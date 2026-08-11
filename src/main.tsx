@@ -1,5 +1,16 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
+
+// Self-hosted, not the Google CDN: the game must work offline and the PNG export
+// needs the faces present at draw time (PRD §2.1, §5.2).
+import '@fontsource/cormorant-garamond/600.css';
+import '@fontsource/inter/400.css';
+import '@fontsource/inter/500.css';
+import '@fontsource/inter/600.css';
+import '@fontsource/ibm-plex-mono/400.css';
+import '@fontsource/ibm-plex-mono/500.css';
+import '@fontsource/ibm-plex-mono/600.css';
+
 import App from './App';
 import './styles/tokens.css';
 import './styles/global.css';

@@ -63,7 +63,10 @@ export function applyEveningWear(input: EveningWearInput): Cook[] {
     const extra = input.extraWear?.get(cook.id) ?? 0;
 
     if (resting.has(cook.id)) {
-      return { ...cook, wear: round1(clamp(cook.wear + C.wear.rest + extra, C.wear.min, C.wear.max)) };
+      return {
+        ...cook,
+        wear: round1(clamp(cook.wear + C.wear.rest + extra, C.wear.min, C.wear.max)),
+      };
     }
 
     const station = STATIONS.find((s) => input.setups[s].lead?.id === cook.id) ?? null;
@@ -81,9 +84,7 @@ export function applyEveningWear(input: EveningWearInput): Cook[] {
     // the helper rate, not the lead rate — PRD §9 case 3. `sim-final.js` charges
     // the lead rate here; §9 is normative on mechanics, so this follows §9.
     const base =
-      setup.courseCount === 0
-        ? C.wear.helper
-        : C.wear.leadBase + C.wear.leadLoadCoef * setup.load;
+      setup.courseCount === 0 ? C.wear.helper : C.wear.leadBase + C.wear.leadLoadCoef * setup.load;
     const delta = base + (input.pushedStation === station ? C.wear.push : 0) + extra;
 
     const worn: Cook = {

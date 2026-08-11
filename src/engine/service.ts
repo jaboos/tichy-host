@@ -11,7 +11,13 @@
 
 import { C } from './constants';
 import { computeBar, outcomeFor } from './bar';
-import { buildStationSetup, computeHarmony, computePlateQuality, type EveningContext, type StationSetup } from './plate';
+import {
+  buildStationSetup,
+  computeHarmony,
+  computePlateQuality,
+  type EveningContext,
+  type StationSetup,
+} from './plate';
 import { coversFor, eveningCosts, eveningRevenue } from './economy';
 import { STATIONS } from './types';
 import type { Rng } from './rng';
@@ -60,10 +66,30 @@ export function buildSetups(
   const lookup = (id: string | null): Cook | null => (id === null ? null : (byId.get(id) ?? null));
 
   return {
-    cold: buildStationSetup('cold', menu, lookup(assignment.leads.cold), lookup(assignment.helpers.cold)),
-    fire: buildStationSetup('fire', menu, lookup(assignment.leads.fire), lookup(assignment.helpers.fire)),
-    sauce: buildStationSetup('sauce', menu, lookup(assignment.leads.sauce), lookup(assignment.helpers.sauce)),
-    dessert: buildStationSetup('dessert', menu, lookup(assignment.leads.dessert), lookup(assignment.helpers.dessert)),
+    cold: buildStationSetup(
+      'cold',
+      menu,
+      lookup(assignment.leads.cold),
+      lookup(assignment.helpers.cold),
+    ),
+    fire: buildStationSetup(
+      'fire',
+      menu,
+      lookup(assignment.leads.fire),
+      lookup(assignment.helpers.fire),
+    ),
+    sauce: buildStationSetup(
+      'sauce',
+      menu,
+      lookup(assignment.leads.sauce),
+      lookup(assignment.helpers.sauce),
+    ),
+    dessert: buildStationSetup(
+      'dessert',
+      menu,
+      lookup(assignment.leads.dessert),
+      lookup(assignment.helpers.dessert),
+    ),
   };
 }
 
@@ -106,7 +132,14 @@ export function runService(setup: EveningSetup, rng: Rng): ServiceOutcome {
       // No hands, no capacity, or cut tonight — a defect with no number computed.
       const cut = setup.cutCourseId === course.id;
       if (cut || !stationSetup.viable) {
-        plates.push({ courseId: course.id, station: course.station, wave, q: null, bar, outcome: 'defect' });
+        plates.push({
+          courseId: course.id,
+          station: course.station,
+          wave,
+          q: null,
+          bar,
+          outcome: 'defect',
+        });
         defects += 1;
         defectsByStation[course.station] += 1;
         continue;

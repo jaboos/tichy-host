@@ -19,6 +19,7 @@ import { runService, type EveningSetup } from './service';
 import { applyEveningWear, applyMondayRecovery } from './wear';
 import { draftBrigade, draftCatalogue, defaultMenu } from './draft';
 import { createRng, seedToRngState, type Rng } from './rng';
+import { STATIONS } from './types';
 import type {
   Assignment,
   Cook,
@@ -52,7 +53,8 @@ export function resolveMenu(state: GameState): Course[] {
   const menu: Course[] = [];
   for (const id of state.menu) {
     const course = byId.get(id);
-    if (course === undefined) throw new Error(`Menu references a course outside the catalogue: ${id}`);
+    if (course === undefined)
+      throw new Error(`Menu references a course outside the catalogue: ${id}`);
     menu.push(course);
   }
   return menu;
@@ -79,8 +81,10 @@ export function startSeason(options: StartSeasonOptions): GameState {
   const rng = createRng(seedToRngState(options.seed));
 
   const catalogue = options.catalogue !== undefined ? [...options.catalogue] : draftCatalogue(rng);
-  const cooks = options.cooks !== undefined ? options.cooks.map((c) => ({ ...c })) : draftBrigade(rng);
-  const menu = options.menu !== undefined ? [...options.menu] : defaultMenu(catalogue).map((c) => c.id);
+  const cooks =
+    options.cooks !== undefined ? options.cooks.map((c) => ({ ...c })) : draftBrigade(rng);
+  const menu =
+    options.menu !== undefined ? [...options.menu] : defaultMenu(catalogue).map((c) => c.id);
   const visitEvenings = drawVisitEvenings(rng);
 
   return {
@@ -113,6 +117,48 @@ export function startSeason(options: StartSeasonOptions): GameState {
   };
 }
 
+/**
+ * A sensible opening assignment for an evening: the best hands take their home
+ * station, whoever is left covers an empty one, and the last one or two become
+ * helpers. The player rearranges from here — this only exists so the Pas screen
+ * never opens empty. Pure.
+ */
+export function autoAssign(cooks: readonly Cook[], restingIds: readonly string[]): Assignment {
+  const leads: Record<Station, string | null> = {
+    cold: null,
+    fire: null,
+    sauce: null,
+    dessert: null,
+  };
+  const helpers: Record<Station, string | null> = {
+    cold: null,
+    fire: null,
+    sauce: null,
+    dessert: null,
+  };
+  const resting = new Set(restingIds);
+
+  const available = cooks.filter((cook) => !resting.has(cook.id)).sort((a, b) => b.hand - a.hand);
+  for (const cook of available) {
+    if (leads[cook.homeStation] === null) leads[cook.homeStation] = cook.id;
+  }
+  const isLead = (id: string): boolean => STATIONS.some((station) => leads[station] === id);
+
+  for (const cook of available) {
+    if (isLead(cook.id)) continue;
+    const empty = STATIONS.find((station) => leads[station] === null);
+    if (empty !== undefined) leads[empty] = cook.id;
+  }
+  // Spare hands help where the load is heaviest.
+  for (const cook of available) {
+    if (isLead(cook.id) || STATIONS.some((station) => helpers[station] === cook.id)) continue;
+    const slot = STATIONS.find((station) => helpers[station] === null);
+    if (slot !== undefined) helpers[slot] = cook.id;
+  }
+
+  return { leads, helpers, resting: [...restingIds] };
+}
+
 // ---------------------------------------------------------------------------
 // The evening
 // ---------------------------------------------------------------------------
@@ -131,7 +177,10 @@ export interface EveningOpening {
   bar: number;
 }
 
-export function openEvening(state: GameState, rng: Rng): { state: GameState; opening: EveningOpening } {
+export function openEvening(
+  state: GameState,
+  rng: Rng,
+): { state: GameState; opening: EveningOpening } {
   const eveningIndex = state.eveningIndex;
   const inspected = state.visitEvenings.includes(eveningIndex);
 
@@ -149,7 +198,12 @@ export function openEvening(state: GameState, rng: Rng): { state: GameState; ope
     signals,
     suspicion: computeSuspicion(signals, computePrior(eveningIndex, state.visitEvenings)),
     covers: coversFor(state.reputation, eveningInWeekOf(eveningIndex)),
-    bar: computeBar(resolveMenu(state), weekIndexOf(eveningIndex), state.reputation, state.seasonNumber),
+    bar: computeBar(
+      resolveMenu(state),
+      weekIndexOf(eveningIndex),
+      state.reputation,
+      state.seasonNumber,
+    ),
   };
 
   return { state: { ...state, rngState: rng.state() }, opening };

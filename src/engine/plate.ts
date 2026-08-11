@@ -76,7 +76,8 @@ export function buildStationSetup(
     if (course.difficulty > maxDifficulty) maxDifficulty = course.difficulty;
   }
 
-  const capacity = C.plate.capacityCoef * (effHandLead + C.plate.capacityHelperCoef * effHandHelper);
+  const capacity =
+    C.plate.capacityCoef * (effHandLead + C.plate.capacityHelperCoef * effHandHelper);
   const viable = lead !== null && capacity > 0;
   const overload = viable ? Math.max(0, load / capacity - 1) : 0;
 
@@ -122,7 +123,9 @@ function areOpposing(left: Flavour, right: Flavour): boolean {
   if (left === right) return false;
   if (right === 'sweet') return true;
   if (left === 'sweet') return false;
-  return OPPOSING_PAIRS.some(([x, y]) => (left === x && right === y) || (left === y && right === x));
+  return OPPOSING_PAIRS.some(
+    ([x, y]) => (left === x && right === y) || (left === y && right === x),
+  );
 }
 
 /**
@@ -295,10 +298,8 @@ export function noiseWidth(
 ): number {
   const ambition =
     C.plate.noiseWidthBase +
-    C.plate.noiseDifficultyCoef *
-      Math.max(0, course.difficulty - C.plate.noiseDifficultyPivot);
-  const push =
-    evening.pushedStation === setup.station ? C.intervention.pushVarianceMultiplier : 1;
+    C.plate.noiseDifficultyCoef * Math.max(0, course.difficulty - C.plate.noiseDifficultyPivot);
+  const push = evening.pushedStation === setup.station ? C.intervention.pushVarianceMultiplier : 1;
 
   let traitScale = 1;
   const lead = setup.lead;

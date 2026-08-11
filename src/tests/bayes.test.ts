@@ -132,7 +132,7 @@ describe('discrimination', () => {
     let rankSumVisits = 0;
     let visits = 0;
 
-    for (let i = 0; i < sorted.length; ) {
+    for (let i = 0; i < sorted.length;) {
       let j = i;
       while (j < sorted.length && sorted[j]?.suspicion === sorted[i]?.suspicion) j += 1;
       const averageRank = rank + (j - i - 1) / 2;
@@ -252,7 +252,7 @@ describe('the prior is scoped to the current third — PRD §3.8', () => {
     expect(computePrior(38, visits)).toBeCloseTo(1 / 4, 12); // 35–38 unknown
   });
 
-  it('drops to zero once a report card has named this third\'s visit', () => {
+  it("drops to zero once a report card has named this third's visit", () => {
     // A visit on evening 2 is confirmed by the Sunday closing week 0.
     expect(computePrior(4, [2, 20, 30])).toBeGreaterThan(0);
     expect(computePrior(5, [2, 20, 30])).toBe(0);

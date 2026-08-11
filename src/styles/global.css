@@ -1,2 +1,193 @@
-/* Reset, @fontsource imports, the 2.2 % fractal-noise overlay and the 390 px
-   mobile frame. PRD §6.1. Phase 3. */
+/* Layout and primitives on top of tokens.css. PRD §6.1.
+   Every colour, radius, duration and keyframe lives in tokens.css; nothing is
+   re-derived here. */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  -webkit-font-smoothing: antialiased;
+  overscroll-behavior-y: none;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+}
+
+button:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2px solid var(--brass);
+  outline-offset: 2px;
+}
+
+/* The mobile frame: 390 px centred, and the same column on desktop. PRD §6.1 */
+.frame {
+  max-width: var(--col-width);
+  margin: 0 auto;
+  padding: var(--pad-top) var(--pad-x) var(--pad-bottom);
+  min-height: 100dvh;
+}
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+  padding: 14px;
+}
+
+.card--lifted {
+  background: var(--card-hi);
+  border-color: var(--brass-a35);
+}
+
+.label {
+  font-size: var(--fs-label);
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  color: var(--ink-muted);
+}
+
+.display {
+  font-family: var(--font-display);
+  font-weight: 600;
+}
+
+.quote {
+  font-family: var(--font-display);
+  font-style: italic;
+  color: var(--ink-muted);
+  font-size: var(--fs-body);
+  line-height: 1.45;
+  margin: 0;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.spread {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* Touch targets are never below 44 px. PRD §6.9 */
+.tap {
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+}
+
+.cta {
+  position: fixed;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: 18px;
+  width: min(calc(var(--col-width) - 2 * var(--pad-x)), calc(100vw - 2 * var(--pad-x)));
+  padding: 15px;
+  border-radius: var(--radius-pill);
+  background: linear-gradient(180deg, var(--brass-hi), var(--brass));
+  color: #20180e;
+  font-weight: 600;
+  font-size: 15px;
+  letter-spacing: 0.02em;
+  box-shadow: var(--shadow-cta);
+  text-align: center;
+  justify-content: center;
+  z-index: 20;
+}
+
+.cta:disabled {
+  opacity: 0.45;
+  box-shadow: none;
+  cursor: not-allowed;
+}
+
+.cta__note {
+  display: block;
+  font-size: var(--fs-small);
+  font-weight: 500;
+  opacity: 0.75;
+  margin-top: 2px;
+}
+
+.chip {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--fs-small);
+  padding: 3px 7px;
+  border-radius: var(--radius-chip);
+  border: 1px solid var(--line);
+  color: var(--ink-muted);
+  white-space: nowrap;
+}
+
+.chip--brass {
+  color: var(--brass);
+  border-color: var(--brass-a35);
+}
+.chip--ok {
+  color: var(--ok);
+  border-color: rgba(111, 163, 107, 0.35);
+}
+.chip--warn {
+  color: var(--warn);
+  border-color: rgba(217, 146, 46, 0.35);
+}
+.chip--bad {
+  color: var(--bad);
+  border-color: var(--bad-a45);
+}
+
+.divider {
+  height: 1px;
+  border: 0;
+  margin: 12px 0;
+  background: linear-gradient(90deg, transparent, var(--brass-a35), transparent);
+}
+
+.muted {
+  color: var(--ink-muted);
+}
+.ok {
+  color: var(--ok);
+}
+.warn {
+  color: var(--warn);
+}
+.bad {
+  color: var(--bad);
+}
+.brass {
+  color: var(--brass);
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}

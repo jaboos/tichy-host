@@ -102,7 +102,10 @@ export function drawSignals(rng: Rng, inspectorPresent: boolean): Signal[] {
 export function likelihoodRatio(signals: readonly Signal[]): number {
   let lr = 1;
   for (const signal of signals) {
-    const pH = Math.min(C.inspector.maxSignalProbability, C.inspector.baseSignalProbability * signal.lr);
+    const pH = Math.min(
+      C.inspector.maxSignalProbability,
+      C.inspector.baseSignalProbability * signal.lr,
+    );
     const pNotH = C.inspector.baseSignalProbability;
     lr *= signal.present ? pH / pNotH : (1 - pH) / (1 - pNotH);
   }

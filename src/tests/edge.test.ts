@@ -93,7 +93,7 @@ describe('§9 case 2 — an empty station has capacity 0', () => {
 
   it('treats a lead with no effective hand the same way', () => {
     // hand 1 away from home leaves an effective hand of 0, and so no capacity.
-    const weak: Cook = { ...brigade()[0] as Cook, hand: 1, homeStation: 'cold' };
+    const weak: Cook = { ...(brigade()[0] as Cook), hand: 1, homeStation: 'cold' };
     const setup = buildStationSetup('sauce', testMenu(), weak, null);
     expect(effectiveHand(weak, 'sauce')).toBe(0);
     expect(setup.viable).toBe(false);
@@ -290,7 +290,12 @@ describe('§9 case 20 — a cook at hand 5 stops growing', () => {
 
 describe('growth — PRD §3.4', () => {
   it('needs both a clean station and work that stretches the cook', () => {
-    const cook: Cook = { ...(brigade()[0] as Cook), hand: 2, homeStation: 'sauce', cleanEvenings: 0 };
+    const cook: Cook = {
+      ...(brigade()[0] as Cook),
+      hand: 2,
+      homeStation: 'sauce',
+      cleanEvenings: 0,
+    };
     const menu = [getCourse('houboveJus')]; // sauce, difficulty 4 — above effective hand 3
     const setups = {} as Record<Station, ReturnType<typeof buildStationSetup>>;
     for (const station of STATIONS) {
@@ -298,13 +303,19 @@ describe('growth — PRD §3.4', () => {
     }
 
     const clean = applyEveningWear({
-      cooks: [cook], setups, restingIds: [], pushedStation: null,
+      cooks: [cook],
+      setups,
+      restingIds: [],
+      pushedStation: null,
       defectsByStation: { cold: 0, fire: 0, sauce: 0, dessert: 0 },
     });
     expect(clean[0]?.cleanEvenings).toBe(1);
 
     const withDefect = applyEveningWear({
-      cooks: [cook], setups, restingIds: [], pushedStation: null,
+      cooks: [cook],
+      setups,
+      restingIds: [],
+      pushedStation: null,
       defectsByStation: { cold: 0, fire: 0, sauce: 1, dessert: 0 },
     });
     expect(withDefect[0]?.cleanEvenings).toBe(0);
@@ -312,8 +323,11 @@ describe('growth — PRD §3.4', () => {
 
   it('promotes at the threshold and moves to the next one', () => {
     const cook: Cook = {
-      ...(brigade()[0] as Cook), hand: 2, homeStation: 'sauce',
-      cleanEvenings: C.growth.thresholds[0] - 1, growthThreshold: C.growth.thresholds[0],
+      ...(brigade()[0] as Cook),
+      hand: 2,
+      homeStation: 'sauce',
+      cleanEvenings: C.growth.thresholds[0] - 1,
+      growthThreshold: C.growth.thresholds[0],
     };
     const menu = [getCourse('houboveJus')];
     const setups = {} as Record<Station, ReturnType<typeof buildStationSetup>>;
@@ -321,7 +335,10 @@ describe('growth — PRD §3.4', () => {
       setups[station] = buildStationSetup(station, menu, station === 'sauce' ? cook : null, null);
     }
     const after = applyEveningWear({
-      cooks: [cook], setups, restingIds: [], pushedStation: null,
+      cooks: [cook],
+      setups,
+      restingIds: [],
+      pushedStation: null,
       defectsByStation: { cold: 0, fire: 0, sauce: 0, dessert: 0 },
     })[0];
     expect(after?.hand).toBe(3);
@@ -381,22 +398,38 @@ describe('the bar prices harmony — PRD §3.3', () => {
 
   it('the breakdown sums to the bar it reports', () => {
     const b = computeBarBreakdown(testMenu(), 3, 40, 2);
-    expect(b.base + b.ambition + b.week + b.reputation + b.season + b.harmony).toBeCloseTo(b.total, 12);
+    expect(b.base + b.ambition + b.week + b.reputation + b.season + b.harmony).toBeCloseTo(
+      b.total,
+      12,
+    );
   });
 });
 
 describe('the verdict — PRD §3.8 FR-12', () => {
   const plate = (outcome: 'defect' | 'passed' | 'star') => ({
-    courseId: 'x', station: 'sauce' as Station, wave: 0 as const, q: 1, bar: 1, outcome,
+    courseId: 'x',
+    station: 'sauce' as Station,
+    wave: 0 as const,
+    q: 1,
+    bar: 1,
+    outcome,
   });
   const visit = (outcomes: readonly ('defect' | 'passed' | 'star')[]) => ({
-    eveningIndex: 0, wave: 0 as const, plates: outcomes.map(plate),
-    suspicionAtTime: 0, pushedStation: null, confirmed: false,
+    eveningIndex: 0,
+    wave: 0 as const,
+    plates: outcomes.map(plate),
+    suspicionAtTime: 0,
+    pushedStation: null,
+    confirmed: false,
   });
 
   it('gives ★ for at most one plate below the bar', () => {
-    expect(judge({ visits: [visit(['passed', 'defect']), visit(['passed']), visit(['passed'])] })).toBe(1);
-    expect(judge({ visits: [visit(['defect', 'defect']), visit(['passed']), visit(['passed'])] })).toBe(0);
+    expect(
+      judge({ visits: [visit(['passed', 'defect']), visit(['passed']), visit(['passed'])] }),
+    ).toBe(1);
+    expect(
+      judge({ visits: [visit(['defect', 'defect']), visit(['passed']), visit(['passed'])] }),
+    ).toBe(0);
   });
 
   it('gives ★★ only with no defect and a star plate in every visit', () => {
@@ -404,7 +437,9 @@ describe('the verdict — PRD §3.8 FR-12', () => {
     // A star plate missing from one visit is enough to lose the second star.
     expect(judge({ visits: [visit(['star']), visit(['star']), visit(['passed'])] })).toBe(1);
     // ...and so is a single defect.
-    expect(judge({ visits: [visit(['star', 'defect']), visit(['star']), visit(['star'])] })).toBe(1);
+    expect(judge({ visits: [visit(['star', 'defect']), visit(['star']), visit(['star'])] })).toBe(
+      1,
+    );
   });
 
   it('needs all three visits before it can award ★★', () => {
@@ -422,7 +457,12 @@ describe('determinism — PRD §8.1', () => {
         const opened = openEvening(state, rng);
         state = opened.state;
         const assignment = makePlan(state.cooks, null);
-        const stepped = advanceEvening(state, opened.opening, { assignment, intervention: null }, rng);
+        const stepped = advanceEvening(
+          state,
+          opened.opening,
+          { assignment, intervention: null },
+          rng,
+        );
         state = stepped.state;
         results.push(stepped.result);
       }
@@ -436,7 +476,12 @@ describe('determinism — PRD §8.1', () => {
     const rng = createRng(state.rngState);
     const opened = openEvening(state, rng);
     const assignment = makePlan(state.cooks, null);
-    const { state: next } = advanceEvening(opened.state, opened.opening, { assignment, intervention: null }, rng);
+    const { state: next } = advanceEvening(
+      opened.state,
+      opened.opening,
+      { assignment, intervention: null },
+      rng,
+    );
     expect(JSON.parse(JSON.stringify(next))).toEqual(next);
   });
 });
@@ -449,8 +494,10 @@ describe('the push — PRD §3.5', () => {
     const opened = openEvening(state, rng);
     const assignment = makePlan(opened.state.cooks, null);
     const stepped = advanceEvening(
-      opened.state, opened.opening,
-      { assignment, intervention: { id: 'push', station: 'sauce' } }, rng,
+      opened.state,
+      opened.opening,
+      { assignment, intervention: { id: 'push', station: 'sauce' } },
+      rng,
     );
     expect(stepped.state.pushTokens).toBe(C.intervention.pushTokensPerSeason - 1);
     state = stepped.state;
@@ -466,8 +513,10 @@ describe('the push — PRD §3.5', () => {
     const opened = openEvening(state, rng);
     const assignment = makePlan(opened.state.cooks, null);
     const stepped = advanceEvening(
-      opened.state, opened.opening,
-      { assignment, intervention: { id: 'push', station: 'sauce' } }, rng,
+      opened.state,
+      opened.opening,
+      { assignment, intervention: { id: 'push', station: 'sauce' } },
+      rng,
     );
     expect(stepped.state.pushTokens).toBe(0);
   });

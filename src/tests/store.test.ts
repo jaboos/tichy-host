@@ -1,0 +1,97 @@
+/**
+ * The Phase 3 exit criteria, driven through the real store: a full 40-evening
+ * season completes, a reload restores exactly (RNG included), a replayed seed
+ * gives an identical season, and a corrupt save never crashes and never silently
+ * wipes (PRD §7 Phase 3, §8.1, §9 case 13).
+ *
+ * Not one of the four files in §2.3, and it earned its place: it caught the store
+ * persisting the state AFTER `openEvening` had drawn the evening's signals, so a
+ * reload rolled a second opening on top of the first and quietly diverged from
+ * the season that was saved.
+ */
+import { beforeEach, describe, expect, it } from 'vitest';
+
+// Minimal localStorage, because the store owns persistence and the engine does not.
+const store = new Map<string, string>();
+const shim: Storage = {
+  getItem: (key) => store.get(key) ?? null,
+  setItem: (key, value) => void store.set(key, value),
+  removeItem: (key) => void store.delete(key),
+  clear: () => store.clear(),
+  key: () => null,
+  get length() {
+    return store.size;
+  },
+};
+(globalThis as unknown as { localStorage: Storage }).localStorage = shim;
+
+const { useGame } = await import('../store/gameStore');
+const { C } = await import('../engine/constants');
+
+function playEvening(): void {
+  const s = useGame.getState();
+  s.startService();
+  useGame.getState().finishReveal();
+  useGame.getState().nextEvening();
+  if (useGame.getState().screen === 'monday') useGame.getState().lockKitchen();
+}
+
+describe('a whole season through the store', () => {
+  beforeEach(() => {
+    store.clear();
+    useGame.setState({ screen: 'onboarding', game: null, opening: null, lastResult: null });
+  });
+
+  it('plays 40 evenings and reaches the verdict', () => {
+    useGame.getState().boot();
+    useGame.getState().newGame('Test', '7K3-MAREN');
+    for (let i = 0; i < C.season.eveningsPerSeason; i += 1) {
+      expect(useGame.getState().screen, `evening ${i}`).toBe('pas');
+      playEvening();
+    }
+    expect(useGame.getState().screen).toBe('verdict');
+    const game = useGame.getState().game;
+    expect(game?.eveningIndex).toBe(C.season.eveningsPerSeason);
+    expect(game?.history).toHaveLength(C.season.eveningsPerSeason);
+    expect(game?.visits).toHaveLength(C.inspector.visitsPerSeason);
+    expect([0, 1, 2]).toContain(game?.stars);
+  });
+
+  it('a reload mid-season restores exactly, RNG included', () => {
+    useGame.getState().boot();
+    useGame.getState().newGame('Test', '7K3-MAREN');
+    for (let i = 0; i < 12; i += 1) playEvening();
+
+    const before = useGame.getState().game;
+    expect(before).not.toBeNull();
+
+    // Close the tab and come back: same storage, fresh store.
+    useGame.setState({ screen: 'onboarding', game: null, opening: null, lastResult: null });
+    useGame.getState().boot();
+    const after = useGame.getState().game;
+
+    expect(after?.rngState).toBe(before?.rngState);
+    expect(after?.eveningIndex).toBe(before?.eveningIndex);
+    expect(JSON.stringify(after)).toBe(JSON.stringify(before));
+  });
+
+  it('replaying the same seed with the same inputs gives the same season', () => {
+    const run = (): string => {
+      store.clear();
+      useGame.setState({ screen: 'onboarding', game: null, opening: null, lastResult: null });
+      useGame.getState().boot();
+      useGame.getState().newGame('Test', '7K3-MAREN');
+      for (let i = 0; i < 15; i += 1) playEvening();
+      return JSON.stringify(useGame.getState().game);
+    };
+    expect(run()).toBe(run());
+  });
+
+  it('a corrupt save never crashes and never silently wipes', () => {
+    store.set(C.storage.gameKey, '{ not json');
+    useGame.setState({ screen: 'onboarding', game: null, opening: null, lastResult: null });
+    expect(() => useGame.getState().boot()).not.toThrow();
+    expect(useGame.getState().screen).toBe('onboarding');
+    expect(store.get(C.storage.backupKey)).toBe('{ not json');
+  });
+});
