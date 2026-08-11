@@ -204,7 +204,6 @@ export const cs = {
   'pas.brigade': 'Brigáda',
   'pas.lead': 'vedoucí',
   'pas.helper': 'pomocník',
-  'pas.tapCook': 'Klepni na kuchaře, pak na post.',
   'pas.intervention': 'Volba večera',
   'pas.noIntervention': 'Bez zásahu',
   'pas.statusOverload': 'Přetížené posty: {stations}',
@@ -306,6 +305,16 @@ export const cs = {
   'day.satShort': 'So',
   'lang.switch': 'English',
   'lang.switchBack': 'Česky',
+
+  // --- Pas assignment, FR-1 / FR-1a ---------------------------------------
+  'pas.load': 'zátěž',
+  'pas.capacity': 'kapacita',
+  'pas.addHelper': '+ pomocník',
+  'pas.placement': 'Kam patří',
+  'pas.tapRow': 'Klepni na kuchaře a vyber, kam dnes patří.',
+  'pas.reasonStationFull': 'post je obsazený',
+  'pas.reasonHelpersFull': 'už jsou tam dva',
+  'pas.here': 'tady',
 } as const;
 
 /** Every valid translation key. A typo is a compile error. */

@@ -72,7 +72,18 @@ export default function CookTriptych({
       >
         {body}
       </div>
-      <div className="label" style={{ fontSize: 'var(--fs-micro)', marginTop: 3 }}>
+      {/* Playtested: ODOLNOST and CHTĚNÍ ran together. Adjacent uppercase
+          micro-labels need a real gutter — FR-1 item 5 sets the floor at 8 px. */}
+      <div
+        className="label"
+        style={{
+          fontSize: 'var(--fs-micro)',
+          letterSpacing: '.06em',
+          marginTop: 3,
+          whiteSpace: 'nowrap',
+          paddingInline: 5,
+        }}
+      >
         {t(labelKey)}
       </div>
       {withWords && words !== undefined ? (
@@ -84,7 +95,7 @@ export default function CookTriptych({
   );
 
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
+    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', columnGap: 10 }}>
       {slot(
         'triptych.hand',
         <>

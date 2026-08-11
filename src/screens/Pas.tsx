@@ -7,7 +7,7 @@
  */
 import { C } from '../engine/constants';
 import { buildSetups } from '../engine/service';
-import { STATIONS, type InterventionId, type Station } from '../engine/types';
+import { STATIONS, type InterventionId } from '../engine/types';
 import { SIGNALS } from '../data/signals';
 import { t } from '../i18n';
 import { currentMenu, useGame } from '../store/gameStore';
@@ -39,10 +39,10 @@ export default function Pas(): React.JSX.Element | null {
   const opening = useGame((s) => s.opening);
   const draft = useGame((s) => s.draft);
   const intervention = useGame((s) => s.intervention);
-  const selectedCookId = useGame((s) => s.selectedCookId);
+  const expandedCookId = useGame((s) => s.expandedCookId);
   const refusal = useGame((s) => s.refusal);
-  const selectCook = useGame((s) => s.selectCook);
-  const placeSelected = useGame((s) => s.placeSelected);
+  const expandCook = useGame((s) => s.expandCook);
+  const placeCook = useGame((s) => s.placeCook);
   const setIntervention = useGame((s) => s.setIntervention);
   const startService = useGame((s) => s.startService);
   const openCookCard = useGame((s) => s.openCookCard);
@@ -53,14 +53,6 @@ export default function Pas(): React.JSX.Element | null {
   const setups = buildSetups(game.cooks, draft, menu);
   const overloaded = STATIONS.filter((s) => setups[s].overload > 0 || !setups[s].viable);
   const dayKey = DAY_KEYS[opening.eveningInWeek] ?? DAY_KEYS[0];
-
-  const roleOf = (cookId: string): { station: Station | null; role: 'lead' | 'helper' | null } => {
-    for (const station of STATIONS) {
-      if (draft.leads[station] === cookId) return { station, role: 'lead' };
-      if (draft.helpers[station] === cookId) return { station, role: 'helper' };
-    }
-    return { station: null, role: null };
-  };
 
   const maitre = SIGNALS.filter((definition) =>
     opening.signals.some((signal) => signal.id === definition.id && signal.present),
@@ -99,25 +91,22 @@ export default function Pas(): React.JSX.Element | null {
 
       <BrassDivider />
       <div className="label">{t('pas.stations')}</div>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginTop: 8 }}>
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: '1fr 1fr',
+          gap: 8,
+          marginTop: 8,
+          alignItems: 'stretch',
+        }}
+      >
         {STATIONS.map((station) => (
-          <div key={station} className="stack" style={{ gap: 4 }}>
-            <StationDisk
-              station={station}
-              setup={setups[station]}
-              selected={selectedCookId !== null}
-              onSelect={() => placeSelected(station, 'lead')}
-            />
-            <button
-              type="button"
-              className="chip tap"
-              style={{ justifyContent: 'center' }}
-              onClick={() => placeSelected(station, 'helper')}
-            >
-              {t('pas.helper')}
-              {draft.helpers[station] !== null ? ' ✓' : ''}
-            </button>
-          </div>
+          <StationDisk
+            key={station}
+            station={station}
+            setup={setups[station]}
+            onPickCook={expandCook}
+          />
         ))}
       </div>
 
@@ -125,25 +114,21 @@ export default function Pas(): React.JSX.Element | null {
       <div className="spread">
         <span className="label">{t('pas.brigade')}</span>
         <span className="muted" style={{ fontSize: 'var(--fs-small)' }}>
-          {t('pas.tapCook')}
+          {t('pas.tapRow')}
         </span>
       </div>
       <div className="stack" style={{ marginTop: 8 }}>
-        {game.cooks.map((cook) => {
-          const placement = roleOf(cook.id);
-          return (
-            <CookRow
-              key={cook.id}
-              cook={cook}
-              station={placement.station}
-              role={placement.role}
-              resting={draft.resting.includes(cook.id)}
-              selected={selectedCookId === cook.id}
-              onSelect={() => selectCook(selectedCookId === cook.id ? null : cook.id)}
-              onOpenCard={() => openCookCard(cook.id)}
-            />
-          );
-        })}
+        {game.cooks.map((cook) => (
+          <CookRow
+            key={cook.id}
+            cook={cook}
+            assignment={draft}
+            expanded={expandedCookId === cook.id}
+            onToggle={() => expandCook(expandedCookId === cook.id ? null : cook.id)}
+            onPlace={(target) => placeCook(cook.id, target)}
+            onOpenCard={() => openCookCard(cook.id)}
+          />
+        ))}
       </div>
 
       <BrassDivider />

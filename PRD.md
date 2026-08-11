@@ -138,6 +138,8 @@ tichy-host/
    ├─ screens/
    │  ├─ Onboarding.tsx
    │  ├─ MondayPlan.tsx
+   │  ├─ Consequence.tsx         # §6.7 — after service
+   │  ├─ Brigade.tsx             # §6.7 — roster tab
    │  ├─ Pas.tsx
    │  ├─ Service.tsx
    │  ├─ Menu.tsx
@@ -161,6 +163,7 @@ tichy-host/
       ├─ golden.test.ts          # MUST reproduce sim-final.js
       ├─ bayes.test.ts
       ├─ i18n.test.ts            # no hardcoded strings, cs/en key parity
+      ├─ store.test.ts           # full season, exact resume, seed reproducibility, corrupt save
       └─ edge.test.ts
 ```
 
@@ -184,11 +187,41 @@ Displays, top to bottom:
 2. Maître line (italic serif): the drawn signals rendered as one sentence.
 3. **BarIndicator** — today's bar with tap-to-expand breakdown (§3.3). **Mandatory on this screen.**
 4. Four **StationDisk** components in a 2×2 grid: load %, colour ramp green → amber → red, pulsing radial glow + `PŘETÍŽENO` badge when `overload > 0`.
+
+   **A station card must always name the people standing at it.** Playtested regression: the cards showed `4/2,0` and no names at all, so the screen about people had no people on it — and the removal target from `Pas.dc.html` did not exist, making cooks impossible to unassign. Required contents, in this order:
+
+   | Element | Rule |
+   |---|---|
+   | station name | as now |
+   | **lead** | surname chip. Empty station reads `bez rukou` in `--bad`, never a blank |
+   | **helper** | surname chip, or a dashed `+ pomocník` slot **inside the same card** — never a separate card floating beneath the grid |
+   | load figure | labelled: `zátěž 4 / kapacita 2,0`, not the bare `4/2,0` |
+   | percentage + ramp + badge | as now |
+
+   The 2 × 2 grid holds exactly four cards of equal height. Helper slots live inside their card; nothing is appended below the grid.
+
+5. Labels in the triptych and elsewhere need explicit spacing — playtested `ODOLNOSTCHTĚNÍ` running together. Adjacent uppercase micro-labels get a minimum 8 px gutter.
 5. Six **CookRow** components: name (serif), station, the **three-slot triptych** (§6.5), home-station marker, wear bar, trait chip, optional warning line.
 6. **One intervention of six** (§3.5), mutually exclusive, selection is required-optional (may choose none).
+
+   Any hint text must describe the interaction from §3.1 FR-1a. The string `Klepni na kuchaře, pak na post` describes the rejected modal model and must not appear.
 7. Fixed bottom CTA `Zahájit servis` + status line summarising overloaded stations and whether an intervention is set.
 
-Assignment interaction: tap a cook to select, tap a station to assign; drag-and-drop also supported on pointer devices. Tap an assigned cook chip on a station to unassign.
+#### FR-1a Assignment interaction — no modes, no hidden gestures
+
+The obvious design is "tap a cook to select, then tap a station to place". **Do not build that.** It has a hidden state (is anyone selected?) that the player cannot see, it makes a station tap a silent no-op when nothing is selected, and it leaves removal with nowhere to live except an undiscoverable tap on a 9 px name chip. Playtested: a first-time player could add a cook only by accident and could not remove one at all.
+
+Build it the other way round — **the cook is what you touch, the station is what you read.**
+
+1. Every `CookRow` carries its current placement on the right as a chip: `Omáčky · vedoucí` · `Oheň · pomocník` · `Volno`. There is no state in which a cook's placement is unknown or invisible.
+2. Tapping the row expands an **inline picker directly beneath it** — not a modal, not a sheet that covers the screen. Five options: the four stations plus **Volno**. The current one is marked.
+3. **Removal is just choosing Volno.** It is a visible option with a name, never a gesture to be discovered.
+4. Unavailable options are shown **disabled with the reason on them** — `Oheň · už jsou tam dva` — never hidden and never silently ignored.
+5. Choosing an option collapses the picker and updates the station disks immediately.
+6. The station disks stay read-only display: load, colour ramp, who is there. Tapping a name chip on a disk opens **that cook's** picker, so the gesture from the mockup still does something sensible instead of nothing.
+7. Drag from a cook row onto a station disk remains as an optional accelerator on pointer devices. It is never the only path.
+
+**Global UI rule, applies everywhere and not just here: no silent no-ops.** If a tap is refused, the interface says why, inline, in one short sentence. An interaction that does nothing teaches the player nothing except that the game is unpredictable.
 
 **Edge cases:**
 - Fewer available cooks than stations → station may stay empty; UI must show it red *before* service with the text "no hands" and every course on that station resolves as a defect without computing Q.
@@ -428,7 +461,19 @@ Final verdict = a letter on cream paper (the only light screen in the game), cit
 
 **FR-14 Persistence.** Key `tichy-host-v4`, one active-game slot plus a chronicle list. Autosave after every evening, **including RNG state**. Schema carries `version: number`; on mismatch attempt migration, else archive the old save under `tichy-host-v4-backup` and start fresh — never crash, never silently wipe.
 
-**FR-15 Seed.** Format `7K3-MAREN` (3 chars, dash, 5 chars, from `[A-Z0-9]` minus ambiguous `O/0/I/1`). Determines brigade, catalogue, visit evenings, signals and every roll. A weekly seed derives from the ISO week in UTC.
+**FR-15 Seed — internal name only; the player never sees the word.** Format `7K3-MAREN` (3 chars, dash, 5 chars, from `[A-Z0-9]` minus ambiguous `O/0/I/1`). Determines brigade, catalogue, visit evenings, signals and every roll. A weekly seed derives from the ISO week in UTC.
+
+**In the UI it is called `kód kuchyně` / `kitchen code`, and it must not appear on the first screen.** "Seed" is developer vocabulary; a first-time player has never heard it, does not need it, and reads it as a sign that this is a technical toy rather than a restaurant. It is also not one of the twelve concepts (§14 of the design doc), so it may not consume a slot in onboarding.
+
+Where it appears instead:
+
+| Place | Form |
+|---|---|
+| Start screen | primary button **Nová kuchyně**; beneath it a quiet text link **Mám kód kuchyně** that reveals the field only when tapped |
+| The revealed field | label `Kód kuchyně`, helper line: *"Když ti někdo poslal svou kuchyni, vlož kód sem. Dostaneš stejnou partu i stejný katalog."* |
+| Chronicle | where the code is generated, shown and copied — this is the only place a player meets it unprompted, and by then it means something |
+
+Never show a placeholder that looks like a required value. An empty field with the helper line is correct; `7K3-MAREN` sitting in the box reads as "type something like this".
 
 **FR-16 i18n.** Every string in a typed dictionary; switchable at runtime without losing state. Czech cook names need nominative and accusative forms stored explicitly (`Ilona` / `Ilonu`). Numbers formatted per locale (`12,3` vs `12.3`). Chronicles store the language they were generated in.
 
@@ -936,6 +981,7 @@ If a divergence pushes a rate outside the band, **report it — do not tune cons
 | 4 | Third helper attempted | Refused with an inline message |
 | 5 | Cook leaves mid-week | Remaining evenings free up; player gets one free re-plan outside Monday |
 | 6 | Tab closed mid-reveal | Result persisted before animation; reload shows the finished result |
+| 6b | **Opening an evening advances the RNG** | Persist the RNG state **before** opening, never after. Opening must be a deterministic replay from the saved state, or a reload silently forks the season into a different one (different signals, different suspicion). Regression-tested in `store.test.ts`. |
 | 7 | Visit lands on evening 40 | Prevented at generation — one visit per third, last not on the final evening |
 | 8 | `cutCourse` on an inspection evening | Allowed; the cut course counts as a defect. Not an exploit |
 | 9 | Menu change with an inspection in the trial evenings | Allowed; that is the risk of revising |
@@ -972,3 +1018,5 @@ Nothing in Layer 2 or 3 changes the constants in §3. They are additions on top.
 5. **The number is immediate, the story is one tap away.** Never block a player who doesn't want to read.
 6. **Input randomness before the decision, output randomness only in the plate roll.**
 7. **Twelve concepts, no more.** If a feature needs a thirteenth, it belongs in Layer 2.
+8. **No silent no-ops.** Every refused interaction explains itself inline. Every state the player can be in must be visible on screen — never modal-by-implication.
+9. **The thing you touch and the thing you read may be different, but the thing you touch must look touchable.** Removal is never a gesture; it is a named option.

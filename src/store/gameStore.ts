@@ -30,6 +30,7 @@ import {
 import { createStartingBrigade } from '../engine/draft';
 import { setLang as setI18nLang } from '../i18n';
 import * as persistence from './persistence';
+import { STATIONS } from '../engine/types';
 import type {
   Assignment,
   CookRole,
@@ -63,6 +64,80 @@ export type RefusalKey =
   | 'refusal.menuStations'
   | 'refusal.menuSize';
 
+/** Where a cook can stand. Rest is a place like any other, never a gesture. */
+export type Placement = Station | 'rest';
+
+export interface PlacementOption {
+  target: Placement;
+  /** What the cook would become there. null for rest. */
+  role: CookRole | null;
+  current: boolean;
+  disabled: boolean;
+  /** Shown ON the disabled option, so a refusal is never silent. FR-1a item 4. */
+  reasonKey: 'pas.reasonStationFull' | 'pas.reasonHelpersFull' | null;
+}
+
+export function placementOf(
+  assignment: Assignment,
+  cookId: string,
+): { target: Placement; role: CookRole | null } {
+  for (const station of STATIONS) {
+    if (assignment.leads[station] === cookId) return { target: station, role: 'lead' };
+    if (assignment.helpers[station] === cookId) return { target: station, role: 'helper' };
+  }
+  return { target: 'rest', role: null };
+}
+
+/**
+ * The five options under a cook row: four stations and Volno. Nothing is hidden —
+ * an option the rules forbid is present, disabled, and carries its reason.
+ */
+export function placementOptions(assignment: Assignment, cookId: string): PlacementOption[] {
+  const here = placementOf(assignment, cookId);
+  const helperCount = STATIONS.filter(
+    (station) => assignment.helpers[station] !== null && assignment.helpers[station] !== cookId,
+  ).length;
+
+  const options: PlacementOption[] = STATIONS.map((station) => {
+    const leadFree = assignment.leads[station] === null || assignment.leads[station] === cookId;
+    const helperFree =
+      assignment.helpers[station] === null || assignment.helpers[station] === cookId;
+    const current = here.target === station;
+
+    if (leadFree) {
+      return { target: station, role: 'lead', current, disabled: false, reasonKey: null };
+    }
+    if (!helperFree) {
+      return {
+        target: station,
+        role: null,
+        current,
+        disabled: true,
+        reasonKey: 'pas.reasonStationFull',
+      };
+    }
+    if (helperCount >= C.planning.maxHelpers) {
+      return {
+        target: station,
+        role: null,
+        current,
+        disabled: true,
+        reasonKey: 'pas.reasonHelpersFull',
+      };
+    }
+    return { target: station, role: 'helper', current, disabled: false, reasonKey: null };
+  });
+
+  options.push({
+    target: 'rest',
+    role: null,
+    current: here.target === 'rest',
+    disabled: false,
+    reasonKey: null,
+  });
+  return options;
+}
+
 interface Store {
   screen: Screen;
   game: GameState | null;
@@ -71,7 +146,8 @@ interface Store {
   /** The assignment the player is editing, before service starts. */
   draft: Assignment;
   intervention: Intervention | null;
-  selectedCookId: string | null;
+  /** Which cook row has its picker open. There is no invisible selection. */
+  expandedCookId: string | null;
   focusCookId: string | null;
   refusal: RefusalKey | null;
   lang: Lang;
@@ -84,9 +160,8 @@ interface Store {
   dismissRefusal: () => void;
   setLang: (lang: Lang) => void;
 
-  selectCook: (cookId: string | null) => void;
-  placeSelected: (station: Station, role: CookRole) => void;
-  clearSlot: (station: Station, role: CookRole) => void;
+  expandCook: (cookId: string | null) => void;
+  placeCook: (cookId: string, target: Placement) => void;
   openCookCard: (cookId: string) => void;
 
   setIntervention: (intervention: Intervention | null) => void;
@@ -146,7 +221,7 @@ export const useGame = create<Store>((set, get) => ({
   lastResult: null,
   draft: EMPTY_DRAFT,
   intervention: null,
-  selectedCookId: null,
+  expandedCookId: null,
   focusCookId: null,
   refusal: null,
   lang: 'cs',
@@ -211,7 +286,7 @@ export const useGame = create<Store>((set, get) => ({
       draft: opened.draft,
       lastResult: null,
       intervention: null,
-      selectedCookId: null,
+      expandedCookId: null,
       refusal: null,
     });
   },
@@ -233,50 +308,46 @@ export const useGame = create<Store>((set, get) => ({
     }
   },
 
-  selectCook: (cookId) => set({ selectedCookId: cookId, refusal: null }),
+  expandCook: (cookId) => set({ expandedCookId: cookId, refusal: null }),
   openCookCard: (cookId) => set({ focusCookId: cookId, screen: 'cook' }),
 
-  placeSelected: (station, role) => {
-    const { selectedCookId, draft } = get();
-    if (selectedCookId === null) return;
-    if (draft.resting.includes(selectedCookId)) return;
-
+  /**
+   * Move a cook. The picker only offers legal targets, so this should never
+   * refuse — but if it ever does, it says why rather than doing nothing.
+   */
+  placeCook: (cookId, target) => {
+    const { draft } = get();
     const leads = { ...draft.leads };
     const helpers = { ...draft.helpers };
+    let resting = draft.resting.filter((id) => id !== cookId);
 
-    if (role === 'helper') {
-      const alreadyElsewhere = Object.entries(helpers).some(
-        ([key, id]) => id === selectedCookId && key !== station,
-      );
-      const occupiedCount = Object.values(helpers).filter(
-        (id) => id !== null && id !== selectedCookId,
-      ).length;
-      // At most two helpers in the brigade, one per station. PRD §9 case 4.
-      if (helpers[station] === null && occupiedCount >= C.planning.maxHelpers) {
-        set({ refusal: 'refusal.thirdHelper' });
-        return;
-      }
-      if (alreadyElsewhere) {
-        set({ refusal: 'refusal.helperTwice' });
-        return;
-      }
+    for (const station of STATIONS) {
+      if (leads[station] === cookId) leads[station] = null;
+      if (helpers[station] === cookId) helpers[station] = null;
     }
 
-    // A cook stands in exactly one place.
-    for (const key of Object.keys(leads) as Station[]) {
-      if (leads[key] === selectedCookId) leads[key] = null;
-      if (helpers[key] === selectedCookId) helpers[key] = null;
+    if (target === 'rest') {
+      resting = [...resting, cookId];
+    } else if (leads[target] === null) {
+      leads[target] = cookId;
+    } else {
+      const helperCount = STATIONS.filter((s) => helpers[s] !== null).length;
+      if (helpers[target] !== null) {
+        set({ refusal: 'refusal.thirdHelper', expandedCookId: null });
+        return;
+      }
+      if (helperCount >= C.planning.maxHelpers) {
+        set({ refusal: 'refusal.thirdHelper', expandedCookId: null });
+        return;
+      }
+      helpers[target] = cookId;
     }
-    if (role === 'lead') leads[station] = selectedCookId;
-    else helpers[station] = selectedCookId;
 
-    set({ draft: { ...draft, leads, helpers }, selectedCookId: null, refusal: null });
-  },
-
-  clearSlot: (station, role) => {
-    const { draft } = get();
-    if (role === 'lead') set({ draft: { ...draft, leads: { ...draft.leads, [station]: null } } });
-    else set({ draft: { ...draft, helpers: { ...draft.helpers, [station]: null } } });
+    set({
+      draft: { leads, helpers, resting },
+      expandedCookId: null,
+      refusal: null,
+    });
   },
 
   setIntervention: (intervention) => {
@@ -307,7 +378,7 @@ export const useGame = create<Store>((set, get) => ({
       screen: 'service',
       opening: null,
       intervention: null,
-      selectedCookId: null,
+      expandedCookId: null,
     });
   },
 

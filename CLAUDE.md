@@ -89,6 +89,7 @@ Czech in the UI, English in the code. Do not invent alternatives.
 | chtění | `desire` | a cook's two-step personal arc |
 | brigáda | `brigade` | the six cooks |
 | kronika | `chronicle` | shareable season summary |
+| kód kuchyně | `seed` | **never write "seed" in the UI** — it is developer vocabulary and not one of the twelve concepts |
 
 ## Definition of done for any task
 

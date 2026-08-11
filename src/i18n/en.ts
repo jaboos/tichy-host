@@ -207,7 +207,6 @@ export const en = {
   'pas.brigade': 'Brigade',
   'pas.lead': 'lead',
   'pas.helper': 'helper',
-  'pas.tapCook': 'Tap a cook, then a station.',
   'pas.intervention': "Tonight's call",
   'pas.noIntervention': 'No intervention',
   'pas.statusOverload': 'Overloaded: {stations}',
@@ -309,4 +308,14 @@ export const en = {
   'day.satShort': 'Sat',
   'lang.switch': 'English',
   'lang.switchBack': 'Česky',
+
+  // --- Pas assignment, FR-1 / FR-1a ---------------------------------------
+  'pas.load': 'load',
+  'pas.capacity': 'capacity',
+  'pas.addHelper': '+ helper',
+  'pas.placement': 'Where they stand',
+  'pas.tapRow': 'Tap a cook and choose where they stand tonight.',
+  'pas.reasonStationFull': 'station is taken',
+  'pas.reasonHelpersFull': 'already two there',
+  'pas.here': 'here',
 } satisfies Record<TKey, string>;

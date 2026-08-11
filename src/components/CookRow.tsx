@@ -1,34 +1,44 @@
 /**
- * One cook on the Pas screen. PRD §3.1 FR-1: name, station, the three-slot
- * triptych, the home-station marker, a wear bar, the trait chip, and a warning
- * line when there is something to warn about.
+ * One cook on the Pas, and the thing you actually touch. PRD §3.1 FR-1a.
+ *
+ * The rejected design was "tap a cook to select, then tap a station": it hides
+ * state the player cannot see, makes a station tap a silent no-op when nobody is
+ * selected, and leaves removal with nowhere to live. Here the cook is what you
+ * touch and the station is what you read.
+ *
+ *   · the row always shows where this cook stands — there is no unknown state
+ *   · tapping the row opens an inline picker directly beneath it, not a modal
+ *   · removal is just choosing Volno, a named option rather than a gesture
+ *   · illegal options are shown disabled WITH their reason, never hidden
  */
 import { C } from '../engine/constants';
 import { getTrait } from '../data/traits';
 import { formatNumber, t } from '../i18n';
 import CookTriptych from './CookTriptych';
-import type { Cook, Station } from '../engine/types';
+import { placementOf, placementOptions, type Placement } from '../store/gameStore';
+import type { Assignment, Cook } from '../engine/types';
 
 interface Props {
   cook: Cook;
-  station: Station | null;
-  role: 'lead' | 'helper' | null;
-  resting: boolean;
-  selected: boolean;
-  onSelect: () => void;
+  assignment: Assignment;
+  expanded: boolean;
+  onToggle: () => void;
+  onPlace: (target: Placement) => void;
   onOpenCard: () => void;
 }
 
 export default function CookRow({
   cook,
-  station,
-  role,
-  resting,
-  selected,
-  onSelect,
+  assignment,
+  expanded,
+  onToggle,
+  onPlace,
   onOpenCard,
 }: Props): React.JSX.Element {
   const trait = getTrait(cook.traitId);
+  const here = placementOf(assignment, cook.id);
+  const station = here.target === 'rest' ? null : here.target;
+  const resting = station === null;
   const wearRatio = cook.wear / C.wear.max;
   const nearCap = cook.wear >= C.wear.warningThreshold;
   const wearTone = nearCap
@@ -37,32 +47,81 @@ export default function CookRow({
       ? 'var(--warn)'
       : 'var(--ok)';
 
+  const placementLabel =
+    station === null
+      ? t('pas.resting')
+      : `${t(`station.${station}`)} · ${here.role === 'helper' ? t('pas.helper') : t('pas.lead')}`;
+
   return (
-    <div
-      className={selected ? 'card card--lifted' : 'card'}
-      style={{ padding: 10, opacity: resting ? 0.55 : 1 }}
-    >
-      <div className="spread">
-        <button
-          type="button"
-          onClick={onSelect}
-          style={{ textAlign: 'left', flex: 1, minWidth: 0 }}
-        >
-          <div className="display" style={{ fontSize: 'var(--fs-dish)' }}>
-            {cook.firstName} {cook.lastName}
+    <div className={expanded ? 'card card--lifted' : 'card'} style={{ padding: 10 }}>
+      <button
+        type="button"
+        onClick={onToggle}
+        style={{ width: '100%', textAlign: 'left' }}
+        aria-expanded={expanded}
+      >
+        <div className="spread">
+          <div style={{ minWidth: 0, opacity: resting ? 0.65 : 1 }}>
+            <div className="display" style={{ fontSize: 'var(--fs-dish)' }}>
+              {cook.firstName} {cook.lastName}
+            </div>
+            {/* Placement is always visible. FR-1a item 1. */}
+            <span
+              className={resting ? 'chip' : 'chip chip--brass'}
+              style={{ display: 'inline-block', marginTop: 4 }}
+            >
+              {placementLabel}
+            </span>
           </div>
-          <div className="muted" style={{ fontSize: 'var(--fs-small)' }}>
-            {resting
-              ? t('pas.resting')
-              : station === null
-                ? t('common.none')
-                : `${t(`station.${station}`)} · ${role === 'helper' ? t('pas.helper') : t('pas.lead')}`}
+          <div style={{ width: 150 }}>
+            <CookTriptych cook={cook} station={station} />
           </div>
-        </button>
-        <div style={{ width: 132 }}>
-          <CookTriptych cook={cook} station={station} />
         </div>
-      </div>
+      </button>
+
+      {expanded ? (
+        <div style={{ marginTop: 10 }}>
+          <div className="label">{t('pas.placement')}</div>
+          <div
+            style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6, marginTop: 6 }}
+            role="group"
+          >
+            {placementOptions(assignment, cook.id).map((option) => {
+              const label =
+                option.target === 'rest' ? t('pas.resting') : t(`station.${option.target}`);
+              const suffix = option.current
+                ? t('pas.here')
+                : option.reasonKey !== null
+                  ? t(option.reasonKey)
+                  : option.role === 'helper'
+                    ? t('pas.helper')
+                    : option.role === 'lead'
+                      ? t('pas.lead')
+                      : '';
+              return (
+                <button
+                  key={option.target}
+                  type="button"
+                  disabled={option.disabled}
+                  className={option.current ? 'chip chip--brass tap' : 'chip tap'}
+                  style={{
+                    justifyContent: 'space-between',
+                    gap: 6,
+                    opacity: option.disabled ? 0.45 : 1,
+                    cursor: option.disabled ? 'not-allowed' : 'pointer',
+                  }}
+                  onClick={() => onPlace(option.target)}
+                >
+                  <span>{label}</span>
+                  <span className="label" style={{ fontSize: 'var(--fs-micro)' }}>
+                    {suffix}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      ) : null}
 
       <div className="row" style={{ marginTop: 8, gap: 8 }}>
         <div
