@@ -1,0 +1,18 @@
+# Vendored mockup runtime and the mockups themselves — CLAUDE.md rule 5.
+design/
+
+# Design history, superseded. Context only.
+docs/
+
+# Reference implementation of the engine. Never reformat, never edit.
+sim-final.js
+
+node_modules/
+dist/
+pnpm-lock.yaml
+
+# Specification documents. Owned by the project, not by the formatter.
+*.md
+
+# Local tool settings.
+.claude/
