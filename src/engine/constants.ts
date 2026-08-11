@@ -65,6 +65,16 @@ export const C = deepFreeze({
     reputationPivot: 15,
     /** Also the retention penalty: keeping a star means playing season n+1. */
     seasonCoef: 0.4,
+    /**
+     * WHY 0.5: any player-chosen quality the bar does not claw back becomes a
+     * dominant strategy — the same failure the moving bar was introduced to fix
+     * for ambition. An optimised menu reaches mean harmony ~0.9 against ~0.12 for
+     * a thoughtless one, so unpriced harmony was ~1.5 free quality on every plate.
+     * At 0.5 the ladder is monotone and harmony is still worth chasing; at 1.1
+     * optimisers stop chasing it entirely and menu composition stops mattering.
+     * Evidence: docs/sim-harmony.js. PRD §3.3.
+     */
+    harmonyCoef: 0.5,
   },
 
   /**

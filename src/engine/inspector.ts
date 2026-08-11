@@ -16,22 +16,69 @@ import type { Rng } from './rng';
 import type { Signal } from './types';
 
 /**
- * One visit per third of the season, random inside the third, and never on the
- * final evening (PRD §9 case 7). `sim-final.js` draws uniformly over all forty —
- * a deliberate divergence, listed in PRD §8.2.
+ * The thirds a visit can fall in. PRD §3.8: evening 39 never hosts one, so the
+ * three windows are 13, 14 and 12 evenings rather than an even split.
+ */
+export const VISIT_THIRDS: readonly (readonly [number, number])[] = [
+  [0, 12],
+  [13, 26],
+  [27, 38],
+];
+
+/** Which third an evening belongs to, or null for the final evening. */
+export function thirdOf(eveningIndex: number): number | null {
+  for (let index = 0; index < VISIT_THIRDS.length; index += 1) {
+    const bounds = VISIT_THIRDS[index];
+    if (bounds !== undefined && eveningIndex >= bounds[0] && eveningIndex <= bounds[1]) {
+      return index;
+    }
+  }
+  return null;
+}
+
+/**
+ * One visit per third, uniform inside it (PRD §9 case 7). `sim-final.js` draws
+ * uniformly over all forty — a deliberate divergence, listed in PRD §8.2.
  */
 export function drawVisitEvenings(rng: Rng): number[] {
-  const evenings = C.season.eveningsPerSeason;
-  const visits = C.inspector.visitsPerSeason;
-  const out: number[] = [];
+  return VISIT_THIRDS.map(([start, end]) => start + rng.int(end - start + 1));
+}
 
-  for (let third = 0; third < visits; third += 1) {
-    const start = Math.floor((third * evenings) / visits);
-    const end = Math.floor(((third + 1) * evenings) / visits);
-    const limit = third === visits - 1 ? end - 1 : end;
-    out.push(start + rng.int(limit - start));
+/**
+ * The last evening the player has had a report card for. A visit is confirmed on
+ * the Sunday closing its week (FR-11), so nothing inside the current week is known
+ * yet — which is exactly why the count below only shrinks at week boundaries.
+ */
+export function lastReportedEvening(eveningIndex: number): number {
+  return Math.floor(eveningIndex / C.season.eveningsPerWeek) * C.season.eveningsPerWeek - 1;
+}
+
+/**
+ * Prior probability that tonight is the visit, using only what the player knows.
+ *
+ * It is scoped to the CURRENT THIRD, not to the rest of the season. A season-wide
+ * prior assumes visits are spread uniformly over the evenings that remain; they
+ * are not — there is exactly one per third. Measured: the season-wide version
+ * understated the top suspicion decile by 4.24 pp (38.0 % shown against 42.2 %
+ * observed), worst at the end of a third. Understating suspicion precisely where
+ * it matters is a rule-6 problem, not just a failed test. PRD §3.8.
+ */
+export function computePrior(eveningIndex: number, visitEvenings: readonly number[]): number {
+  const third = thirdOf(eveningIndex);
+  if (third === null) return 0;
+  const bounds = VISIT_THIRDS[third];
+  if (bounds === undefined) return 0;
+
+  const [start, end] = bounds;
+  const lastReported = lastReportedEvening(eveningIndex);
+
+  // A report card already named this third's visit — it cannot be tonight.
+  if (visitEvenings.some((visit) => visit >= start && visit <= end && visit <= lastReported)) {
+    return 0;
   }
-  return out;
+
+  const unknownEvenings = end - Math.max(start - 1, lastReported);
+  return unknownEvenings <= 0 ? 0 : 1 / unknownEvenings;
 }
 
 /**
@@ -63,19 +110,12 @@ export function likelihoodRatio(signals: readonly Signal[]): number {
 }
 
 /**
- * Posterior probability that tonight is a visit.
- * Prior = remaining visits / remaining evenings, which is what makes the number
- * climb on its own as the season runs out.
+ * Posterior probability that tonight is a visit: the prior above, updated by every
+ * signal — present and absent alike.
  */
-export function computeSuspicion(
-  signals: readonly Signal[],
-  remainingVisits: number,
-  remainingEvenings: number,
-): number {
-  if (remainingVisits <= 0 || remainingEvenings <= 0) return 0;
-  if (remainingVisits >= remainingEvenings) return 1;
-
-  const prior = remainingVisits / remainingEvenings;
+export function computeSuspicion(signals: readonly Signal[], prior: number): number {
+  if (prior <= 0) return 0;
+  if (prior >= 1) return 1;
   const odds = (prior / Math.max(1 - prior, C.inspector.priorEpsilon)) * likelihoodRatio(signals);
   return odds / (1 + odds);
 }

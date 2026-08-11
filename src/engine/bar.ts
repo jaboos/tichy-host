@@ -6,6 +6,7 @@
  *       + 0.20 × weekIndex          (0-based)
  *       + 0.03 × (reputation − 15)
  *       + 0.4  × (seasonNumber − 1)
+ *       + 0.5  × meanHarmony(menu)
  *
  * An ambitious menu lowers the bar, which is what stops timidity from being free.
  * d(bar)/d(own quality) = 0.48 < 1 — success raises the bar but never erases progress.
@@ -13,6 +14,7 @@
 
 import { C } from './constants';
 import { clamp } from './math';
+import { meanHarmony } from './plate';
 import type { Course, PlateOutcome } from './types';
 
 export interface BarBreakdown {
@@ -22,6 +24,8 @@ export interface BarBreakdown {
   week: number;
   reputation: number;
   season: number;
+  /** Negative when the menu flows badly, positive when it flows well. */
+  harmony: number;
   total: number;
 }
 
@@ -46,13 +50,17 @@ export function computeBarBreakdown(
   const week = C.bar.weekCoef * weekIndex;
   const reputationTerm = C.bar.reputationCoef * (reputation - C.bar.reputationPivot);
   const season = C.bar.seasonCoef * (seasonNumber - 1);
+  // Harmony is priced for the same reason ambition is: quality the bar does not
+  // claw back is a dominant strategy. PRD §3.3.
+  const harmony = C.bar.harmonyCoef * meanHarmony(menu);
   return {
     base: C.bar.base,
     ambition,
     week,
     reputation: reputationTerm,
     season,
-    total: C.bar.base + ambition + week + reputationTerm + season,
+    harmony,
+    total: C.bar.base + ambition + week + reputationTerm + season + harmony,
   };
 }
 

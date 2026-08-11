@@ -134,7 +134,10 @@ LAŤKA = 12,0
       + 0,20 × týden
       + 0,03 × (pověst − 15)
       + 0,4  × (sezóna − 1)
+      + 0,5  × průměrná souhra menu
 ```
+
+Souhra se oceňuje ze stejného důvodu jako ambice: **každá hráčova kvalita, kterou si laťka nevybere zpátky, se stane dominantní strategií.** Změřeno — optimalizované menu má souhru 0,90, bezmyšlenkovité 0,12; to je zhruba 1,5 kvality na talíř zdarma. Koeficient 0,5 nechává souhru vyplatit se, 1,1 už ji úplně vyruší.
 
 Derivace laťky podle tvé vlastní kvality je **0,48 < 1** — úspěch laťku zvedá, ale ne úplně. Dovednostní žebřík zůstává, gumování ne.
 

@@ -8,7 +8,7 @@
 CLAUDE.md                  ← working rules: commands, invariants, glossary. Read every session.
 PRD.md                     ← this file. The build spec.
 TICHY-HOST-v4-FINAL.md     ← game design. Authoritative for mechanics and rationale.
-sim-final.js               ← reference implementation of the engine. Golden tests must match it.
+sim-final.js               ← RNG oracle + historical balance reference. Superseded on harmony (§3.6).
 tichy-host-vizual-brief.md ← art direction rationale.
 design/
   tokens.css               ← SINGLE SOURCE OF TRUTH for the visual language. Copy verbatim.
@@ -238,7 +238,10 @@ bar = 12.0
     + 0.20 * weekIndex          // 0-based
     + 0.03 * (reputation - 15)
     + 0.4  * (seasonNumber - 1)
+    + 0.5  * meanHarmony(menu)  // ← the bar prices harmony too
 ```
+
+**Why harmony is priced.** Any player-chosen quality the bar does *not* claw back becomes a dominant strategy — this is the same failure the moving bar was introduced to fix for ambition. Measured: an optimised menu reaches mean harmony 0.90 while a thoughtless one sits at 0.12, i.e. ~1.5 free quality on every plate. At coefficient `0.5` the ladder is monotone on both ★ and ★★ and harmony is still worth pursuing; at `1.1` optimisers stop chasing it entirely (mean harmony falls to 0.0) and menu composition becomes pointless. Evidence: `docs/sim-harmony.js`.
 
 Breakdown UI: `base 12.0 · week +1.4 · reputation +0.9 · season +0.0 · menu ambition −1.1 = 13.2`
 
@@ -373,7 +376,16 @@ let lr = 1;
 for (const s of signals) {
   lr *= s.present ? (s.pH / s.pNotH) : ((1 - s.pH) / (1 - s.pNotH));
 }
-const prior = remainingVisits / remainingEvenings;
+// Prior must be computed against the CURRENT THIRD, not the rest of the season —
+// visits are one per third (below), so a season-wide prior understates risk late in
+// a third by up to 4 pp. Use only information the player actually has:
+//   thirds        = evenings [0..12], [13..26], [27..38]   (evening 39 never hosts a visit)
+//   lastReported  = final evening of the last completed week (-1 before the first Sunday)
+//   if a report card already confirmed a visit in this third → prior = 0
+//   else prior = 1 / (evenings in this third with index > lastReported)
+// The count only shrinks at week boundaries, which is correct: until Sunday the player
+// genuinely cannot tell whether Tuesday was the visit.
+const prior = visitConfirmedInThisThird ? 0 : 1 / unknownEveningsInThisThird;
 const odds  = (prior / (1 - prior)) * lr;
 const suspicion = odds / (1 + odds);
 ```
@@ -825,9 +837,27 @@ Therefore:
 
 If a divergence pushes a rate outside the band, **report it — do not tune constants to force a fit.** A shifted ladder is a finding about the design, not a bug in the test.
 
-- [ ] `golden.test.ts` reproduces, within ±3 pp over 500 seasons:
-      `NAIVE ★18.0/★★0.8 · ROTA ★36.8/★★4.4 · REVISE ★46.8/★★10.8 · SMART ★60.6/★★26.4`
-- [ ] The ladder is **monotone** on both ★ and ★★ — each policy beats the one below it. (This is why the star-plate threshold is `bar + 7.5`, not 8.5: at 8.5 weekly menu revision scores *worse* on ★★ than no revision.)
+- [ ] **The gate is the SHAPE of the ladder, not fixed numbers.** The old band
+      (`NAIVE ★18.0 · ROTA ★36.8 · REVISE ★46.8 · SMART ★60.6`) was measured with *static*
+      harmony. §3.6 replaced that with the neighbour rule and §3.3 now prices harmony in the
+      bar, so the whole distribution has shifted by design. Re-derive the band from this
+      engine and this course data, then assert the shape, over 500 seasons per policy:
+
+      | Criterion | Requirement |
+      |---|---|
+      | monotone on ★ | `NAIVE < ROTA < REVISE < SMART` |
+      | monotone on ★★ | same order |
+      | floor | `NAIVE ★ ≤ 20 %` |
+      | ceiling | `SMART ★` between 55 % and 70 % |
+      | two-star chase | `SMART ★★` between 20 % and 35 % |
+      | signals must pay | `SMART ★★ ≥ 1.7 × REVISE ★★` |
+      | career | ★ declines mildly (season 3 below season 1, each step ≤ 10 pp); `Σhand ≤ 23` |
+
+      Reference measurement with the neighbour rule and bar coefficient 0.5, 1200 seasons
+      (`docs/sim-harmony.js`, arbitrary flavour data — indicative shape only, not a target):
+      `★ 12.7 → 43.4 → 47.4 → 62.8 · ★★ 1.0 → 8.2 → 11.8 → 25.3 · career 65 / 64 / 60`.
+- [ ] Once the shape holds, **freeze the measured numbers into the test as a regression band
+      (±3 pp)** and record them in this section, so later changes cannot drift silently.
 - [ ] **No `it.todo` in `golden.test.ts`, `bayes.test.ts` or `edge.test.ts`.** A green-but-empty gate is worse than a red one. `pnpm test:golden` must report passing assertions, not skipped ones.
 - [ ] `bayes.test.ts`: suspicion calibration within ±1 pp; AUC ≥ 0.87.
 - [ ] Career over 3 seasons shows a mild decline, not a runaway (`★ ≈ 57 / 57 / 53`, `★★ ≈ 22 / 30 / 28`, `Σhand 14 → ~22`).

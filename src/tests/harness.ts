@@ -276,8 +276,13 @@ export function runPolicySeason(
 
     if (evening % C.season.eveningsPerWeek === 0) {
       const revises = week > 0 && (policy === 'REVISE' || policy === 'SMART');
+      // The revision must plan against the FULL brigade. Scoring a menu against a
+      // plan that has somebody resting, then cooking it with everyone present, was
+      // measuring one kitchen and playing another — it made weekly revision look
+      // actively harmful and inverted the ★ ladder.
+      const revisionPlan = makePlan(state.cooks, null);
       const nextMenu = revises
-        ? pickMenu(rng, state.catalogue, state.cooks, assignment, week, state.reputation, seasonNumber, tries, evalPush)
+        ? pickMenu(rng, state.catalogue, state.cooks, revisionPlan, week, state.reputation, seasonNumber, tries, evalPush)
         : null;
       state = advanceWeek(state, {
         menu: nextMenu === null ? state.menu : nextMenu.map((course) => course.id),

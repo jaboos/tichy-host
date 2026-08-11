@@ -125,13 +125,17 @@ function areOpposing(left: Flavour, right: Flavour): boolean {
   return OPPOSING_PAIRS.some(([x, y]) => (left === x && right === y) || (left === y && right === x));
 }
 
-/** One adjacent pair's contribution. Same station and same flavour can stack. */
+/**
+ * One adjacent pair's contribution. PRD §3.6 lists these as a table of relations,
+ * one value per pair — first match wins, they do not stack. `docs/sim-harmony.js`
+ * `pairVal` returns on the first hit for the same reason; the coefficient in §3.3
+ * was measured against that behaviour.
+ */
 function pairHarmony(a: Course, b: Course): number {
-  let value = 0;
-  if (a.station === b.station) value += C.harmony.sameStation;
-  if (a.flavour === b.flavour) value += C.harmony.sameFlavour;
-  else if (areOpposing(a.flavour, b.flavour)) value += C.harmony.opposing;
-  return value;
+  if (a.station === b.station) return C.harmony.sameStation;
+  if (a.flavour === b.flavour) return C.harmony.sameFlavour;
+  if (areOpposing(a.flavour, b.flavour)) return C.harmony.opposing;
+  return C.harmony.neutral;
 }
 
 /**
@@ -147,6 +151,15 @@ export function computeHarmony(menu: readonly Course[]): number[] {
     if (right !== undefined) total += pairHarmony(course, right);
     return clamp(total, C.harmony.clampMin, C.harmony.clampMax);
   });
+}
+
+/** What the bar prices, and what the menu screen shows in its footer. PRD §3.3 */
+export function meanHarmony(menu: readonly Course[]): number {
+  if (menu.length === 0) return 0;
+  const values = computeHarmony(menu);
+  let total = 0;
+  for (const value of values) total += value;
+  return total / values.length;
 }
 
 /** ±0.8 over an eight-week cycle. Shifts every course, so it never changes a menu alone. */

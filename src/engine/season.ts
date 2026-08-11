@@ -14,7 +14,7 @@
 import { C } from './constants';
 import { computeBar } from './bar';
 import { coversFor, isBankrupt, updateReputation } from './economy';
-import { computeSuspicion, drawSignals, drawVisitEvenings } from './inspector';
+import { computePrior, computeSuspicion, drawSignals, drawVisitEvenings } from './inspector';
 import { runService, type EveningSetup } from './service';
 import { applyEveningWear, applyMondayRecovery } from './wear';
 import { draftBrigade, draftCatalogue, defaultMenu } from './draft';
@@ -140,9 +140,6 @@ export function openEvening(state: GameState, rng: Rng): { state: GameState; ope
   const inspectedWave = rng.int(C.season.wavesPerEvening) as WaveIndex;
   const signals = drawSignals(rng, inspected);
 
-  const remainingVisits = C.inspector.visitsPerSeason - state.visits.length;
-  const remainingEvenings = C.season.eveningsPerSeason - eveningIndex;
-
   const opening: EveningOpening = {
     eveningIndex,
     weekIndex: weekIndexOf(eveningIndex),
@@ -150,7 +147,7 @@ export function openEvening(state: GameState, rng: Rng): { state: GameState; ope
     inspected,
     inspectedWave,
     signals,
-    suspicion: computeSuspicion(signals, remainingVisits, remainingEvenings),
+    suspicion: computeSuspicion(signals, computePrior(eveningIndex, state.visitEvenings)),
     covers: coversFor(state.reputation, eveningInWeekOf(eveningIndex)),
     bar: computeBar(resolveMenu(state), weekIndexOf(eveningIndex), state.reputation, state.seasonNumber),
   };

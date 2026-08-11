@@ -20,7 +20,8 @@ pnpm test:golden      # vitest run src/tests/golden.test.ts — the balance gate
 pnpm typecheck        # tsc --noEmit
 pnpm lint             # eslint src
 
-node sim-final.js 500 # reference simulation. Golden tests must match its output.
+node sim-final.js 500   # RNG oracle + historical reference (superseded on harmony)
+node docs/sim-harmony.js 1200   # KH sweep behind the bar's harmony term; KH=0.5 node …
 npx serve design      # view mockups at localhost:3000 (file:// will NOT work)
 ```
 
@@ -30,7 +31,7 @@ Phase 1 must create exactly these scripts in `package.json`. Do not rename them.
 
 1. `PRD.md` — the build spec. Wins over everything else.
 2. `TICHY-HOST-v4-FINAL.md` — game design, for anything PRD does not cover.
-3. `sim-final.js` — **on any disagreement about a number, the simulation wins.** It is the only artefact that was measured.
+3. `sim-final.js` — the **RNG oracle**: same seed must give the same stream, bit-exact. It is also the historical balance reference, but it is **superseded on harmony** (PRD §3.6 replaced static harmony with the neighbour rule, and §3.3 prices it in the bar). For balance, the gate is the *shape* of the skill ladder in PRD §8.2, re-derived from this engine — not the old numbers.
 4. `design/tokens.css` + `design/*.dc.html` — visual language only. See `design/README.md`.
 5. `docs/` — history. Context only, superseded.
 
@@ -40,8 +41,8 @@ Phase 1 must create exactly these scripts in `package.json`. Do not rename them.
 
 1. **The engine is pure.** Nothing under `src/engine/` may use `Math.random()`, `Date.now()`, `window`, or any DOM/React API. It is `(state, action, rng) → newState` and nothing else. This is what makes the game seed-reproducible and testable.
 2. **No magic numbers.** Every tunable lives in `src/engine/constants.ts` as one frozen object. If a number appears anywhere else, it is a bug.
-3. **Never change a constant without re-running the simulation.** Change `sim-final.js` first, run `node sim-final.js 500`, confirm the skill ladder still holds, then update `constants.ts` and the golden test expectations together, in one commit.
-4. **Golden tests are a gate, not a formality.** `pnpm test:golden` must stay green **and non-empty** — `it.todo` counts as failure, a green-but-empty gate is worse than a red one. Do not start UI work in Phase 3 until Phase 2 tests pass. Only the RNG stream must match `sim-final.js` bit-exactly; star rates are statistical, ±3 pp over 500 seasons (PRD §8.2).
+3. **Never change a constant to make a test pass.** Re-run the ladder over 500 seasons per policy, check it against the shape criteria in PRD §8.2, and update `constants.ts` and the frozen regression band together in one commit. If a rate moves out of band, that is a **finding to report**, not a number to fix.
+4. **Golden tests are a gate, not a formality.** `pnpm test:golden` must stay green **and non-empty** — `it.todo` counts as failure, a green-but-empty gate is worse than a red one. Do not start UI work in Phase 3 until Phase 2 tests pass. Only the RNG stream is bit-exact; star rates are statistical (PRD §8.2).
 5. **Never touch `design/support.js`.** Vendored third-party runtime, no licence, excluded from tsconfig/eslint/prettier. Nothing in `src/` may import it, and none of its patterns (`DCLogic`, `renderVals()`, `<x-dc>`, `<sc-for>`, `<sc-if>`) may be copied into the app.
 6. **Never lie to the player with numbers.** No hidden difficulty adjustment. If the game helps, it says so on screen.
 7. **Compute before you animate.** Service results are calculated and persisted first; the reveal is a replay. Closing the tab mid-animation must lose nothing.
@@ -93,4 +94,4 @@ Czech in the UI, English in the code. Do not invent alternatives.
 
 `pnpm typecheck` clean · `pnpm test` green · no new `any` in the engine · no new magic numbers · no console errors in the browser.
 
-If a change affects balance, `pnpm test:golden` and `node sim-final.js 500` must agree.
+If a change affects balance, re-run the ladder and check it against the shape criteria in PRD §8.2. Never tune a constant to make a test pass — a shifted ladder is a finding, report it.

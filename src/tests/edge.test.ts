@@ -10,9 +10,10 @@ import { describe, expect, it } from 'vitest';
 
 import { C } from '../engine/constants';
 import { createRng } from '../engine/rng';
-import { buildStationSetup, computeHarmony, effectiveHand } from '../engine/plate';
+import { buildStationSetup, computeHarmony, effectiveHand, meanHarmony } from '../engine/plate';
+import { computeBarBreakdown } from '../engine/bar';
 import { coversFor, isBankrupt, updateReputation } from '../engine/economy';
-import { drawVisitEvenings } from '../engine/inspector';
+import { VISIT_THIRDS, drawVisitEvenings } from '../engine/inspector';
 import { runService, type EveningSetup } from '../engine/service';
 import { applyEveningWear, applyMondayRecovery } from '../engine/wear';
 import { advanceEvening, judge, openEvening, startSeason } from '../engine/season';
@@ -160,13 +161,11 @@ describe('§9 case 7 — visit dates', () => {
       expect(visits).toHaveLength(C.inspector.visitsPerSeason);
       expect(new Set(visits).size).toBe(C.inspector.visitsPerSeason);
       expect(Math.max(...visits)).toBeLessThan(C.season.eveningsPerSeason - 1);
-      for (let third = 0; third < C.inspector.visitsPerSeason; third += 1) {
-        const start = Math.floor((third * C.season.eveningsPerSeason) / C.inspector.visitsPerSeason);
-        const end = Math.floor(((third + 1) * C.season.eveningsPerSeason) / C.inspector.visitsPerSeason);
+      VISIT_THIRDS.forEach(([start, end], third) => {
         const visit = visits[third] as number;
         expect(visit).toBeGreaterThanOrEqual(start);
-        expect(visit).toBeLessThan(end);
-      }
+        expect(visit).toBeLessThanOrEqual(end);
+      });
     }
   });
 });
@@ -335,7 +334,15 @@ describe('harmony — PRD §3.6', () => {
   it('penalises adjacent courses from the same station', () => {
     const a = getCourse('beurreBlanc');
     const b = getCourse('houboveJus'); // also sauce
-    expect(computeHarmony([a, b])[0]).toBeLessThan(0);
+    expect(computeHarmony([a, b])[0]).toBe(C.harmony.sameStation);
+  });
+
+  it('does not stack relations — the first match wins', () => {
+    // Same station AND same flavour is still one penalty, not two. PRD §3.6 is a
+    // table of relations, and docs/sim-harmony.js returns on the first hit.
+    const a = getCourse('beurreBlanc'); // sauce, dairy
+    const b = getCourse('smetanovaKrenova'); // sauce, dairy
+    expect(computeHarmony([a, b])[0]).toBe(C.harmony.sameStation);
   });
 
   it('rewards arriving at a sweet course but not leaving one', () => {
@@ -353,6 +360,28 @@ describe('harmony — PRD §3.6', () => {
     }
     const single = computeHarmony([getCourse('beurreBlanc')]);
     expect(single).toEqual([0]);
+  });
+});
+
+describe('the bar prices harmony — PRD §3.3', () => {
+  it('a better-flowing menu raises its own bar', () => {
+    const flowing = [getCourse('kachniPrsaNaUhli'), getCourse('svestkovyKolac')];
+    const flat = [getCourse('beurreBlanc'), getCourse('houboveJus')];
+    expect(computeBarBreakdown(flowing, 0, 15, 1).harmony).toBeGreaterThan(
+      computeBarBreakdown(flat, 0, 15, 1).harmony,
+    );
+  });
+
+  it('claws back half of what harmony gives, so it stays worth chasing', () => {
+    const menu = testMenu();
+    const breakdown = computeBarBreakdown(menu, 0, 15, 1);
+    expect(breakdown.harmony).toBeCloseTo(C.bar.harmonyCoef * meanHarmony(menu), 12);
+    expect(C.bar.harmonyCoef).toBeLessThan(1);
+  });
+
+  it('the breakdown sums to the bar it reports', () => {
+    const b = computeBarBreakdown(testMenu(), 3, 40, 2);
+    expect(b.base + b.ambition + b.week + b.reputation + b.season + b.harmony).toBeCloseTo(b.total, 12);
   });
 });
 
