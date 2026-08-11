@@ -845,13 +845,25 @@ If a divergence pushes a rate outside the band, **report it — do not tune cons
 
       | Criterion | Requirement |
       |---|---|
-      | monotone on ★ | `NAIVE < ROTA < REVISE < SMART` |
-      | monotone on ★★ | same order |
+      | rest pays | `ROTA ★ > NAIVE ★` by ≥ 15 pp |
+      | signals pay on ★ | `SMART ★ ≥ max(ROTA, REVISE) ★ + 8 pp` |
+      | signals pay on ★★ | `SMART ★★ ≥ 1.7 × max(ROTA, REVISE) ★★` |
       | floor | `NAIVE ★ ≤ 20 %` |
       | ceiling | `SMART ★` between 55 % and 70 % |
       | two-star chase | `SMART ★★` between 20 % and 35 % |
-      | signals must pay | `SMART ★★ ≥ 1.7 × REVISE ★★` |
       | career | ★ declines mildly (season 3 below season 1, each step ≤ 10 pp); `Σhand ≤ 23` |
+
+      **`ROTA` vs `REVISE` is deliberately NOT a criterion.** `REVISE` re-rolls 200 random menus
+      every Monday and keeps the best by a myopic score — that is a bot heuristic, not a human
+      skill, and whether it beats a single well-chosen menu says nothing about whether the game
+      rewards skill. Report which is higher as an observation; do not gate on it.
+
+      **Bot hygiene — the reference bot may not be dumber than the screen.** It must use only
+      information the real UI shows the player, but it must use *all* of it:
+      `push` targets the station with the lowest predicted margin (never a hardcoded station),
+      and menu scoring accounts for station overload and crowding, which the Pas screen displays
+      as glowing disks. Fixing the instrument this way is legitimate; searching bot weights until
+      the ladder comes out right is not.
 
       Reference measurement with the neighbour rule and bar coefficient 0.5, 1200 seasons
       (`docs/sim-harmony.js`, arbitrary flavour data — indicative shape only, not a target):

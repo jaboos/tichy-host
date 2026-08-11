@@ -22,6 +22,7 @@ import {
   advanceEvening,
   advanceWeek,
   openEvening,
+  resolveMenu,
   startSeason,
 } from '../engine/season';
 import { STARTING_ARCHETYPES, createCook } from '../data/cooks';
@@ -34,13 +35,28 @@ import { STATIONS, type Assignment, type Cook, type Course, type Intervention, t
 const REST_WEAR_THRESHOLD = 4;
 /** Lines 83 and 87: the suspicion at which SMART cancels rest and burns a token. */
 const SUSPICION_THRESHOLD = 0.35;
-/** Line 87: SMART always pushes the same station. */
-const PUSH_STATION: Station = 'sauce';
+/**
+ * `sim-final.js` line 87 always pushes station 2. PRD §8.2 bot hygiene forbids a
+ * hardcoded target: the push goes to the station with the worst predicted margin,
+ * which is what a player reads off the station disks and the bar.
+ */
 /** Line 23: the planner reasons about a typical evening, not tonight's fatigue. */
 const EVAL_WEAR = 3.0;
 /** Line 26: `-below*10 + top*0.5`. Defects dominate; star plates are a tiebreak. */
 const EVAL_DEFECT_WEIGHT = -10;
 const EVAL_STAR_WEIGHT = 0.5;
+/**
+ * PRD §8.2 bot hygiene: the planner must not be blind to what the Pas screen puts
+ * on the player's screen as a glowing disk. `below` and `top` are counts, so once
+ * a candidate has no plates under the bar they stop discriminating and the planner
+ * happily buys ambition with capacity.
+ *
+ * The weight is 1.0 and was chosen once, not searched: `strain` is already measured
+ * in quality points (it is literally the overload and crowding terms of
+ * `computePlateQuality`), so one point of lost quality costs one point of score.
+ * Defects stay an order of magnitude more important, as they were.
+ */
+const EVAL_STRAIN_WEIGHT = 1.0;
 /** Line 69: NAIVE takes the first menu it draws; everyone else searches. */
 const MENU_TRIES_NAIVE = 1;
 const MENU_TRIES_SEARCH = 200;
@@ -50,8 +66,17 @@ const STATION_ORDER: readonly Station[] = STATIONS;
 /** ...and seats its one or two helpers on sauce first, then fire. */
 const HELPER_PRIORITY: readonly Station[] = ['sauce', 'fire'];
 
-export type Policy = 'NAIVE' | 'ROTA' | 'REVISE' | 'SMART';
+export type Policy = 'NAIVE' | 'ROTA' | 'REVISE' | 'SMART' | 'REVISE_SMART';
+/** The four the gate measures. REVISE_SMART is an observation, never a criterion. */
 export const POLICIES: readonly Policy[] = ['NAIVE', 'ROTA', 'REVISE', 'SMART'];
+
+/**
+ * REVISE_SMART revises only when the predicted margin actually improves by more
+ * than this, instead of every Monday regardless. Chosen once at a quarter of a
+ * quality point — smaller than the −1.0 a trial evening costs, so the policy is
+ * not trivially refusing to ever revise.
+ */
+const REVISION_MARGIN_THRESHOLD = 0.25;
 
 /**
  * The §4.2 brigade with traits switched off, which is what `sim-final.js` measured
@@ -169,7 +194,84 @@ export function evalMenu(
       if (q >= bar + C.outcome.starPlateOffset) top += 1;
     }
   }
-  return below * EVAL_DEFECT_WEIGHT + top * EVAL_STAR_WEIGHT;
+
+  // The quality this menu throws away on strained stations, in quality points.
+  let strain = 0;
+  for (const station of STATIONS) {
+    const setup = setups[station];
+    if (!setup.viable) continue;
+    strain += C.plate.overloadCoef * setup.overload * setup.overload + setup.crowding;
+  }
+
+  return below * EVAL_DEFECT_WEIGHT + top * EVAL_STAR_WEIGHT - strain * EVAL_STRAIN_WEIGHT;
+}
+
+/**
+ * Mean predicted distance from the bar across the twelve plates, using tonight's
+ * actual fatigue. This is what the player estimates from the bar line and the
+ * station disks; the bot uses it to aim a push and to judge whether a revision is
+ * worth two trial evenings.
+ */
+export function predictedMargin(
+  menu: readonly Course[],
+  cooks: readonly Cook[],
+  assignment: Assignment,
+  weekIndex: number,
+  reputation: number,
+  seasonNumber: number,
+  station: Station | null = null,
+): number {
+  const bar = computeBar(menu, weekIndex, reputation, seasonNumber);
+  const setups = setupsFor(cooks, assignment, menu);
+  const evening: EveningContext = {
+    menu,
+    harmony: computeHarmony(menu),
+    weekIndex,
+    eveningIndex: 0,
+    pushedStation: null,
+    scoldedStation: null,
+    premium: false,
+    trialEvening: false,
+    bar,
+  };
+
+  let total = 0;
+  let count = 0;
+  for (let index = 0; index < menu.length; index += 1) {
+    const course = menu[index];
+    if (course === undefined) continue;
+    if (station !== null && course.station !== station) continue;
+    const setup = setups[course.station];
+    for (const wave of [0, 1] as readonly WaveIndex[]) {
+      total += setup.viable
+        ? computeBaseQuality(course, index, setup, evening, wave) - bar
+        : -C.outcome.starPlateOffset;
+      count += 1;
+    }
+  }
+  return count === 0 ? 0 : total / count;
+}
+
+/** Where a push buys the most: the station closest to dropping plates. */
+export function worstMarginStation(
+  menu: readonly Course[],
+  cooks: readonly Cook[],
+  assignment: Assignment,
+  weekIndex: number,
+  reputation: number,
+  seasonNumber: number,
+): Station | null {
+  let worst: Station | null = null;
+  let worstMargin = Number.POSITIVE_INFINITY;
+  for (const station of STATIONS) {
+    if (!menu.some((course) => course.station === station)) continue;
+    const margin = predictedMargin(menu, cooks, assignment, weekIndex, reputation, seasonNumber, station);
+    if (margin < worstMargin) {
+      worstMargin = margin;
+      worst = station;
+    }
+  }
+  return worst;
 }
 
 /**
@@ -275,15 +377,25 @@ export function runPolicySeason(
     const week = Math.floor(evening / C.season.eveningsPerWeek);
 
     if (evening % C.season.eveningsPerWeek === 0) {
-      const revises = week > 0 && (policy === 'REVISE' || policy === 'SMART');
+      const revises = week > 0 && (policy === 'REVISE' || policy === 'SMART' || policy === 'REVISE_SMART');
       // The revision must plan against the FULL brigade. Scoring a menu against a
       // plan that has somebody resting, then cooking it with everyone present, was
       // measuring one kitchen and playing another — it made weekly revision look
       // actively harmful and inverted the ★ ladder.
       const revisionPlan = makePlan(state.cooks, null);
-      const nextMenu = revises
+      let nextMenu = revises
         ? pickMenu(rng, state.catalogue, state.cooks, revisionPlan, week, state.reputation, seasonNumber, tries, evalPush)
         : null;
+
+      // REVISE_SMART only pays the two trial evenings when the swap is worth it.
+      if (nextMenu !== null && policy === 'REVISE_SMART') {
+        const current = resolveMenu(state);
+        const gain =
+          predictedMargin(nextMenu, state.cooks, revisionPlan, week, state.reputation, seasonNumber) -
+          predictedMargin(current, state.cooks, revisionPlan, week, state.reputation, seasonNumber);
+        if (gain <= REVISION_MARGIN_THRESHOLD) nextMenu = null;
+      }
+
       state = advanceWeek(state, {
         menu: nextMenu === null ? state.menu : nextMenu.map((course) => course.id),
         premiumIngredients: policy !== 'NAIVE' && week % 2 === 0,
@@ -297,21 +409,21 @@ export function runPolicySeason(
     state = opened.state;
 
     let restId: string | null = null;
+    const readsSignals = policy === 'SMART' || policy === 'REVISE_SMART';
     if (policy !== 'NAIVE') {
       const worst = [...state.cooks].sort((a, b) => b.wear - a.wear)[0];
       if (worst !== undefined && worst.wear >= REST_WEAR_THRESHOLD) restId = worst.id;
       // Reading the signals: never rest anyone on an evening that smells of a visit.
-      if (policy === 'SMART' && opened.opening.suspicion >= SUSPICION_THRESHOLD) restId = null;
+      if (readsSignals && opened.opening.suspicion >= SUSPICION_THRESHOLD) restId = null;
     }
     assignment = makePlan(state.cooks, restId);
 
     let intervention: Intervention | null = null;
-    if (
-      policy === 'SMART' &&
-      state.pushTokens > 0 &&
-      opened.opening.suspicion >= SUSPICION_THRESHOLD
-    ) {
-      intervention = { id: 'push', station: PUSH_STATION };
+    if (readsSignals && state.pushTokens > 0 && opened.opening.suspicion >= SUSPICION_THRESHOLD) {
+      const target = worstMarginStation(
+        resolveMenu(state), state.cooks, assignment, week, state.reputation, seasonNumber,
+      );
+      if (target !== null) intervention = { id: 'push', station: target };
     }
 
     state = advanceEvening(state, opened.opening, { assignment, intervention }, rng).state;
