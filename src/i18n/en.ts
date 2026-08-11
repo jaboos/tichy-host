@@ -314,7 +314,6 @@ export const en = {
   'pas.capacity': 'capacity',
   'pas.addHelper': '+ helper',
   'pas.placement': 'Where they stand',
-  'pas.tapRow': 'Tap a cook and choose where they stand tonight.',
   'pas.here': 'here',
 
   // --- placement and interventions, FR-1a item 4 and §3.5 -------------------
@@ -333,4 +332,18 @@ export const en = {
   'iv.effectCut': '{course} · does not leave the pass tonight, counts as a defect',
   'iv.effectDefer': '{name} · works tonight, the rest returns later',
   'iv.effectSwap': '{name} · stands at {station} tonight, against the plan',
+
+  // --- station-first assignment, FR-1a as amended ---------------------------
+  'pas.whoOnSlot': 'Who on {station} · {role}',
+  'pas.releaseSlot': 'Leave it empty',
+  'pas.impactLine': '{station} {before} → {after}',
+  'pas.leavesNoHands': '{station} → NO HANDS',
+  'pas.restTag': 'Resting: {names}',
+  'pas.capTag': 'At the cap: {names}',
+  'pas.nobodyResting': 'nobody',
+  'station.cold.from': 'from the Cold kitchen',
+  'station.fire.from': 'from Fire',
+  'station.sauce.from': 'from Sauces',
+  'station.dessert.from': 'from Desserts',
+  'pas.tapSlot': 'Tap a place on a station and choose who stands there tonight.',
 } satisfies Record<TKey, string>;

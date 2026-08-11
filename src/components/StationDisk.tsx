@@ -1,59 +1,110 @@
 /**
- * One station. PRD §3.1 FR-1 item 4.
+ * One station, and the control the whole Pas turns on. PRD §3.1 FR-1 item 4 and
+ * FR-1a as amended.
  *
- * A station card must always NAME the people standing at it. Playtested
- * regression: the cards showed `4/2,0` and nothing else, so the screen about
- * people had no people on it — and because the name chips from `Pas.dc.html` were
- * missing, there was no target to tap and a cook could not be unassigned at all.
- *
- * The helper lives INSIDE this card, never as a separate card floating under the
- * grid, so the 2 × 2 grid stays exactly four cards of equal height.
+ * The card names the people standing at it and carries their wear, so the two
+ * things a staffing decision needs — who is here and how worn they are — sit next
+ * to the load figure that decides whether it matters. Tapping a place opens the
+ * list of people who could stand there; the card stays visible above it, which is
+ * the whole point of moving assignment here from the cook rows.
  */
+import { C } from '../engine/constants';
 import { formatNumber, t } from '../i18n';
+import { slotEquals, type SlotRef } from '../store/gameStore';
 import type { StationSetup } from '../engine/plate';
-import type { Cook, Station } from '../engine/types';
+import type { Cook, CookRole, Station } from '../engine/types';
 
 interface Props {
   setup: StationSetup;
   station: Station;
-  /** Opens that cook's own picker — the mockup gesture does something sensible. */
-  onPickCook: (cookId: string) => void;
+  openSlot: SlotRef | null;
+  onOpenSlot: (slot: SlotRef) => void;
 }
 
-function NameChip({
+function Slot({
   cook,
-  roleKey,
-  onPick,
+  station,
+  role,
+  active,
+  onOpen,
 }: {
-  cook: Cook;
-  roleKey: 'pas.lead' | 'pas.helper';
-  onPick: () => void;
+  cook: Cook | null;
+  station: Station;
+  role: CookRole;
+  active: boolean;
+  onOpen: () => void;
 }): React.JSX.Element {
+  const nearCap = cook !== null && cook.wear >= C.wear.warningThreshold;
+  const empty = cook === null;
+  const tone = nearCap ? 'var(--bad)' : 'var(--ink)';
+
   return (
     <button
       type="button"
-      className="chip tap"
-      style={{ justifyContent: 'space-between', width: '100%', gap: 6 }}
-      onClick={onPick}
+      onClick={onOpen}
+      className={active ? 'chip chip--brass tap' : empty ? 'chip tap' : 'chip tap'}
+      style={{
+        width: '100%',
+        flexDirection: 'column',
+        alignItems: 'stretch',
+        gap: 3,
+        borderStyle: empty ? 'dashed' : 'solid',
+        borderColor: nearCap ? 'var(--bad-a45)' : undefined,
+        opacity: empty ? 0.75 : 1,
+      }}
+      aria-label={`${t(`station.${station}`)} · ${t(role === 'lead' ? 'pas.lead' : 'pas.helper')}`}
     >
-      <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{cook.lastName}</span>
-      <span className="label" style={{ fontSize: 'var(--fs-micro)' }}>
-        {t(roleKey)}
+      <span className="spread" style={{ gap: 6, width: '100%' }}>
+        <span style={{ color: tone, overflow: 'hidden', textOverflow: 'ellipsis' }}>
+          {empty ? (role === 'lead' ? t('pas.noHands') : t('pas.addHelper')) : cook.lastName}
+          {nearCap ? ' !' : ''}
+        </span>
+        <span className="label" style={{ fontSize: 'var(--fs-micro)' }}>
+          {t(role === 'lead' ? 'pas.lead' : 'pas.helper')}
+        </span>
       </span>
+
+      {/* Wear sits with the name, because that is where its consequence lands. */}
+      {cook === null ? null : (
+        <span
+          aria-hidden="true"
+          style={{ display: 'block', height: 3, borderRadius: 2, background: 'var(--line)' }}
+        >
+          <span
+            style={{
+              display: 'block',
+              width: `${(cook.wear / C.wear.max) * 100}%`,
+              height: '100%',
+              borderRadius: 2,
+              background: nearCap
+                ? 'var(--bad)'
+                : cook.wear >= C.wear.max * 0.6
+                  ? 'var(--warn)'
+                  : 'var(--ok)',
+            }}
+          />
+        </span>
+      )}
     </button>
   );
 }
 
-export default function StationDisk({ setup, station, onPickCook }: Props): React.JSX.Element {
+export default function StationDisk({
+  setup,
+  station,
+  openSlot,
+  onOpenSlot,
+}: Props): React.JSX.Element {
   const ratio = setup.capacity > 0 ? setup.load / setup.capacity : Number.POSITIVE_INFINITY;
   const overloaded = setup.overload > 0;
   const tone =
     !setup.viable || overloaded ? 'var(--bad)' : ratio > 0.8 ? 'var(--warn)' : 'var(--ok)';
-  const percent = Number.isFinite(ratio) ? Math.round(ratio * 100) : 999;
+  const percent = Number.isFinite(ratio) ? Math.round(ratio * 100) : 0;
+  const touched = openSlot !== null && openSlot.station === station;
 
   return (
     <section
-      className="card"
+      className={touched ? 'card card--lifted' : 'card'}
       style={{
         padding: 10,
         position: 'relative',
@@ -83,46 +134,25 @@ export default function StationDisk({ setup, station, onPickCook }: Props): Reac
       >
         <div className="label">{t(`station.${station}`)}</div>
 
-        {setup.lead === null ? (
-          <div className="chip chip--bad" style={{ justifyContent: 'center' }}>
-            {t('pas.noHands')}
-          </div>
-        ) : (
-          <NameChip
-            cook={setup.lead}
-            roleKey="pas.lead"
-            onPick={() => onPickCook(setup.lead!.id)}
-          />
-        )}
-
-        {setup.helper === null ? (
-          <div
-            className="chip muted"
-            style={{
-              justifyContent: 'center',
-              borderStyle: 'dashed',
-              opacity: 0.7,
-            }}
-          >
-            {t('pas.addHelper')}
-          </div>
-        ) : (
-          <NameChip
-            cook={setup.helper}
-            roleKey="pas.helper"
-            onPick={() => onPickCook(setup.helper!.id)}
-          />
-        )}
+        <Slot
+          cook={setup.lead}
+          station={station}
+          role="lead"
+          active={slotEquals(openSlot, { station, role: 'lead' })}
+          onOpen={() => onOpenSlot({ station, role: 'lead' })}
+        />
+        <Slot
+          cook={setup.helper}
+          station={station}
+          role="helper"
+          active={slotEquals(openSlot, { station, role: 'helper' })}
+          onOpen={() => onOpenSlot({ station, role: 'helper' })}
+        />
 
         <div style={{ marginTop: 'auto' }}>
-          <div className="row" style={{ alignItems: 'baseline', gap: 6 }}>
-            <span className="mono" style={{ fontSize: '19px', color: tone }}>
-              {setup.viable ? `${percent}%` : '—'}
-            </span>
-          </div>
-          {/* Labelled, never a bare `4/2,0` (FR-1 item 4) — but the words sit
-              above the numbers rather than between them, so the figure stops
-              wrapping mid-phrase in a half-width card. */}
+          <span className="mono" style={{ fontSize: '19px', color: tone }}>
+            {setup.viable ? `${percent}%` : '—'}
+          </span>
           <div className="label" style={{ fontSize: 'var(--fs-micro)', marginTop: 3 }}>
             {t('pas.load')} / {t('pas.capacity')}
           </div>

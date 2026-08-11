@@ -311,7 +311,6 @@ export const cs = {
   'pas.capacity': 'kapacita',
   'pas.addHelper': '+ pomocník',
   'pas.placement': 'Kam patří',
-  'pas.tapRow': 'Klepni na kuchaře a vyber, kam dnes patří.',
   'pas.here': 'tady',
 
   // --- placement and interventions, FR-1a item 4 and §3.5 -------------------
@@ -330,6 +329,20 @@ export const cs = {
   'iv.effectCut': '{course} · dnes nejde ven, počítá se jako vada',
   'iv.effectDefer': '{name} · dnes nastoupí, volno se vrátí později',
   'iv.effectSwap': '{name} · dnes stojí na {station} mimo pondělní rozpis',
+
+  // --- station-first assignment, FR-1a as amended ---------------------------
+  'pas.whoOnSlot': 'Kdo na {station} · {role}',
+  'pas.releaseSlot': 'Uvolnit místo',
+  'pas.impactLine': '{station} {before} → {after}',
+  'pas.leavesNoHands': '{station} → BEZ RUKOU',
+  'pas.restTag': 'Volno: {names}',
+  'pas.capTag': 'Na stropu: {names}',
+  'pas.nobodyResting': 'nikdo',
+  'station.cold.from': 'ze Studené kuchyně',
+  'station.fire.from': 'z Ohně',
+  'station.sauce.from': 'z Omáček',
+  'station.dessert.from': 'z Dezertů',
+  'pas.tapSlot': 'Klepni na místo na postu a vyber, kdo tam dnes stojí.',
 } as const;
 
 /** Every valid translation key. A typo is a compile error. */

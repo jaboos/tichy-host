@@ -30,7 +30,13 @@ import {
 import { createStartingBrigade } from '../engine/draft';
 import { computeBar } from '../engine/bar';
 import { buildSetups } from '../engine/service';
-import { computeHarmony, stationOdds, type EveningContext } from '../engine/plate';
+import {
+  buildStationSetup,
+  computeHarmony,
+  effectiveHand,
+  stationOdds,
+  type EveningContext,
+} from '../engine/plate';
 import { formatNumber, formatPercent, setLang as setI18nLang, t } from '../i18n';
 import * as persistence from './persistence';
 import { STATIONS } from '../engine/types';
@@ -74,19 +80,24 @@ export type RefusalKey =
 export type Placement = Station | 'rest';
 
 /**
- * A station is exactly one of three rows — PRD §3.1 FR-1a item 4. An occupied
- * station does not refuse, it offers a swap, and a swap never changes how many
- * leads or helpers exist, so the cap of two helpers can never block one. That is
- * what removes the dead rows: every station is always actionable.
+ * The assignment is STATION-FIRST — PRD §3.1 FR-1a as amended.
+ *
+ * The decision the player is actually making is "who cooks this station", not
+ * "where does this person go", and the numbers that decide it live on the station
+ * card. So the card is the control: tapping one of its two places opens the list
+ * of people who could stand there, each with the consequence already worked out.
  */
-export type PlacementKind = 'lead' | 'helper' | 'swap' | 'rest';
+export interface SlotRef {
+  station: Station;
+  role: CookRole;
+}
 
-export interface PlacementOption {
-  target: Placement;
-  kind: PlacementKind;
-  current: boolean;
-  /** For a swap: the cook who moves the other way, in the instrumental. */
-  swapWith: Cook | null;
+export function slotEquals(a: SlotRef | null, b: SlotRef | null): boolean {
+  return a !== null && b !== null && a.station === b.station && a.role === b.role;
+}
+
+function occupantOf(assignment: Assignment, slot: SlotRef): string | null {
+  return slot.role === 'lead' ? assignment.leads[slot.station] : assignment.helpers[slot.station];
 }
 
 export function placementOf(
@@ -100,40 +111,123 @@ export function placementOf(
   return { target: 'rest', role: null };
 }
 
-/** Five rows, all live: the four stations and Volno. Nothing is ever disabled. */
-export function placementOptions(
+/**
+ * Puts `cookId` (or nobody) into `slot`, purely.
+ *
+ * Whoever was standing there takes the incoming cook's old place — station,
+ * helper slot or Volno alike — so an exchange never changes how many leads or
+ * helpers exist and the cap of two helpers can never block one. Moving somebody
+ * out of a station that has nobody else leaves a hole; that is allowed, and the
+ * picker says so in red before the tap rather than refusing it.
+ */
+export function applyToSlot(
   assignment: Assignment,
-  cooks: readonly Cook[],
-  cookId: string,
-): PlacementOption[] {
-  const here = placementOf(assignment, cookId);
-  const helperCount = STATIONS.filter(
-    (station) => assignment.helpers[station] !== null && assignment.helpers[station] !== cookId,
-  ).length;
+  slot: SlotRef,
+  cookId: string | null,
+): Assignment {
+  const leads = { ...assignment.leads };
+  const helpers = { ...assignment.helpers };
+  let resting = [...assignment.resting];
 
-  const options: PlacementOption[] = STATIONS.map((station) => {
-    const lead = assignment.leads[station];
-    const helper = assignment.helpers[station];
-    const current = here.target === station;
+  const occupant = occupantOf(assignment, slot);
+  const from = cookId === null ? null : placementOf(assignment, cookId);
 
-    if (lead === null || lead === cookId) {
-      return { target: station, kind: 'lead', current, swapWith: null };
+  const clear = (id: string): void => {
+    for (const station of STATIONS) {
+      if (leads[station] === id) leads[station] = null;
+      if (helpers[station] === id) helpers[station] = null;
     }
-    if ((helper === null || helper === cookId) && helperCount < C.planning.maxHelpers) {
-      return { target: station, kind: 'helper', current, swapWith: null };
-    }
-    // Both slots spoken for, or the helper cap is reached: trade places with the
-    // lead. Counts stay identical, so this is always legal.
+    resting = resting.filter((x) => x !== id);
+  };
+
+  if (occupant !== null) clear(occupant);
+  if (cookId !== null) clear(cookId);
+
+  if (cookId !== null) {
+    if (slot.role === 'lead') leads[slot.station] = cookId;
+    else helpers[slot.station] = cookId;
+  }
+
+  // The displaced cook inherits the incoming one's old place.
+  if (occupant !== null && occupant !== cookId) {
+    if (from === null || from.target === 'rest') resting = [...resting, occupant];
+    else if (from.role === 'lead') leads[from.target] = occupant;
+    else helpers[from.target] = occupant;
+  }
+
+  const placed = new Set<string>();
+  for (const station of STATIONS) {
+    const lead = leads[station];
+    const helper = helpers[station];
+    if (lead !== null) placed.add(lead);
+    if (helper !== null) placed.add(helper);
+  }
+  return { leads, helpers, resting: resting.filter((id) => !placed.has(id)) };
+}
+
+export interface SlotCandidate {
+  cook: Cook;
+  /** Effective hand AT THIS STATION, the ±1 already applied. */
+  effHand: number;
+  current: boolean;
+  /** Where they stand now, or null when resting. */
+  fromStation: Station | null;
+  /** This station's load as a percentage of capacity, before and after. */
+  percentBefore: number;
+  percentAfter: number;
+  /** The station they would leave without a lead. Null when nothing is emptied. */
+  emptiedStation: Station | null;
+}
+
+function loadPercent(setup: ReturnType<typeof buildStationSetup>): number {
+  return setup.capacity > 0 ? Math.round((setup.load / setup.capacity) * 100) : 0;
+}
+
+/** Everyone who could stand in this slot, each with the consequence worked out. */
+export function slotCandidates(
+  game: GameState,
+  draft: Assignment,
+  menu: readonly Course[],
+  slot: SlotRef,
+): SlotCandidate[] {
+  const byId = new Map(game.cooks.map((cook) => [cook.id, cook]));
+  const setupFor = (assignment: Assignment, station: Station) =>
+    buildStationSetup(
+      station,
+      menu,
+      byId.get(assignment.leads[station] ?? '') ?? null,
+      byId.get(assignment.helpers[station] ?? '') ?? null,
+    );
+
+  const percentBefore = loadPercent(setupFor(draft, slot.station));
+
+  return game.cooks.map((cook) => {
+    const next = applyToSlot(draft, slot, cook.id);
+    const from = placementOf(draft, cook.id);
+    const fromStation = from.target === 'rest' ? null : from.target;
+
+    // Which station does this move leave without a lead? Scanning every station
+    // rather than just the one the cook came from, because moving a station's own
+    // lead down into its helper place empties it too — and that reads as a
+    // survivable capacity change unless it is called out.
+    const emptied =
+      STATIONS.find(
+        (station) =>
+          next.leads[station] === null &&
+          draft.leads[station] !== null &&
+          menu.some((course) => course.station === station),
+      ) ?? null;
+
     return {
-      target: station,
-      kind: 'swap',
-      current,
-      swapWith: cooks.find((cook) => cook.id === lead) ?? null,
+      cook,
+      effHand: effectiveHand(cook, slot.station),
+      current: occupantOf(draft, slot) === cook.id,
+      fromStation,
+      percentBefore,
+      percentAfter: loadPercent(setupFor(next, slot.station)),
+      emptiedStation: emptied,
     };
   });
-
-  options.push({ target: 'rest', kind: 'rest', current: here.target === 'rest', swapWith: null });
-  return options;
 }
 
 // ---------------------------------------------------------------------------
@@ -292,8 +386,8 @@ interface Store {
   interventionOpen: InterventionId | null;
   /** A named target the player has picked but not yet confirmed (§3.5 step 3). */
   interventionPick: Intervention | null;
-  /** Which cook row has its picker open. There is no invisible selection. */
-  expandedCookId: string | null;
+  /** Which place on which station has its picker open. Never invisible. */
+  openSlot: SlotRef | null;
   focusCookId: string | null;
   refusal: RefusalKey | null;
   lang: Lang;
@@ -306,8 +400,9 @@ interface Store {
   dismissRefusal: () => void;
   setLang: (lang: Lang) => void;
 
-  expandCook: (cookId: string | null) => void;
-  placeCook: (cookId: string, target: Placement) => void;
+  openSlotPicker: (slot: SlotRef | null) => void;
+  /** `null` empties the place. Removal is a named option, never a gesture. */
+  assignToSlot: (slot: SlotRef, cookId: string | null) => void;
   openCookCard: (cookId: string) => void;
 
   openIntervention: (id: InterventionId | null) => void;
@@ -372,7 +467,7 @@ export const useGame = create<Store>((set, get) => ({
   intervention: null,
   interventionOpen: null,
   interventionPick: null,
-  expandedCookId: null,
+  openSlot: null,
   focusCookId: null,
   refusal: null,
   lang: 'cs',
@@ -439,7 +534,7 @@ export const useGame = create<Store>((set, get) => ({
       intervention: null,
       interventionOpen: null,
       interventionPick: null,
-      expandedCookId: null,
+      openSlot: null,
       refusal: null,
     });
   },
@@ -461,56 +556,11 @@ export const useGame = create<Store>((set, get) => ({
     }
   },
 
-  expandCook: (cookId) => set({ expandedCookId: cookId, refusal: null }),
+  openSlotPicker: (slot) => set({ openSlot: slot, refusal: null }),
   openCookCard: (cookId) => set({ focusCookId: cookId, screen: 'cook' }),
 
-  /**
-   * Move a cook. The picker only offers legal targets, so this should never
-   * refuse — but if it ever does, it says why rather than doing nothing.
-   */
-  placeCook: (cookId, target) => {
-    const { draft, game } = get();
-    if (game === null) return;
-
-    const from = placementOf(draft, cookId);
-    const leads = { ...draft.leads };
-    const helpers = { ...draft.helpers };
-    let resting = draft.resting.filter((id) => id !== cookId);
-
-    // Who is standing where, captured before anything moves.
-    const displacedLead = target === 'rest' ? null : leads[target];
-    const helperCount = STATIONS.filter(
-      (station) => helpers[station] !== null && helpers[station] !== cookId,
-    ).length;
-
-    const clear = (id: string): void => {
-      for (const station of STATIONS) {
-        if (leads[station] === id) leads[station] = null;
-        if (helpers[station] === id) helpers[station] = null;
-      }
-    };
-    clear(cookId);
-
-    if (target === 'rest') {
-      resting = [...resting, cookId];
-    } else if (displacedLead === null || displacedLead === cookId) {
-      leads[target] = cookId;
-    } else if (
-      (helpers[target] === null || helpers[target] === cookId) &&
-      helperCount < C.planning.maxHelpers
-    ) {
-      helpers[target] = cookId;
-    } else {
-      // Swap: the lead takes whatever this cook was doing, including nothing.
-      clear(displacedLead);
-      leads[target] = cookId;
-      resting = resting.filter((id) => id !== displacedLead);
-      if (from.target === 'rest') resting = [...resting, displacedLead];
-      else if (from.role === 'lead') leads[from.target] = displacedLead;
-      else helpers[from.target] = displacedLead;
-    }
-
-    set({ draft: { leads, helpers, resting }, expandedCookId: null, refusal: null });
+  assignToSlot: (slot, cookId) => {
+    set({ draft: applyToSlot(get().draft, slot, cookId), openSlot: null, refusal: null });
   },
 
   openIntervention: (id) => {
@@ -558,7 +608,7 @@ export const useGame = create<Store>((set, get) => ({
       intervention: null,
       interventionOpen: null,
       interventionPick: null,
-      expandedCookId: null,
+      openSlot: null,
     });
   },
 

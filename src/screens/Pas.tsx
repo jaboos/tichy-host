@@ -10,7 +10,7 @@ import { buildSetups } from '../engine/service';
 import { STATIONS, type InterventionId } from '../engine/types';
 import { SIGNALS } from '../data/signals';
 import { t } from '../i18n';
-import { currentMenu, interventionTargets, useGame } from '../store/gameStore';
+import { currentMenu, interventionTargets, slotCandidates, useGame } from '../store/gameStore';
 import type { Intervention } from '../engine/types';
 
 /** Two intervention targets are the same when they name the same thing. */
@@ -25,7 +25,7 @@ function sameTarget(a: Intervention | null, b: Intervention): boolean {
 }
 import BarIndicator from '../components/BarIndicator';
 import BrassDivider from '../components/BrassDivider';
-import CookRow from '../components/CookRow';
+import SlotPicker from '../components/SlotPicker';
 import StationDisk from '../components/StationDisk';
 import SuspicionDial from '../components/SuspicionDial';
 
@@ -51,10 +51,10 @@ export default function Pas(): React.JSX.Element | null {
   const opening = useGame((s) => s.opening);
   const draft = useGame((s) => s.draft);
   const intervention = useGame((s) => s.intervention);
-  const expandedCookId = useGame((s) => s.expandedCookId);
+  const openSlot = useGame((s) => s.openSlot);
   const refusal = useGame((s) => s.refusal);
-  const expandCook = useGame((s) => s.expandCook);
-  const placeCook = useGame((s) => s.placeCook);
+  const openSlotPicker = useGame((s) => s.openSlotPicker);
+  const assignToSlot = useGame((s) => s.assignToSlot);
   const interventionOpen = useGame((s) => s.interventionOpen);
   const interventionPick = useGame((s) => s.interventionPick);
   const openIntervention = useGame((s) => s.openIntervention);
@@ -62,7 +62,6 @@ export default function Pas(): React.JSX.Element | null {
   const confirmIntervention = useGame((s) => s.confirmIntervention);
   const clearIntervention = useGame((s) => s.clearIntervention);
   const startService = useGame((s) => s.startService);
-  const openCookCard = useGame((s) => s.openCookCard);
 
   if (game === null || opening === null) return null;
 
@@ -70,6 +69,9 @@ export default function Pas(): React.JSX.Element | null {
   const setups = buildSetups(game.cooks, draft, menu);
   const overloaded = STATIONS.filter((s) => setups[s].overload > 0 || !setups[s].viable);
   const dayKey = DAY_KEYS[opening.eveningInWeek] ?? DAY_KEYS[0];
+
+  const resting = game.cooks.filter((cook) => draft.resting.includes(cook.id));
+  const atCap = game.cooks.filter((cook) => cook.wear >= C.wear.warningThreshold);
 
   const targets =
     interventionOpen === null
@@ -127,31 +129,41 @@ export default function Pas(): React.JSX.Element | null {
             key={station}
             station={station}
             setup={setups[station]}
-            onPickCook={expandCook}
+            openSlot={openSlot}
+            onOpenSlot={openSlotPicker}
           />
         ))}
       </div>
 
-      <BrassDivider />
-      <div className="spread">
-        <span className="label">{t('pas.brigade')}</span>
-        <span className="muted" style={{ fontSize: 'var(--fs-small)' }}>
-          {t('pas.tapRow')}
-        </span>
-      </div>
-      <div className="stack" style={{ marginTop: 8 }}>
-        {game.cooks.map((cook) => (
-          <CookRow
-            key={cook.id}
-            cook={cook}
-            cooks={game.cooks}
-            assignment={draft}
-            expanded={expandedCookId === cook.id}
-            onToggle={() => expandCook(expandedCookId === cook.id ? null : cook.id)}
-            onPlace={(target) => placeCook(cook.id, target)}
-            onOpenCard={() => openCookCard(cook.id)}
-          />
-        ))}
+      {openSlot === null ? null : (
+        <SlotPicker
+          slot={openSlot}
+          candidates={slotCandidates(game, draft, menu, openSlot)}
+          occupied={
+            (openSlot.role === 'lead' ? draft.leads : draft.helpers)[openSlot.station] !== null
+          }
+          onChoose={(cookId) => assignToSlot(openSlot, cookId)}
+          onCancel={() => openSlotPicker(null)}
+        />
+      )}
+
+      {/* The two things the station cards cannot say: who is not on one, and who
+          is about to break. FR-1 requires the wear warning to be visible. */}
+      <div className="mono muted" style={{ fontSize: 'var(--fs-small)', marginTop: 10 }}>
+        {t('pas.restTag', {
+          names:
+            resting.length === 0
+              ? t('pas.nobodyResting')
+              : resting.map((c) => c.lastName).join(', '),
+        })}
+        {atCap.length === 0 ? null : (
+          <>
+            {'  ·  '}
+            <span className="bad">
+              {t('pas.capTag', { names: atCap.map((c) => c.lastName).join(', ') })}
+            </span>
+          </>
+        )}
       </div>
 
       <BrassDivider />

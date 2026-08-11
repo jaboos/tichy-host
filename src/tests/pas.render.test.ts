@@ -28,7 +28,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 const { useGame } = await import('../store/gameStore');
 const { default: Pas } = await import('../screens/Pas');
 const { STATIONS } = await import('../engine/types');
-const { interventionTargets, placementOptions } = await import('../store/gameStore');
+const { applyToSlot, interventionTargets, slotCandidates } = await import('../store/gameStore');
 const { resolveMenu, weekIndexOf } = await import('../engine/season');
 const { cs } = await import('../i18n/cs');
 const { t } = await import('../i18n');
@@ -141,72 +141,111 @@ describe('the rejected interaction model is gone, FR-1 item 6', () => {
     }
   });
 
-  it('every cook row offers five placements: four stations and rest', () => {
+  it('a station slot offers every cook by name', () => {
     const { draft, game } = useGame.getState();
-    const cookId = game?.cooks[0]?.id ?? '';
-    const expanded = render(() => useGame.getState().expandCook(cookId));
-    for (const station of STATIONS) {
-      expect(expanded).toContain(t(`station.${station}`));
+    const expanded = render(() =>
+      useGame.getState().openSlotPicker({ station: 'sauce', role: 'lead' }),
+    );
+    expect(expanded).toContain(
+      t('pas.whoOnSlot', { station: t('station.sauce'), role: t('pas.lead') }),
+    );
+    for (const cook of game?.cooks ?? []) {
+      expect(expanded, `${cook.lastName} is missing from the picker`).toContain(cook.lastName);
     }
-    expect(expanded).toContain(t('pas.resting'));
-    expect(expanded).toContain(t('pas.placement'));
     render(() => {
-      useGame.getState().expandCook(null);
+      useGame.getState().openSlotPicker(null);
       useGame.setState({ draft });
     });
   });
 });
 
-describe('an occupied station offers a swap, not a refusal — FR-1a item 4', () => {
-  it('leaves nothing disabled: every one of the five rows is actionable', () => {
-    const cookId = useGame.getState().game?.cooks[0]?.id ?? '';
-    const expanded = render(() => useGame.getState().expandCook(cookId));
-    // The picker's own buttons carry no disabled attribute at all.
-    const disabled = expanded.match(/<button[^>]*disabled/g) ?? [];
-    expect(disabled).toHaveLength(0);
-    render(() => useGame.getState().expandCook(null));
-  });
-
-  it('names the cook being traded with, in the instrumental', () => {
-    const { game, draft } = useGame.getState();
-    const cooks = game?.cooks ?? [];
-    const options = placementOptions(draft, cooks, cooks[0]?.id ?? '');
-    const swaps = options.filter((option) => option.kind === 'swap');
-    expect(swaps.length).toBeGreaterThan(0);
-    for (const swap of swaps) {
-      expect(swap.swapWith).not.toBeNull();
-      // "Ryba" in the nominative, "Rybou" in the instrumental — the form the
-      // sentence "prohodit s ..." actually needs.
-      expect(swap.swapWith?.lastNameIns).toBeTruthy();
-      expect(swap.swapWith?.lastNameIns).not.toBe(swap.swapWith?.lastName);
+describe('the station card is the control — FR-1a as amended', () => {
+  it('every place on every station is a tap target', () => {
+    for (const station of STATIONS) {
+      for (const role of ['lead', 'helper'] as const) {
+        const label = `${t(`station.${station}`)} · ${t(role === 'lead' ? 'pas.lead' : 'pas.helper')}`;
+        expect(markup, `${label} is not tappable`).toContain(`aria-label="${label}"`);
+      }
     }
   });
 
-  it('a swap keeps the counts identical, so the helper cap can never block it', () => {
+  it('leaves nothing disabled in the picker', () => {
+    const expanded = render(() =>
+      useGame.getState().openSlotPicker({ station: 'cold', role: 'lead' }),
+    );
+    expect(expanded.match(/<button[^>]*disabled/g) ?? []).toHaveLength(0);
+    render(() => useGame.getState().openSlotPicker(null));
+  });
+
+  it('shows the effective hand at THIS station, not the raw one', () => {
     const { game, draft } = useGame.getState();
-    const cooks = game?.cooks ?? [];
-    const mover = cooks[0];
-    const swap = placementOptions(draft, cooks, mover?.id ?? '').find((o) => o.kind === 'swap');
-    expect(swap).toBeDefined();
-    const partner = swap?.swapWith?.id ?? '';
+    if (game === null) throw new Error('no game');
+    const candidates = slotCandidates(game, draft, resolveMenu(game), {
+      station: 'sauce',
+      role: 'lead',
+    });
+    for (const candidate of candidates) {
+      const home = candidate.cook.homeStation === 'sauce';
+      expect(candidate.effHand).toBe(candidate.cook.hand + (home ? 1 : -1));
+    }
+  });
 
-    const leadsBefore = STATIONS.filter((s) => draft.leads[s] !== null).length;
-    const helpersBefore = STATIONS.filter((s) => draft.helpers[s] !== null).length;
+  it('previews what the move does to this station', () => {
+    const { game, draft } = useGame.getState();
+    if (game === null) throw new Error('no game');
+    const candidates = slotCandidates(game, draft, resolveMenu(game), {
+      station: 'sauce',
+      role: 'lead',
+    });
+    // Different hands give different capacity, so the previews cannot all agree.
+    expect(new Set(candidates.map((c) => c.percentAfter)).size).toBeGreaterThan(1);
+    for (const candidate of candidates) {
+      expect(Number.isFinite(candidate.percentAfter)).toBe(true);
+    }
+  });
 
-    render(() => useGame.getState().placeCook(mover?.id ?? '', swap?.target ?? 'rest'));
-    const after = useGame.getState().draft;
+  it('flags the station that would be left without hands', () => {
+    const { game, draft } = useGame.getState();
+    if (game === null) throw new Error('no game');
+    const candidates = slotCandidates(game, draft, resolveMenu(game), {
+      station: 'sauce',
+      role: 'helper',
+    });
+    for (const candidate of candidates.filter((c) => c.emptiedStation !== null)) {
+      expect(candidate.fromStation).not.toBeNull();
+      expect(candidate.emptiedStation).toBe(candidate.fromStation);
+    }
+  });
 
-    expect(STATIONS.filter((s) => after.leads[s] !== null).length).toBe(leadsBefore);
-    expect(STATIONS.filter((s) => after.helpers[s] !== null).length).toBe(helpersBefore);
-    // They really did trade places.
-    expect(after.leads[swap?.target as 'cold']).toBe(mover?.id);
-    expect([
-      ...Object.values(after.leads),
-      ...Object.values(after.helpers),
-      ...after.resting,
-    ]).toContain(partner);
+  it('an exchange keeps the counts identical', () => {
+    const { game, draft } = useGame.getState();
+    const mover = game?.cooks.find((c) => draft.leads.fire === c.id);
+    const beforeLeads = STATIONS.filter((s) => draft.leads[s] !== null).length;
+    const beforeHelpers = STATIONS.filter((s) => draft.helpers[s] !== null).length;
 
-    render(() => useGame.setState({ draft }));
+    const next = applyToSlot(draft, { station: 'cold', role: 'lead' }, mover?.id ?? '');
+    expect(next.leads.cold).toBe(mover?.id);
+    expect(STATIONS.filter((s) => next.leads[s] !== null).length).toBe(beforeLeads);
+    expect(STATIONS.filter((s) => next.helpers[s] !== null).length).toBe(beforeHelpers);
+
+    const everyone = [
+      ...Object.values(next.leads),
+      ...Object.values(next.helpers),
+      ...next.resting,
+    ].filter((id): id is string => id !== null);
+    expect(new Set(everyone).size).toBe(game?.cooks.length);
+  });
+
+  it('releasing a place empties it and rests whoever was there', () => {
+    const { draft } = useGame.getState();
+    const was = draft.leads.sauce;
+    const next = applyToSlot(draft, { station: 'sauce', role: 'lead' }, null);
+    expect(next.leads.sauce).toBeNull();
+    expect(next.resting).toContain(was);
+  });
+
+  it('says who is resting and who is at the wear cap', () => {
+    expect(markup).toContain(t('pas.restTag', { names: t('pas.nobodyResting') }));
   });
 });
 
