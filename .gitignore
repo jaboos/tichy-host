@@ -1,0 +1,34 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Build output
+dist/
+dist-ssr/
+*.local
+
+# Test / coverage
+coverage/
+.vitest/
+
+# Editors & tooling
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.antigravity/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+yarn-error.log*
+
+# Env
+.env
+.env.*
+!.env.example
