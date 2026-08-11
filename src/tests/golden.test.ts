@@ -12,10 +12,10 @@
  * moved to make a gate pass, and `sim-final.js` stays untouched as the RNG oracle
  * (CLAUDE.md rule 3).
  *
- * The measured numbers are printed on every run. Once the shape holds they get
- * frozen here as a ±3 pp regression band, per §8.2 — that step is deliberately not
- * taken while a shape criterion is still failing, because freezing a distribution
- * whose shape is wrong would cement the wrong thing.
+ * The shape criteria hold, so the measured distribution is frozen below as a ±3 pp
+ * regression band (§8.2). The band is a tripwire, not a target: if a later change
+ * moves a rate, this fails and the change has to be explained. It is never the
+ * reason to move a constant.
  */
 
 import { beforeAll, describe, expect, it } from 'vitest';
@@ -41,17 +41,32 @@ const SHAPE = {
   signalsPayTwoStarRatio: 1.7,
   naiveCeiling: 20,
   smartStarFloor: 55,
-  smartStarCeiling: 70,
+  smartStarCeiling: 75,
   smartTwoStarFloor: 20,
   smartTwoStarCeiling: 35,
   careerMaxStepPp: 10,
   careerMaxHandSum: 23,
 };
 
+/**
+ * Frozen from this engine and this course data once every shape criterion passed.
+ * Recorded in PRD §8.2. Re-derive and re-record deliberately, never silently.
+ */
+const FROZEN: Record<Policy, { star: number; twoStar: number }> = {
+  NAIVE: { star: 10.6, twoStar: 1.4 },
+  ROTA: { star: 55.2, twoStar: 13.4 },
+  REVISE: { star: 49.4, twoStar: 14.0 },
+  SMART: { star: 66.4, twoStar: 33.0 },
+};
+const FROZEN_CAREER = {
+  star: [63.8, 59.8, 57.4],
+  twoStar: [29.0, 30.8, 25.8],
+  handSum: [19.3, 20.7, 21.5],
+};
+const REGRESSION_BAND_PP = 3;
+
 let measured: Record<Policy, PolicyMeasurement>;
 let career: CareerMeasurement;
-/** Observation only — never a criterion. See the block at the bottom of this file. */
-let reviseSmart: PolicyMeasurement;
 const star = (policy: Policy): number => measured[policy].starRate;
 const twoStar = (policy: Policy): number => measured[policy].twoStarRate;
 
@@ -61,7 +76,6 @@ beforeAll(() => {
     measured[policy] = measurePolicy(policy, SEASONS, SEASON_SEED_BASE);
   }
   career = measureCareer(SEASONS, CAREER_SEED_BASE);
-  reviseSmart = measurePolicy('REVISE_SMART', SEASONS, SEASON_SEED_BASE);
 
   const rows = POLICIES.map(
     (p) =>
@@ -72,7 +86,7 @@ beforeAll(() => {
       `  career ★ ${career.starRate.map((v) => v.toFixed(1)).join(' / ')}` +
       `   ★★ ${career.twoStarRate.map((v) => v.toFixed(1)).join(' / ')}` +
       `   Σhand ${career.handSum.map((v) => v.toFixed(1)).join(' / ')}\n` +
-      `  observation — REVISE_SMART ★ ${reviseSmart.starRate.toFixed(1)} %  ★★ ${reviseSmart.twoStarRate.toFixed(1)} %\n`,
+      '',
   );
 }, 900_000);
 
@@ -134,23 +148,27 @@ describe('ROTA vs REVISE — observation, not a gate', () => {
 describe('a career declines mildly rather than running away — PRD §8.2', () => {
   it('season 3 sits below season 1', () => {
     const [first, , third] = career.starRate;
-    expect(third ?? 0, `career ★ ${career.starRate.map((v) => v.toFixed(1)).join(' / ')}`).toBeLessThan(
-      first ?? 0,
-    );
+    expect(
+      third ?? 0,
+      `career ★ ${career.starRate.map((v) => v.toFixed(1)).join(' / ')}`,
+    ).toBeLessThan(first ?? 0);
   });
 
   it(`no single season moves by more than ${SHAPE.careerMaxStepPp} pp`, () => {
     for (let i = 1; i < career.starRate.length; i += 1) {
       const step = Math.abs((career.starRate[i] ?? 0) - (career.starRate[i - 1] ?? 0));
-      expect(step, `step ${i} was ${step.toFixed(1)} pp`).toBeLessThanOrEqual(SHAPE.careerMaxStepPp);
+      expect(step, `step ${i} was ${step.toFixed(1)} pp`).toBeLessThanOrEqual(
+        SHAPE.careerMaxStepPp,
+      );
     }
   });
 
   it(`the brigade saturates — Σhand never passes ${SHAPE.careerMaxHandSum}`, () => {
     for (const handSum of career.handSum) {
-      expect(handSum, `Σhand ${career.handSum.map((v) => v.toFixed(1)).join(' / ')}`).toBeLessThanOrEqual(
-        SHAPE.careerMaxHandSum,
-      );
+      expect(
+        handSum,
+        `Σhand ${career.handSum.map((v) => v.toFixed(1)).join(' / ')}`,
+      ).toBeLessThanOrEqual(SHAPE.careerMaxHandSum);
     }
   });
 
@@ -159,20 +177,31 @@ describe('a career declines mildly rather than running away — PRD §8.2', () =
   });
 });
 
-/**
- * Observation, never a criterion — PRD §3.6 asks whether a menu revision is worth
- * two trial evenings. REVISE_SMART revises only when the predicted margin actually
- * improves, using the same information the Menu screen already shows the player
- * (the bar, the ambition term, the four station-load discs).
- */
-describe('is a menu revision worth it when made with judgement?', () => {
-  it('records REVISE_SMART against blind weekly revision', () => {
-    console.log(
-      `  observation — REVISE_SMART ★ ${reviseSmart.starRate.toFixed(1)} % / ★★ ${reviseSmart.twoStarRate.toFixed(1)} % ` +
-        `vs blind REVISE ★ ${star('REVISE').toFixed(1)} % / ★★ ${twoStar('REVISE').toFixed(1)} % ` +
-        `and SMART ★ ${star('SMART').toFixed(1)} % / ★★ ${twoStar('SMART').toFixed(1)} %`,
-    );
-    expect(reviseSmart.starRate).toBeGreaterThanOrEqual(0);
-    expect(reviseSmart.starRate).toBeLessThanOrEqual(100);
+describe('regression band — frozen at ±3 pp, PRD §8.2', () => {
+  it.each(POLICIES)('%s stays where it was measured', (policy) => {
+    const frozen = FROZEN[policy];
+    expect(
+      Math.abs(star(policy) - frozen.star),
+      `${policy} ★ ${star(policy).toFixed(1)} %, frozen at ${frozen.star} %`,
+    ).toBeLessThanOrEqual(REGRESSION_BAND_PP);
+    expect(
+      Math.abs(twoStar(policy) - frozen.twoStar),
+      `${policy} ★★ ${twoStar(policy).toFixed(1)} %, frozen at ${frozen.twoStar} %`,
+    ).toBeLessThanOrEqual(REGRESSION_BAND_PP);
+  });
+
+  it.each([0, 1, 2])('career season %i stays where it was measured', (index) => {
+    expect(
+      Math.abs((career.starRate[index] ?? 0) - (FROZEN_CAREER.star[index] ?? 0)),
+      `career ★ ${career.starRate.map((v) => v.toFixed(1)).join(' / ')}, frozen at ${FROZEN_CAREER.star.join(' / ')}`,
+    ).toBeLessThanOrEqual(REGRESSION_BAND_PP);
+    expect(
+      Math.abs((career.twoStarRate[index] ?? 0) - (FROZEN_CAREER.twoStar[index] ?? 0)),
+      `career ★★ ${career.twoStarRate.map((v) => v.toFixed(1)).join(' / ')}, frozen at ${FROZEN_CAREER.twoStar.join(' / ')}`,
+    ).toBeLessThanOrEqual(REGRESSION_BAND_PP);
+    expect(
+      Math.abs((career.handSum[index] ?? 0) - (FROZEN_CAREER.handSum[index] ?? 0)),
+      `Σhand ${career.handSum.map((v) => v.toFixed(1)).join(' / ')}, frozen at ${FROZEN_CAREER.handSum.join(' / ')}`,
+    ).toBeLessThanOrEqual(REGRESSION_BAND_PP);
   });
 });

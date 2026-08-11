@@ -16,7 +16,12 @@
 
 import { C } from '../engine/constants';
 import { computeBar } from '../engine/bar';
-import { buildStationSetup, computeBaseQuality, computeHarmony, type EveningContext } from '../engine/plate';
+import {
+  buildStationSetup,
+  computeBaseQuality,
+  computeHarmony,
+  type EveningContext,
+} from '../engine/plate';
 import { createRng, type Rng } from '../engine/rng';
 import {
   advanceEvening,
@@ -27,7 +32,15 @@ import {
 } from '../engine/season';
 import { STARTING_ARCHETYPES, createCook } from '../data/cooks';
 import { NEUTRAL_TRAIT_ID } from '../data/traits';
-import { STATIONS, type Assignment, type Cook, type Course, type Intervention, type Station, type WaveIndex } from '../engine/types';
+import {
+  STATIONS,
+  type Assignment,
+  type Cook,
+  type Course,
+  type Intervention,
+  type Station,
+  type WaveIndex,
+} from '../engine/types';
 
 // --- reference-experiment constants ---------------------------------------
 
@@ -66,17 +79,8 @@ const STATION_ORDER: readonly Station[] = STATIONS;
 /** ...and seats its one or two helpers on sauce first, then fire. */
 const HELPER_PRIORITY: readonly Station[] = ['sauce', 'fire'];
 
-export type Policy = 'NAIVE' | 'ROTA' | 'REVISE' | 'SMART' | 'REVISE_SMART';
-/** The four the gate measures. REVISE_SMART is an observation, never a criterion. */
+export type Policy = 'NAIVE' | 'ROTA' | 'REVISE' | 'SMART';
 export const POLICIES: readonly Policy[] = ['NAIVE', 'ROTA', 'REVISE', 'SMART'];
-
-/**
- * REVISE_SMART revises only when the predicted margin actually improves by more
- * than this, instead of every Monday regardless. Chosen once at a quarter of a
- * quality point — smaller than the −1.0 a trial evening costs, so the policy is
- * not trivially refusing to ever revise.
- */
-const REVISION_MARGIN_THRESHOLD = 0.25;
 
 /**
  * The §4.2 brigade with traits switched off, which is what `sim-final.js` measured
@@ -98,8 +102,18 @@ export function starterBrigade(): Cook[] {
 // --- the reference planner (sim-final.js `makePlan`) -----------------------
 
 export function makePlan(cooks: readonly Cook[], restId: string | null): Assignment {
-  const leads: Record<Station, string | null> = { cold: null, fire: null, sauce: null, dessert: null };
-  const helpers: Record<Station, string | null> = { cold: null, fire: null, sauce: null, dessert: null };
+  const leads: Record<Station, string | null> = {
+    cold: null,
+    fire: null,
+    sauce: null,
+    dessert: null,
+  };
+  const helpers: Record<Station, string | null> = {
+    cold: null,
+    fire: null,
+    sauce: null,
+    dessert: null,
+  };
 
   // Best hands claim their home station first.
   const available = cooks.filter((cook) => cook.id !== restId).sort((a, b) => b.hand - a.hand);
@@ -141,7 +155,12 @@ function setupsFor(cooks: readonly Cook[], assignment: Assignment, menu: readonl
   const lookup = (id: string | null): Cook | null => (id === null ? null : (byId.get(id) ?? null));
   const out = {} as Record<Station, ReturnType<typeof buildStationSetup>>;
   for (const station of STATIONS) {
-    out[station] = buildStationSetup(station, menu, lookup(assignment.leads[station]), lookup(assignment.helpers[station]));
+    out[station] = buildStationSetup(
+      station,
+      menu,
+      lookup(assignment.leads[station]),
+      lookup(assignment.helpers[station]),
+    );
   }
   return out;
 }
@@ -157,7 +176,14 @@ function setupsFor(cooks: readonly Cook[], assignment: Assignment, menu: readonl
  * because the 18.0 / 36.8 / 46.8 / 60.6 table was measured with it; "fixing" it
  * here would measure a different experiment against an unchanged band.
  */
-export function evalMenu(
+export interface MenuScore {
+  /** The menu cooked on an ordinary evening. */
+  normal: number;
+  /** The same menu on one of the two trial evenings a revision costs. */
+  trial: number;
+}
+
+export function scoreMenu(
   menu: readonly Course[],
   cooks: readonly Cook[],
   assignment: Assignment,
@@ -165,7 +191,7 @@ export function evalMenu(
   reputation: number,
   seasonNumber: number,
   evalPushStation: Station | null = 'cold',
-): number {
+): MenuScore {
   const bar = computeBar(menu, weekIndex, reputation, seasonNumber);
   const setups = setupsFor(cooks, assignment, menu);
   const evening: EveningContext = {
@@ -182,6 +208,10 @@ export function evalMenu(
 
   let below = 0;
   let top = 0;
+  let belowTrial = 0;
+  let topTrial = 0;
+  const starBar = bar + C.outcome.starPlateOffset;
+
   for (let index = 0; index < menu.length; index += 1) {
     const course = menu[index];
     if (course === undefined) continue;
@@ -191,7 +221,11 @@ export function evalMenu(
         ? computeBaseQuality(course, index, setup, evening, wave, EVAL_WEAR)
         : Number.NEGATIVE_INFINITY;
       if (q < bar) below += 1;
-      if (q >= bar + C.outcome.starPlateOffset) top += 1;
+      if (q >= starBar) top += 1;
+      // A trial evening is the same plate minus 1.0, so one pass covers both.
+      const trialQ = q + C.plate.trialEveningPenalty;
+      if (trialQ < bar) belowTrial += 1;
+      if (trialQ >= starBar) topTrial += 1;
     }
   }
 
@@ -202,15 +236,48 @@ export function evalMenu(
     if (!setup.viable) continue;
     strain += C.plate.overloadCoef * setup.overload * setup.overload + setup.crowding;
   }
+  const penalty = strain * EVAL_STRAIN_WEIGHT;
 
-  return below * EVAL_DEFECT_WEIGHT + top * EVAL_STAR_WEIGHT - strain * EVAL_STRAIN_WEIGHT;
+  return {
+    normal: below * EVAL_DEFECT_WEIGHT + top * EVAL_STAR_WEIGHT - penalty,
+    trial: belowTrial * EVAL_DEFECT_WEIGHT + topTrial * EVAL_STAR_WEIGHT - penalty,
+  };
 }
 
 /**
+ * What a challenger is really worth once the revision is paid for. PRD §3.6
+ * charges two evenings at −1.0 out of the five a menu will cook before the next
+ * Monday, so the expected score is that blend. No free parameter: both numbers
+ * come from the spec (`C.menu.trialEvenings`, `C.season.eveningsPerWeek`).
+ */
+export function challengerScore(score: MenuScore): number {
+  const trialEvenings = C.menu.trialEvenings;
+  const ordinary = C.season.eveningsPerWeek - trialEvenings;
+  return (ordinary * score.normal + trialEvenings * score.trial) / C.season.eveningsPerWeek;
+}
+
+export function evalMenu(
+  menu: readonly Course[],
+  cooks: readonly Cook[],
+  assignment: Assignment,
+  weekIndex: number,
+  reputation: number,
+  seasonNumber: number,
+  evalPushStation: Station | null = 'cold',
+): number {
+  return scoreMenu(menu, cooks, assignment, weekIndex, reputation, seasonNumber, evalPushStation)
+    .normal;
+}
+
+/**
+ * Draws one course per station, then fills to six at random, and keeps the best of
+ * `tries` candidates. The insertion order — cold, fire, sauce, dessert, then the
+ * fillers — is what the neighbour harmony rule sees as the service order.
+ */
+/**
  * Mean predicted distance from the bar across the twelve plates, using tonight's
  * actual fatigue. This is what the player estimates from the bar line and the
- * station disks; the bot uses it to aim a push and to judge whether a revision is
- * worth two trial evenings.
+ * station disks; the bot uses it to aim a push.
  */
 export function predictedMargin(
   menu: readonly Course[],
@@ -265,7 +332,15 @@ export function worstMarginStation(
   let worstMargin = Number.POSITIVE_INFINITY;
   for (const station of STATIONS) {
     if (!menu.some((course) => course.station === station)) continue;
-    const margin = predictedMargin(menu, cooks, assignment, weekIndex, reputation, seasonNumber, station);
+    const margin = predictedMargin(
+      menu,
+      cooks,
+      assignment,
+      weekIndex,
+      reputation,
+      seasonNumber,
+      station,
+    );
     if (margin < worstMargin) {
       worstMargin = margin;
       worst = station;
@@ -274,11 +349,6 @@ export function worstMarginStation(
   return worst;
 }
 
-/**
- * Draws one course per station, then fills to six at random, and keeps the best of
- * `tries` candidates. The insertion order — cold, fire, sauce, dessert, then the
- * fillers — is what the neighbour harmony rule sees as the service order.
- */
 export function pickMenu(
   rng: Rng,
   catalogue: readonly Course[],
@@ -289,12 +359,32 @@ export function pickMenu(
   seasonNumber: number,
   tries: number,
   evalPushStation: Station | null = 'cold',
+  /**
+   * The menu the kitchen is already cooking, if there is one. It competes, and it
+   * competes on fair terms: it costs nothing to keep, while every challenger is
+   * charged the two trial evenings §3.6 says a revision costs. Leaving it out was
+   * a plain omission — the bot was forced to swap even when the best of two
+   * hundred rolls was worse than what it already had, which no player looking at
+   * the Menu screen would ever do.
+   */
+  incumbent: readonly Course[] | null = null,
 ): Course[] {
   const byStation = new Map<Station, Course[]>(STATIONS.map((station) => [station, []]));
   for (const course of catalogue) byStation.get(course.station)?.push(course);
 
-  let best: Course[] | null = null;
-  let bestScore = Number.NEGATIVE_INFINITY;
+  let best: Course[] | null = incumbent === null ? null : [...incumbent];
+  let bestScore =
+    incumbent === null
+      ? Number.NEGATIVE_INFINITY
+      : scoreMenu(
+          incumbent,
+          cooks,
+          assignment,
+          weekIndex,
+          reputation,
+          seasonNumber,
+          evalPushStation,
+        ).normal;
 
   for (let attempt = 0; attempt < tries; attempt += 1) {
     const chosen: Course[] = [];
@@ -316,9 +406,19 @@ export function pickMenu(
     }
     if (chosen.length < C.menu.courses) continue;
 
-    const score = evalMenu(chosen, cooks, assignment, weekIndex, reputation, seasonNumber, evalPushStation);
-    if (score > bestScore) {
-      bestScore = score;
+    const score = scoreMenu(
+      chosen,
+      cooks,
+      assignment,
+      weekIndex,
+      reputation,
+      seasonNumber,
+      evalPushStation,
+    );
+    // An opening menu costs nothing to adopt; a replacement costs two evenings.
+    const value = incumbent === null ? score.normal : challengerScore(score);
+    if (value > bestScore) {
+      bestScore = value;
       best = chosen;
     }
   }
@@ -370,31 +470,43 @@ export function runPolicySeason(
 
   let assignment = makePlan(state.cooks, null);
   const evalPush = options.evalPushStation === undefined ? 'cold' : options.evalPushStation;
-  const opening = pickMenu(rng, state.catalogue, state.cooks, assignment, 0, state.reputation, seasonNumber, tries, evalPush);
+  const opening = pickMenu(
+    rng,
+    state.catalogue,
+    state.cooks,
+    assignment,
+    0,
+    state.reputation,
+    seasonNumber,
+    tries,
+    evalPush,
+  );
   state = { ...state, menu: opening.map((course) => course.id) };
 
   for (let evening = 0; evening < C.season.eveningsPerSeason; evening += 1) {
     const week = Math.floor(evening / C.season.eveningsPerWeek);
 
     if (evening % C.season.eveningsPerWeek === 0) {
-      const revises = week > 0 && (policy === 'REVISE' || policy === 'SMART' || policy === 'REVISE_SMART');
+      const revises = week > 0 && (policy === 'REVISE' || policy === 'SMART');
       // The revision must plan against the FULL brigade. Scoring a menu against a
       // plan that has somebody resting, then cooking it with everyone present, was
       // measuring one kitchen and playing another — it made weekly revision look
       // actively harmful and inverted the ★ ladder.
       const revisionPlan = makePlan(state.cooks, null);
-      let nextMenu = revises
-        ? pickMenu(rng, state.catalogue, state.cooks, revisionPlan, week, state.reputation, seasonNumber, tries, evalPush)
+      const nextMenu = revises
+        ? pickMenu(
+            rng,
+            state.catalogue,
+            state.cooks,
+            revisionPlan,
+            week,
+            state.reputation,
+            seasonNumber,
+            tries,
+            evalPush,
+            resolveMenu(state),
+          )
         : null;
-
-      // REVISE_SMART only pays the two trial evenings when the swap is worth it.
-      if (nextMenu !== null && policy === 'REVISE_SMART') {
-        const current = resolveMenu(state);
-        const gain =
-          predictedMargin(nextMenu, state.cooks, revisionPlan, week, state.reputation, seasonNumber) -
-          predictedMargin(current, state.cooks, revisionPlan, week, state.reputation, seasonNumber);
-        if (gain <= REVISION_MARGIN_THRESHOLD) nextMenu = null;
-      }
 
       state = advanceWeek(state, {
         menu: nextMenu === null ? state.menu : nextMenu.map((course) => course.id),
@@ -409,7 +521,7 @@ export function runPolicySeason(
     state = opened.state;
 
     let restId: string | null = null;
-    const readsSignals = policy === 'SMART' || policy === 'REVISE_SMART';
+    const readsSignals = policy === 'SMART';
     if (policy !== 'NAIVE') {
       const worst = [...state.cooks].sort((a, b) => b.wear - a.wear)[0];
       if (worst !== undefined && worst.wear >= REST_WEAR_THRESHOLD) restId = worst.id;
@@ -421,7 +533,12 @@ export function runPolicySeason(
     let intervention: Intervention | null = null;
     if (readsSignals && state.pushTokens > 0 && opened.opening.suspicion >= SUSPICION_THRESHOLD) {
       const target = worstMarginStation(
-        resolveMenu(state), state.cooks, assignment, week, state.reputation, seasonNumber,
+        resolveMenu(state),
+        state.cooks,
+        assignment,
+        week,
+        state.reputation,
+        seasonNumber,
       );
       if (target !== null) intervention = { id: 'push', station: target };
     }
