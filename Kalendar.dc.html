@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;1,600&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  html, body { margin:0; padding:0; background:#14100D; }
+  a { color:#D4A24C; text-decoration:none; }
+  a:hover { color:#F5EFE7; }
+  @keyframes pecet { 0% { transform:scale(1.5) rotate(-16deg); opacity:0; } 55% { transform:scale(.93) rotate(-7deg); opacity:1; } 100% { transform:scale(1) rotate(-7deg); opacity:1; } }
+</style>
+</helmet>
+<div style="min-height:100vh;background:#14100D;background-image:url(&quot;data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='140' height='140'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/></filter><rect width='140' height='140' filter='url(%23n)' opacity='0.022'/></svg>&quot;);display:flex;justify-content:center;font-family:Inter,sans-serif;color:#F5EFE7;">
+<div style="width:100%;max-width:390px;padding:22px 20px 96px;box-sizing:border-box;">
+
+  <div style="display:flex;align-items:baseline;justify-content:space-between;">
+    <div style="font-family:'Cormorant Garamond',serif;font-weight:600;font-size:26px;">Rezervační kniha</div>
+    <div style="font-family:'IBM Plex Mono',monospace;font-variant-numeric:tabular-nums;font-size:10px;letter-spacing:.08em;color:#A89A88;text-transform:uppercase;">Srpen</div>
+  </div>
+
+  <div style="{{ kontraktStyle }}">
+    <div style="position:absolute;inset:8px;border:1px solid rgba(212,162,76,.18);border-radius:6px;pointer-events:none;"></div>
+    <div style="position:relative;display:flex;flex-direction:column;gap:9px;">
+      <div style="display:flex;align-items:center;gap:8px;">
+        <div style="font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:#D4A24C;">Týdenní výzva</div>
+        <div style="height:1px;flex:1;background:linear-gradient(to right,rgba(212,162,76,.5),rgba(212,162,76,0));"></div>
+      </div>
+      <div style="font-family:'Cormorant Garamond',serif;font-weight:600;font-size:22px;line-height:1.25;padding-right:64px;text-wrap:pretty;">Celý týden nikoho nepřetížíš</div>
+      <div style="font-family:'IBM Plex Mono',monospace;font-variant-numeric:tabular-nums;font-size:13px;color:#D4A24C;">→ +8 000 Kč</div>
+      <div style="font-size:11.5px;line-height:1.45;color:#A89A88;padding-right:64px;text-wrap:pretty;">{{ kontraktPopis }}</div>
+      <sc-if value="{{ nerozhodnuto }}" hint-placeholder-val="{{ true }}">
+        <div style="display:flex;gap:9px;margin-top:4px;">
+          <button onClick="{{ prijmout }}" style="flex:1;border:none;border-radius:10px;padding:12px;background:linear-gradient(180deg,#E0B25E,#D4A24C);color:#14100D;font-family:Inter,sans-serif;font-size:12px;font-weight:600;letter-spacing:.11em;text-transform:uppercase;cursor:pointer;box-shadow:0 12px 26px -14px rgba(212,162,76,.6);" style-hover="filter:brightness(1.07)" style-active="transform:translateY(1px)">Přijmout</button>
+          <button onClick="{{ odmitnout }}" style="flex:1;border:1px solid #3A2F26;border-radius:10px;padding:12px;background:transparent;color:#A89A88;font-family:Inter,sans-serif;font-size:12px;font-weight:500;letter-spacing:.11em;text-transform:uppercase;cursor:pointer;" style-hover="color:#F5EFE7;border-color:#A89A88">Nechat být</button>
+        </div>
+      </sc-if>
+      <sc-if value="{{ podpis }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 10px;margin-top:2px;border-top:1px solid #3A2F26;padding-top:10px;padding-right:86px;">
+          <div style="font-family:'Cormorant Garamond',serif;font-style:italic;font-weight:600;font-size:20px;color:#D4A24C;">{{ podpis }}</div>
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:.1em;color:#A89A88;">{{ podpisPoznamka }}</div>
+        </div>
+      </sc-if>
+    </div>
+    <sc-if value="{{ pecetVidet }}" hint-placeholder-val="{{ false }}">
+      <div style="position:absolute;right:16px;bottom:18px;width:58px;height:58px;border-radius:50%;background:radial-gradient(circle at 38% 32%,#A8492F,#8C3B2E 55%,#63281E);box-shadow:0 12px 24px -10px rgba(140,59,46,.85),inset 0 2px 6px rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;transform:rotate(-7deg);animation:pecet .5s cubic-bezier(.2,.9,.3,1) both;">
+        <div style="width:44px;height:44px;border-radius:50%;border:1px dashed rgba(245,239,231,.35);display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-weight:600;font-size:19px;color:#F5EFE7;letter-spacing:.02em;">TH</div>
+      </div>
+    </sc-if>
+  </div>
+
+  <div style="display:flex;align-items:center;gap:8px;margin:22px 0 14px;">
+    <div style="height:1px;flex:1;background:linear-gradient(to right,rgba(212,162,76,0),#D4A24C);"></div>
+    <div style="width:3px;height:3px;border-radius:50%;background:#D4A24C;"></div>
+    <div style="height:1px;flex:1;background:linear-gradient(to left,rgba(212,162,76,0),#D4A24C);"></div>
+  </div>
+
+  <div style="position:relative;border-radius:10px;background:#1F1915;background-image:url(&quot;data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120'><filter id='p'><feTurbulence type='fractalNoise' baseFrequency='1.1' numOctaves='2'/></filter><rect width='120' height='120' filter='url(%23p)' opacity='0.03'/></svg>&quot;);border:1px solid #3A2F26;box-shadow:0 26px 54px -26px rgba(0,0,0,.95);padding:16px 14px 18px;overflow:hidden;">
+    <div style="position:absolute;left:38px;top:0;bottom:0;width:1px;background:rgba(140,59,46,.45);"></div>
+    <div style="display:flex;justify-content:space-between;font-family:'IBM Plex Mono',monospace;font-size:8.5px;letter-spacing:.16em;text-transform:uppercase;color:#A89A88;padding:0 2px 9px;border-bottom:1px solid #3A2F26;">
+      <div>Den</div>
+      <div style="display:flex;gap:26px;"><div>Kryty</div><div>Plnost</div></div>
+    </div>
+
+    <sc-for list="{{ tydny }}" as="t" hint-placeholder-count="2">
+      <div style="margin-top:14px;">
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:8.5px;letter-spacing:.2em;text-transform:uppercase;color:#D4A24C;margin-bottom:4px;">{{ t.popis }}</div>
+        <sc-for list="{{ t.dny }}" as="d" hint-placeholder-count="7">
+          <div>
+            <div onClick="{{ d.onClick }}" style="{{ d.rowStyle }}">
+              <div style="display:flex;align-items:baseline;gap:10px;min-width:0;">
+                <div style="{{ d.denStyle }}">{{ d.den }}</div>
+                <div style="font-family:'IBM Plex Mono',monospace;font-variant-numeric:tabular-nums;font-size:11px;color:#A89A88;">{{ d.datum }}</div>
+                <sc-if value="{{ d.znacka }}" hint-placeholder-val="{{ false }}">
+                  <div style="font-size:8.5px;letter-spacing:.12em;text-transform:uppercase;color:#D4A24C;">{{ d.znacka }}</div>
+                </sc-if>
+              </div>
+              <div style="display:flex;align-items:center;gap:12px;flex:none;">
+                <div style="font-family:'IBM Plex Mono',monospace;font-variant-numeric:tabular-nums;font-size:12px;color:#F5EFE7;width:34px;text-align:right;">{{ d.kryty }}</div>
+                <div style="display:flex;gap:3px;width:53px;justify-content:flex-end;">
+                  <sc-for list="{{ d.tecky }}" as="p" hint-placeholder-count="8">
+                    <div style="{{ p.style }}"></div>
+                  </sc-for>
+                </div>
+              </div>
+            </div>
+            <sc-if value="{{ d.lepenka }}" hint-placeholder-val="{{ false }}">
+              <div style="{{ d.lepenkaStyle }}">
+                <div style="position:absolute;left:14px;top:-7px;width:44px;height:14px;background:rgba(212,162,76,.22);border:1px solid rgba(212,162,76,.3);transform:rotate(-3deg);"></div>
+                <div style="position:absolute;right:18px;bottom:-7px;width:38px;height:14px;background:rgba(212,162,76,.18);border:1px solid rgba(212,162,76,.26);transform:rotate(2deg);"></div>
+                <div style="{{ d.lepenkaNadpisStyle }}">{{ d.lepenkaNadpis }}</div>
+                <div style="{{ d.lepenkaTextStyle }}">{{ d.lepenkaText }}</div>
+                <div style="{{ d.lepenkaCislaStyle }}">{{ d.lepenkaCisla }}</div>
+              </div>
+            </sc-if>
+          </div>
+        </sc-for>
+      </div>
+    </sc-for>
+  </div>
+
+</div>
+
+<div style="position:fixed;left:0;right:0;bottom:0;background:linear-gradient(to top,#14100D 66%,rgba(20,16,13,0));padding:16px 20px 18px;">
+  <div style="max-width:390px;margin:0 auto;display:flex;justify-content:space-between;gap:10px;font-family:'IBM Plex Mono',monospace;font-variant-numeric:tabular-nums;font-size:11px;letter-spacing:.04em;">
+    <div style="color:#A89A88;">Hotovost <span style="color:#F5EFE7;">{{ hotovost }}</span></div>
+    <div style="color:#A89A88;">Pověst <span style="color:#D4A24C;">{{ povest }}</span></div>
+    <div style="color:#A89A88;">Lambert <span style="color:#F5EFE7;">{{ lambert }}</span></div>
+  </div>
+</div>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:390,&quot;height&quot;:960}}">
+class Component extends DCLogic {
+  state = { kontrakt: 'nerozhodnuto', vybrany: null };
+
+  dny = [
+    { den: 'Úterý', datum: '12. 8.', kryty: 34, dnes: true },
+    { den: 'Středa', datum: '13. 8.', kryty: 28 },
+    { den: 'Čtvrtek', datum: '14. 8.', kryty: 31 },
+    { den: 'Pátek', datum: '15. 8.', kryty: 40, znacka: 'plno' },
+    { den: 'Sobota', datum: '16. 8.', kryty: 60, lepenka: 'svatba' },
+    { den: 'Neděle', datum: '17. 8.', kryty: 18 },
+    { den: 'Pondělí', datum: '18. 8.', kryty: 0, zavreno: true },
+    { den: 'Úterý', datum: '19. 8.', kryty: 26 },
+    { den: 'Středa', datum: '20. 8.', kryty: 30 },
+    { den: 'Čtvrtek', datum: '21. 8.', kryty: 33 },
+    { den: 'Pátek', datum: '22. 8.', kryty: 38, lepenka: 'kritik' },
+    { den: 'Sobota', datum: '23. 8.', kryty: 40, znacka: 'plno' },
+    { den: 'Neděle', datum: '24. 8.', kryty: 22 },
+    { den: 'Pondělí', datum: '25. 8.', kryty: 0, zavreno: true }
+  ];
+
+  lepenky = {
+    svatba: {
+      nadpis: 'Svatba', text: 'Rodina Halíkova. Pevné menu o pěti chodech, obsluha do jedné ráno.',
+      cisla: '60 krytů · 5 chodů · tržba ×2', papir: '#E8DFCB', inkoust: '#2A221C', sklon: '-1.4deg'
+    },
+    kritik: {
+      nadpis: 'Kritik Průcha', text: 'Píše pro Stůl a čas. Chodí sám, platí kartou, nikdy si nerezervuje na své jméno.',
+      cisla: 'Ohlášen · pověst ±6', papir: '#D6D0C2', inkoust: '#14100D', sklon: '1.6deg'
+    }
+  };
+
+  renderVals() {
+    const { kontrakt, vybrany } = this.state;
+    const kapacita = 40;
+
+    const mapDen = (d, i) => {
+      const sel = vybrany === i;
+      const l = d.lepenka ? this.lepenky[d.lepenka] : null;
+      const pomer = d.kryty / kapacita;
+      const barva = d.zavreno ? '#3A2F26' : (pomer > 1 ? '#C9503F' : (pomer >= 0.95 ? '#D9922E' : '#D4A24C'));
+      const plne = Math.min(Math.round(pomer * 8), 8);
+      return {
+        den: d.den, datum: d.datum,
+        znacka: d.zavreno ? 'zavřeno' : (d.znacka || false),
+        kryty: d.zavreno ? '—' : String(d.kryty),
+        tecky: Array.from({ length: 8 }, (_, k) => ({
+          style: 'width:5px;height:5px;border-radius:50%;background:' + (k < plne ? barva : 'transparent') + ';border:1px solid ' + (k < plne ? barva : '#3A2F26') + ';box-sizing:border-box;' + (k < plne && pomer > 1 ? 'box-shadow:0 0 6px -1px ' + barva + ';' : '')
+        })),
+        denStyle: 'font-family:\'Cormorant Garamond\',serif;font-weight:600;font-size:17px;line-height:1.1;color:' + (d.dnes ? '#D4A24C' : (d.zavreno ? '#A89A88' : '#F5EFE7')) + ';',
+        rowStyle: 'display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 8px 10px ' + (d.dnes ? '22px' : '26px') + ';border-bottom:1px solid rgba(58,47,38,.65);cursor:pointer;position:relative;opacity:' + (d.zavreno ? '.55' : '1') + ';background:' + (d.dnes ? 'linear-gradient(90deg,rgba(212,162,76,.12),rgba(212,162,76,0) 70%)' : (sel ? 'rgba(245,239,231,.04)' : 'transparent')) + ';' + (d.dnes ? 'border-left:3px solid #D4A24C;' : ''),
+        lepenka: !!l,
+        lepenkaStyle: l ? 'position:relative;margin:-2px 2px 12px 14px;padding:13px 15px 14px;border-radius:2px;background:' + l.papir + ';color:' + l.inkoust + ';transform:rotate(' + l.sklon + ');box-shadow:0 16px 30px -14px rgba(0,0,0,.95);' + (d.lepenka === 'kritik' ? 'clip-path:polygon(0 4px,6% 0,18% 5px,32% 0,48% 4px,64% 0,80% 5px,94% 0,100% 4px,100% calc(100% - 5px),88% 100%,72% calc(100% - 4px),56% 100%,40% calc(100% - 5px),24% 100%,10% calc(100% - 4px),0 100%);border-top:none;' : 'border-left:2px solid rgba(140,59,46,.5);') : '',
+        lepenkaNadpis: l ? l.nadpis : '',
+        lepenkaNadpisStyle: l ? (d.lepenka === 'kritik'
+          ? 'font-family:\'Cormorant Garamond\',serif;font-weight:600;font-size:23px;line-height:1.05;letter-spacing:.01em;text-transform:uppercase;border-bottom:2px solid ' + l.inkoust + ';padding-bottom:5px;'
+          : 'font-family:\'Cormorant Garamond\',serif;font-weight:600;font-size:21px;line-height:1.05;letter-spacing:.16em;text-transform:uppercase;') : '',
+        lepenkaText: l ? l.text : '',
+        lepenkaTextStyle: l ? 'font-family:' + (d.lepenka === 'kritik' ? '\'IBM Plex Mono\',monospace' : 'Inter,sans-serif') + ';font-size:11px;line-height:1.4;margin-top:7px;opacity:.85;text-wrap:pretty;' : '',
+        lepenkaCisla: l ? l.cisla : '',
+        lepenkaCislaStyle: l ? 'font-family:\'IBM Plex Mono\',monospace;font-variant-numeric:tabular-nums;font-size:10px;letter-spacing:.08em;margin-top:9px;padding-top:8px;border-top:1px solid rgba(20,16,13,.25);text-transform:uppercase;' : '',
+        onClick: () => this.setState(s => ({ vybrany: s.vybrany === i ? null : i }))
+      };
+    };
+
+    const prijato = kontrakt === 'prijato';
+    const odmitnuto = kontrakt === 'odmitnuto';
+
+    return {
+      tydny: [
+        { popis: 'Tento týden · 12.–18. srpna', dny: this.dny.slice(0, 7).map(mapDen) },
+        { popis: 'Příští týden · 19.–25. srpna', dny: this.dny.slice(7).map((d, i) => mapDen(d, i + 7)) }
+      ],
+      kontraktStyle: 'position:relative;margin-top:16px;border-radius:10px;padding:18px 18px 18px;background:' + (prijato ? '#2A221C' : '#1F1915') + ';border:1px solid ' + (prijato ? 'rgba(212,162,76,.55)' : (odmitnuto ? '#3A2F26' : 'rgba(212,162,76,.28)')) + ';box-shadow:0 20px 44px -24px rgba(0,0,0,.95);opacity:' + (odmitnuto ? '.55' : '1') + ';overflow:hidden;',
+      kontraktPopis: prijato
+        ? 'Podepsáno. Sedm večerů bez jediného kuchaře nad hranicí opotřebení.'
+        : (odmitnuto ? 'Ponecháno bez podpisu. Nabídka platí do neděle.' : 'Sedm večerů. Žádný kuchař nesmí překročit hranici opotřebení. Jedno provinění a výzva padá.'),
+      nerozhodnuto: kontrakt === 'nerozhodnuto',
+      pecetVidet: prijato,
+      podpis: prijato ? 'Tichý host' : false,
+      podpisPoznamka: prijato ? 'podepsáno 12. 8. · zbývá 7 večerů' : '',
+      prijmout: () => this.setState({ kontrakt: 'prijato' }),
+      odmitnout: () => this.setState({ kontrakt: 'odmitnuto' }),
+      hotovost: '214 800 Kč',
+      povest: '41/100',
+      lambert: 'sledováni'
+    };
+  }
+}
+
+</script>
+</body>
+</html>

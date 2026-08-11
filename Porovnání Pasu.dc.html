@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;1,600&family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  html, body { margin:0; padding:0; background:#0D0A08; }
+  a { color:#D4A24C; text-decoration:none; }
+  a:hover { color:#F5EFE7; }
+</style>
+</helmet>
+<div style="min-height:100vh;background:#0D0A08;padding:34px 34px 60px;box-sizing:border-box;font-family:Inter,sans-serif;color:#F5EFE7;">
+
+  <div style="display:flex;align-items:baseline;gap:14px;margin-bottom:8px;">
+    <div style="font-family:'Cormorant Garamond',serif;font-weight:600;font-size:30px;">Pas ve třech systémech</div>
+    <div style="font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.12em;color:#A89A88;text-transform:uppercase;">stejný obsah · stejná logika</div>
+  </div>
+  <div style="font-size:13px;line-height:1.5;color:#A89A88;max-width:640px;margin-bottom:26px;text-wrap:pretty;">Živé obrazovky, ne snímky — v každé lze kuchaře přiřazovat. Pod každou variantou je zkouška čitelnosti čísel na skutečných velikostech z dané obrazovky a poznámka k náladě.</div>
+
+  <div style="display:flex;gap:26px;align-items:flex-start;">
+
+    <sc-for list="{{ varianty }}" as="v" hint-placeholder-count="3">
+      <div style="width:390px;flex:none;display:flex;flex-direction:column;gap:14px;">
+        <div style="display:flex;align-items:baseline;gap:10px;">
+          <div style="{{ v.znackaStyle }}">{{ v.pismeno }}</div>
+          <div style="display:flex;flex-direction:column;gap:2px;">
+            <div style="font-family:'Cormorant Garamond',serif;font-weight:600;font-size:21px;line-height:1.1;">{{ v.nazev }}</div>
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:.1em;color:#A89A88;">{{ v.pismo }}</div>
+          </div>
+        </div>
+
+        <div style="{{ v.ramecekStyle }}">
+          <iframe src="{{ v.soubor }}" title="{{ v.nazev }}" style="width:390px;height:900px;border:none;display:block;background:transparent;"></iframe>
+        </div>
+
+        <div style="{{ v.ukazkaStyle }}">
+          <div style="font-size:9px;letter-spacing:.18em;text-transform:uppercase;opacity:.6;">Čísla v provozních velikostech</div>
+          <div style="display:flex;align-items:baseline;gap:14px;margin-top:9px;">
+            <div style="{{ v.cisloVelkeStyle }}">171 %</div>
+            <div style="{{ v.cisloStredniStyle }}">16 · 12 · 9</div>
+            <div style="{{ v.cisloMaleStyle }}">61 %</div>
+          </div>
+          <div style="display:flex;gap:8px;margin-top:11px;">
+            <div style="{{ v.stavOkStyle }}">63 %</div>
+            <div style="{{ v.stavRizikoStyle }}">86 %</div>
+            <div style="{{ v.stavVadaStyle }}">171 %</div>
+          </div>
+        </div>
+
+        <div style="background:#1F1915;border:1px solid #3A2F26;border-radius:10px;padding:15px 16px;display:flex;flex-direction:column;gap:11px;">
+          <div>
+            <div style="font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:#A89A88;">Čitelnost čísel</div>
+            <div style="font-size:13px;line-height:1.5;margin-top:5px;text-wrap:pretty;">{{ v.citelnost }}</div>
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:#A89A88;margin-top:7px;line-height:1.5;">{{ v.kontrast }}</div>
+          </div>
+          <div style="height:1px;background:#3A2F26;"></div>
+          <div>
+            <div style="font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:#A89A88;">Nálada</div>
+            <div style="font-size:13px;line-height:1.5;margin-top:5px;text-wrap:pretty;">{{ v.nalada }}</div>
+          </div>
+          <div style="height:1px;background:#3A2F26;"></div>
+          <div>
+            <div style="font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:#A89A88;">Riziko</div>
+            <div style="font-size:13px;line-height:1.5;margin-top:5px;color:#D9922E;text-wrap:pretty;">{{ v.riziko }}</div>
+          </div>
+        </div>
+      </div>
+    </sc-for>
+
+  </div>
+
+  <div style="margin-top:34px;max-width:1240px;background:#1F1915;border:1px solid #3A2F26;border-radius:10px;padding:20px 22px;">
+    <div style="font-family:'Cormorant Garamond',serif;font-weight:600;font-size:22px;">Co z porovnání plyne</div>
+    <div style="display:flex;align-items:center;gap:8px;margin:12px 0 14px;max-width:200px;">
+      <div style="height:1px;flex:1;background:linear-gradient(to right,rgba(212,162,76,0),#D4A24C);"></div>
+      <div style="width:3px;height:3px;border-radius:50%;background:#D4A24C;"></div>
+      <div style="height:1px;flex:1;background:linear-gradient(to left,rgba(212,162,76,0),#D4A24C);"></div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:22px;">
+      <sc-for list="{{ zavery }}" as="z" hint-placeholder-count="3">
+        <div style="display:flex;flex-direction:column;gap:6px;">
+          <div style="font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:#D4A24C;">{{ z.nadpis }}</div>
+          <div style="font-size:13px;line-height:1.55;color:#F5EFE7;text-wrap:pretty;">{{ z.text }}</div>
+        </div>
+      </sc-for>
+    </div>
+  </div>
+
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1400,&quot;height&quot;:1500}}">
+class Component extends DCLogic {
+  renderVals() {
+    const def = [
+      {
+        pismeno: 'A', nazev: 'Vytištěný podnik', soubor: 'Pas.dc.html',
+        pismo: 'Cormorant · Inter · Plex Mono',
+        papir: '#1F1915', text: '#F5EFE7', druhy: '#A89A88', akcent: '#D4A24C', linka: '#3A2F26',
+        ok: '#6FA36B', riziko: '#D9922E', vada: '#C9503F', radius: '10px', monoCislo: true,
+        citelnost: 'Nejlepší ze tří. Plex Mono s tabulkovými číslicemi na teplé tmavé kartě, čísla mají kolem sebe vzduch a nekonkurují si se serifovými jmény — oko je najde napoprvé.',
+        kontrast: 'text 13,2:1 · sekundární 5,6:1 · mosaz 7,4:1',
+        nalada: 'Papír při svíčce. Intimní, trochu nostalgické; večer před službou, ne rozhraní. Nejblíž tomu, co hra slibuje.',
+        riziko: 'Teplá tmavá plocha snáší málo prvků — při přidání dalších čísel ztratí klid.'
+      },
+      {
+        pismeno: 'B', nazev: 'Ocel po zavíračce', soubor: encodeURI('Pas - Ocel.dc.html'),
+        pismo: 'Space Grotesk · Plex Mono',
+        papir: '#1A2026', text: '#EEF2F5', druhy: '#8C9AA5', akcent: '#C87F4A', linka: '#2C353D',
+        ok: '#5C9E7E', riziko: '#C08A2E', vada: '#C05442', radius: '2px', monoCislo: true,
+        citelnost: 'Technicky nejostřejší: studený text na modrošedé oceli má nejvyšší akutanci a mono běží i v popiscích, takže všechna čísla mají stejný rytmus. Zároveň se ale čísla přestávají odlišovat od textu — všechno vypadá jako údaj.',
+        kontrast: 'text 12,6:1 · sekundární 5,3:1 · měď 5,6:1',
+        nalada: 'Prázdná kuchyně po zavíračce, zapnutý terminál. Věcné, chladné, profesionální — blíž Football Manageru než restauraci.',
+        riziko: 'Málo tepla. Chybí důvod, proč to hrát večer; měď je jediné, co drží podnik.'
+      },
+      {
+        pismeno: 'C', nazev: 'Průvodce Lambert', soubor: encodeURI('Pas - Průvodce.dc.html'),
+        pismo: 'Cormorant · Inter · Plex Mono',
+        papir: '#F2EAD9', text: '#1C1710', druhy: 'rgba(28,23,16,.55)', akcent: '#A63B2A', linka: 'rgba(28,23,16,.16)',
+        ok: '#4F7A4B', riziko: '#A9761F', vada: '#A63B2A', radius: '2px', monoCislo: true,
+        citelnost: 'Na papíře čísla čtou skvěle, ale ztrácejí důraz: bez svítícího akcentu se 171 % nedere dopředu a přetížený post musí volat červená stužka, ne číslo samo. Na mobilu ve tmě navíc svítí celá plocha.',
+        kontrast: 'text 13,6:1 · sekundární 4,6:1 · stužka 6,2:1',
+        nalada: 'Ročenka, ve které jsi zapsán. Nejelegantnější, nejvíc „hvězda" — ale klidná až úřední; napětí před servisem z ní nesálá.',
+        riziko: 'Světlá obrazovka spotřebuje kontrast, který verdikt Lamberta potřebuje jako jediný světlý moment hry.'
+      }
+    ];
+
+    const varianty = def.map(v => {
+      const monoRodina = v.pismeno === 'B' ? '\'IBM Plex Mono\',monospace' : '\'IBM Plex Mono\',monospace';
+      const chip = (barva, popis) => 'flex:1;text-align:center;padding:7px 4px;border-radius:' + v.radius + ';font-family:' + monoRodina + ';font-variant-numeric:tabular-nums;font-size:12px;color:' + barva + ';border:1px solid ' + barva + '66;background:' + barva + '14;';
+      return {
+        pismeno: v.pismeno, nazev: v.nazev, pismo: v.pismo, soubor: v.soubor,
+        citelnost: v.citelnost, kontrast: v.kontrast, nalada: v.nalada, riziko: v.riziko,
+        znackaStyle: 'width:30px;height:30px;border-radius:' + v.radius + ';display:flex;align-items:center;justify-content:center;font-family:\'IBM Plex Mono\',monospace;font-size:13px;color:' + v.akcent + ';border:1px solid ' + v.akcent + ';flex:none;',
+        ramecekStyle: 'width:390px;height:900px;overflow:hidden;border-radius:' + v.radius + ';border:1px solid ' + v.linka + ';box-shadow:0 30px 60px -30px rgba(0,0,0,.95);background:' + v.papir + ';',
+        ukazkaStyle: 'border-radius:' + v.radius + ';background:' + v.papir + ';border:1px solid ' + v.linka + ';padding:14px 15px;color:' + v.text + ';',
+        cisloVelkeStyle: 'font-family:' + monoRodina + ';font-variant-numeric:tabular-nums;font-size:15px;color:' + v.text + ';',
+        cisloStredniStyle: 'font-family:' + monoRodina + ';font-variant-numeric:tabular-nums;font-size:13px;color:' + v.text + ';',
+        cisloMaleStyle: 'font-family:' + monoRodina + ';font-variant-numeric:tabular-nums;font-size:9.5px;color:' + v.druhy + ';',
+        stavOkStyle: chip(v.ok),
+        stavRizikoStyle: chip(v.riziko),
+        stavVadaStyle: chip(v.vada)
+      };
+    });
+
+    return {
+      varianty,
+      zavery: [
+        { nadpis: 'Čísla', text: 'B je technicky nejčistší, ale právě proto nejplošší — když je monospace všude, přestane být signálem. A drží nejlepší poměr: mono jen tam, kde jde o údaj, serif všude jinde. Doporučuji A jako základ a z B si vzít jen tabulkové zarovnání sloupců.' },
+        { nadpis: 'Nálada', text: 'A je jediná, která odpovídá slibu „papír při svíčce". B je dobrá pro obrazovky s hustými daty (účetnictví sezóny, sklad), C se hodí na obrazovky průvodce — verdikt, kronika, hodnocení. Systém tedy nemusí být jeden.' },
+        { nadpis: 'Návrh rozdělení', text: 'Provoz (Pas, servis, brigáda) = A. Zázemí a čísla (rozpočet, sklad, statistiky sezóny) = B jako podsystém. Vše, co píše Lambert (verdikt, karta v průvodci, sdílená účtenka), = C. Světlý papír pak zůstane vzácný a udrží dopadu.' }
+      ]
+    };
+  }
+}
+
+</script>
+</body>
+</html>

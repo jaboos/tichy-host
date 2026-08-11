@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;1,600&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  html, body { margin:0; padding:0; background:#14100D; }
+  a { color:#D4A24C; text-decoration:none; }
+  a:hover { color:#F5EFE7; }
+  @keyframes zar { 0%,100% { opacity:.35; transform:scale(1); } 50% { opacity:.85; transform:scale(1.12); } }
+  @keyframes puls { 0%,100% { opacity:.5; } 50% { opacity:1; } }
+</style>
+</helmet>
+<div style="min-height:100vh;background:#14100D;background-image:url(&quot;data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='140' height='140'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/></filter><rect width='140' height='140' filter='url(%23n)' opacity='0.022'/></svg>&quot;);display:flex;justify-content:center;font-family:Inter,sans-serif;color:#F5EFE7;">
+<div style="width:100%;max-width:390px;padding:22px 20px 128px;box-sizing:border-box;">
+
+  <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:14px;">
+    <div style="display:flex;flex-direction:column;gap:5px;min-width:0;">
+      <div style="font-family:'Cormorant Garamond',serif;font-weight:600;font-size:29px;line-height:1.05;letter-spacing:.01em;">Tichý host</div>
+      <div style="font-family:'IBM Plex Mono',monospace;font-variant-numeric:tabular-nums;font-size:11.5px;letter-spacing:.09em;color:#A89A88;text-transform:uppercase;">Večer 14/40 · Čtvrtek · 34 krytů</div>
+    </div>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:4px;flex:none;padding-top:2px;">
+      <div style="position:relative;width:44px;height:44px;">
+        <svg viewBox="0 0 44 44" style="width:44px;height:44px;transform:rotate(-90deg);display:block;">
+          <circle cx="22" cy="22" r="18" fill="none" stroke="#3A2F26" stroke-width="2.5"></circle>
+          <circle cx="22" cy="22" r="18" fill="none" stroke="#D9922E" stroke-width="2.5" stroke-linecap="round" stroke-dasharray="{{ podezreniDash }}"></circle>
+        </svg>
+        <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:'IBM Plex Mono',monospace;font-variant-numeric:tabular-nums;font-size:12px;color:#F5EFE7;">38</div>
+      </div>
+      <div style="font-size:8.5px;letter-spacing:.14em;text-transform:uppercase;color:#A89A88;">Podezření</div>
+    </div>
+  </div>
+
+  <div style="display:flex;align-items:center;gap:8px;margin:20px 0 16px;">
+    <div style="height:1px;flex:1;background:linear-gradient(to right,rgba(212,162,76,0),#D4A24C);"></div>
+    <div style="width:3px;height:3px;border-radius:50%;background:#D4A24C;"></div>
+    <div style="height:1px;flex:1;background:linear-gradient(to left,rgba(212,162,76,0),#D4A24C);"></div>
+  </div>
+
+  <div style="background:#1F1915;border:1px solid #3A2F26;border-radius:10px;padding:14px 16px;box-shadow:0 10px 26px -14px rgba(0,0,0,.85);">
+    <div style="font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:#A89A88;margin-bottom:7px;">Od maître</div>
+    <div style="font-family:'Cormorant Garamond',serif;font-style:italic;font-weight:600;font-size:19px;line-height:1.35;color:#F5EFE7;text-wrap:pretty;">„Stůl šest. Sám, u okna, ptal se na vodu z kohoutku."</div>
+  </div>
+
+  <div style="display:flex;align-items:baseline;justify-content:space-between;margin:28px 0 14px;">
+    <div style="font-family:'Cormorant Garamond',serif;font-weight:600;font-size:20px;">Posty</div>
+    <div style="font-family:'IBM Plex Mono',monospace;font-variant-numeric:tabular-nums;font-size:10.5px;letter-spacing:.08em;color:#A89A88;">{{ nasazeno }}</div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+    <sc-for list="{{ posty }}" as="p" hint-placeholder-count="4">
+      <div onClick="{{ p.onClick }}" onDragOver="{{ p.onDragOver }}" onDrop="{{ p.onDrop }}" style="{{ p.boxStyle }}">
+        <div style="position:relative;width:78px;height:78px;display:flex;align-items:center;justify-content:center;">
+          <sc-if value="{{ p.over }}" hint-placeholder-val="{{ false }}">
+            <div style="position:absolute;width:78px;height:78px;border-radius:50%;background:radial-gradient(circle,rgba(201,80,63,.55),rgba(201,80,63,0) 70%);animation:zar 1.9s ease-in-out infinite;"></div>
+          </sc-if>
+          <div style="{{ p.diskStyle }}">
+            <div style="font-family:'IBM Plex Mono',monospace;font-variant-numeric:tabular-nums;font-size:15px;font-weight:500;">{{ p.pct }}</div>
+            <div style="font-size:8px;letter-spacing:.12em;text-transform:uppercase;color:#A89A88;margin-top:1px;">zátěž</div>
+          </div>
+        </div>
+        <div style="font-family:'Cormorant Garamond',serif;font-weight:600;font-size:17px;line-height:1.15;text-align:center;">{{ p.nazev }}</div>
+        <sc-if value="{{ p.over }}" hint-placeholder-val="{{ false }}">
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:8.5px;letter-spacing:.14em;color:#C9503F;border:1px solid rgba(201,80,63,.5);border-radius:4px;padding:2px 6px;animation:puls 2.1s ease-in-out infinite;">PŘETÍŽENO</div>
+        </sc-if>
+        <div style="display:flex;flex-wrap:wrap;gap:5px;justify-content:center;min-height:18px;">
+          <sc-for list="{{ p.crew }}" as="c" hint-placeholder-count="1">
+            <div onClick="{{ c.onRemove }}" style="font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:.05em;color:#A89A88;background:#14100D;border:1px solid #3A2F26;border-radius:4px;padding:2px 6px;cursor:pointer;">{{ c.prijmeni }}</div>
+          </sc-for>
+        </div>
+      </div>
+    </sc-for>
+  </div>
+
+  <div style="display:flex;align-items:baseline;justify-content:space-between;margin:30px 0 12px;">
+    <div style="font-family:'Cormorant Garamond',serif;font-weight:600;font-size:20px;">Brigáda</div>
+    <div style="font-size:9px;letter-spacing:.13em;text-transform:uppercase;color:#A89A88;">{{ napoveda }}</div>
+  </div>
+
+  <div style="display:flex;flex-direction:column;gap:8px;">
+    <sc-for list="{{ kuchari }}" as="k" hint-placeholder-count="6">
+      <div draggable="true" onDragStart="{{ k.onDragStart }}" onClick="{{ k.onClick }}" style="{{ k.rowStyle }}">
+        <div style="display:flex;align-items:baseline;justify-content:space-between;gap:10px;">
+          <div style="display:flex;align-items:baseline;gap:8px;min-width:0;">
+            <div style="font-family:'Cormorant Garamond',serif;font-weight:600;font-size:18px;line-height:1.1;white-space:nowrap;">{{ k.jmeno }}</div>
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.06em;color:#A89A88;white-space:nowrap;">{{ k.post }}</div>
+          </div>
+          <div style="display:flex;gap:9px;font-family:'IBM Plex Mono',monospace;font-variant-numeric:tabular-nums;flex:none;">
+            <div style="display:flex;flex-direction:column;align-items:center;gap:1px;">
+              <div style="font-size:13px;font-weight:500;color:#F5EFE7;">{{ k.ruka }}</div>
+              <div style="font-size:7.5px;letter-spacing:.1em;color:#A89A88;">RUKA</div>
+            </div>
+            <div style="display:flex;flex-direction:column;align-items:center;gap:1px;">
+              <div style="font-size:13px;font-weight:500;color:#F5EFE7;">{{ k.hlava }}</div>
+              <div style="font-size:7.5px;letter-spacing:.1em;color:#A89A88;">HLAVA</div>
+            </div>
+            <div style="display:flex;flex-direction:column;align-items:center;gap:1px;">
+              <div style="font-size:13px;font-weight:500;color:#F5EFE7;">{{ k.ohen }}</div>
+              <div style="font-size:7.5px;letter-spacing:.1em;color:#A89A88;">OHEŇ</div>
+            </div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;margin-top:9px;">
+          <div style="font-size:9.5px;letter-spacing:.09em;text-transform:uppercase;color:#D4A24C;border:1px solid rgba(212,162,76,.35);border-radius:4px;padding:2px 7px;flex:none;">{{ k.vlastnost }}</div>
+          <div style="flex:1;height:2px;border-radius:2px;background:#3A2F26;overflow:hidden;">
+            <div style="{{ k.wearStyle }}"></div>
+          </div>
+          <div style="font-family:'IBM Plex Mono',monospace;font-variant-numeric:tabular-nums;font-size:9.5px;color:#A89A88;flex:none;">{{ k.wearLabel }}</div>
+        </div>
+        <sc-if value="{{ k.varovani }}" hint-placeholder-val="{{ false }}">
+          <div style="margin-top:9px;padding-top:8px;border-top:1px solid rgba(201,80,63,.28);font-size:12px;line-height:1.35;color:#C9503F;">{{ k.varovani }}</div>
+        </sc-if>
+      </div>
+    </sc-for>
+  </div>
+
+  <div style="display:flex;align-items:center;gap:8px;margin:30px 0 14px;">
+    <div style="height:1px;flex:1;background:linear-gradient(to right,rgba(212,162,76,0),#D4A24C);"></div>
+    <div style="width:3px;height:3px;border-radius:50%;background:#D4A24C;"></div>
+    <div style="height:1px;flex:1;background:linear-gradient(to left,rgba(212,162,76,0),#D4A24C);"></div>
+  </div>
+
+  <div style="font-family:'Cormorant Garamond',serif;font-weight:600;font-size:20px;">Jeden zásah večera</div>
+  <div style="font-size:11.5px;color:#A89A88;margin-top:4px;line-height:1.4;">{{ zasahPopis }}</div>
+
+  <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-top:14px;">
+    <sc-for list="{{ zasahy }}" as="z" hint-placeholder-count="5">
+      <div onClick="{{ z.onClick }}" style="{{ z.style }}">
+        <div style="font-family:'Cormorant Garamond',serif;font-weight:600;font-size:22px;line-height:1;">{{ z.znak }}</div>
+        <div style="font-size:8px;letter-spacing:.06em;text-align:center;line-height:1.2;color:#A89A88;">{{ z.popisek }}</div>
+      </div>
+    </sc-for>
+  </div>
+
+</div>
+
+<div style="position:fixed;left:0;right:0;bottom:0;display:flex;justify-content:center;padding:14px 20px 20px;background:linear-gradient(to top,#14100D 62%,rgba(20,16,13,0));pointer-events:none;">
+  <div style="width:100%;max-width:350px;pointer-events:auto;">
+    <button onClick="{{ zahajit }}" style="width:100%;border:none;border-radius:10px;padding:15px 20px;background:linear-gradient(180deg,#E0B25E,#D4A24C);color:#14100D;font-family:Inter,sans-serif;font-size:14px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;cursor:pointer;box-shadow:0 12px 30px -12px rgba(212,162,76,.6);" style-hover="filter:brightness(1.07)" style-active="transform:translateY(1px)">Zahájit servis</button>
+    <div style="text-align:center;font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:.1em;color:#A89A88;margin-top:8px;">{{ stavRadek }}</div>
+  </div>
+</div>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:390,&quot;height&quot;:900}}">
+class Component extends DCLogic {
+  state = {
+    prirazeni: { halina: 'cold', marek: 'fire', ivo: 'sauce', nela: 'sauce', tereza: 'sweet', dan: null },
+    vybrany: null,
+    zasah: null
+  };
+
+  posty = [
+    { id: 'cold', nazev: 'Studená kuchyně', stat: 'ruka', potreba: 5 },
+    { id: 'fire', nazev: 'Oheň', stat: 'ohen', potreba: 12 },
+    { id: 'sauce', nazev: 'Omáčky', stat: 'hlava', potreba: 12 },
+    { id: 'sweet', nazev: 'Dezerty', stat: 'ruka', potreba: 5 }
+  ];
+
+  kuchari = [
+    { id: 'halina', jmeno: 'Halina Rezková', prijmeni: 'Rezková', ruka: 16, hlava: 12, ohen: 9, wear: 22, vlastnost: 'Nožířka' },
+    { id: 'marek', jmeno: 'Marek Dostál', prijmeni: 'Dostál', ruka: 11, hlava: 8, ohen: 14, wear: 61, vlastnost: 'Těžká ruka', varovani: 'Marek dnes dvakrát přesolil základ.' },
+    { id: 'ivo', jmeno: 'Ivo Sedlák', prijmeni: 'Sedlák', ruka: 13, hlava: 15, ohen: 10, wear: 34, vlastnost: 'Klidná ruka' },
+    { id: 'tereza', jmeno: 'Tereza Vávrová', prijmeni: 'Vávrová', ruka: 14, hlava: 16, ohen: 7, wear: 18, vlastnost: 'Cukrářka' },
+    { id: 'dan', jmeno: 'Dan Křiváček', prijmeni: 'Křiváček', ruka: 9, hlava: 11, ohen: 16, wear: 47, vlastnost: 'Vydrží žár' },
+    { id: 'nela', jmeno: 'Nela Bartošová', prijmeni: 'Bartošová', ruka: 15, hlava: 13, ohen: 11, wear: 29, vlastnost: 'Čte lístky' }
+  ];
+
+  zasahyDef = [
+    { id: 'pochvala', znak: '✦', popisek: 'Pochvala', popis: 'Zvedne odhodlání jednoho kuchaře na celý servis.' },
+    { id: 'serveni', znak: '!', popisek: 'Seřvání', popis: 'Srovná post okamžitě, ale opotřebení poroste rychleji.' },
+    { id: 'presun', znak: '⇄', popisek: 'Přesun', popis: 'Přehodíš kuchaře uprostřed servisu bez ztráty tempa.' },
+    { id: 'skrt', znak: '✕', popisek: 'Škrtnout chod', popis: 'Stáhneš chod z karty. Uleví postu, hosté si všimnou.' },
+    { id: 'maitre', znak: '❧', popisek: 'Pozornost', popis: 'Maître pošle pozornost podniku ke stolu dle tvého výběru.' }
+  ];
+
+  prirad(kuchId, postId) {
+    this.setState(s => ({ prirazeni: Object.assign({}, s.prirazeni, { [kuchId]: postId }), vybrany: null }));
+  }
+
+  crewFor(postId) {
+    return this.kuchari.filter(k => this.state.prirazeni[k.id] === postId);
+  }
+
+  renderVals() {
+    const { vybrany, zasah } = this.state;
+    const obsazeno = this.kuchari.filter(k => this.state.prirazeni[k.id]).length;
+
+    const posty = this.posty.map(p => {
+      const crew = this.crewFor(p.id);
+      const kap = crew.reduce((a, k) => a + k[p.stat], 0) / 2;
+      const load = kap > 0 ? p.potreba / kap : 2.2;
+      const over = load > 1;
+      const barva = load <= 0.7 ? '#6FA36B' : (over ? '#C9503F' : '#D9922E');
+      const aktivni = !!vybrany;
+      return {
+        nazev: p.nazev,
+        over,
+        pct: Math.round(Math.min(load, 2.2) * 100) + '%',
+        boxStyle: 'display:flex;flex-direction:column;align-items:center;gap:9px;padding:16px 12px 14px;border-radius:10px;background:#1F1915;border:1px solid ' + (aktivni ? 'rgba(212,162,76,.55)' : '#3A2F26') + ';box-shadow:0 12px 28px -16px rgba(0,0,0,.9);cursor:' + (aktivni ? 'pointer' : 'default') + ';transition:border-color .2s;',
+        diskStyle: 'position:relative;width:64px;height:64px;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;border:1.5px solid ' + barva + ';background:radial-gradient(circle at 50% 55%, ' + barva + '2E, #14100D 72%);box-shadow:inset 0 0 14px -4px ' + barva + ', 0 0 18px -8px ' + barva + ';',
+        crew: crew.map(k => ({ prijmeni: k.prijmeni, onRemove: (e) => { e.stopPropagation(); this.prirad(k.id, null); } })),
+        onClick: () => { if (vybrany) this.prirad(vybrany, p.id); },
+        onDragOver: (e) => e.preventDefault(),
+        onDrop: (e) => { e.preventDefault(); const id = e.dataTransfer.getData('text/plain'); if (id) this.prirad(id, p.id); }
+      };
+    });
+
+    const kuchari = this.kuchari.map(k => {
+      const sel = vybrany === k.id;
+      const post = this.state.prirazeni[k.id];
+      const p = this.posty.find(x => x.id === post);
+      const wc = k.wear >= 60 ? '#C9503F' : (k.wear >= 40 ? '#D9922E' : '#6FA36B');
+      return {
+        jmeno: k.jmeno, ruka: k.ruka, hlava: k.hlava, ohen: k.ohen, vlastnost: k.vlastnost,
+        varovani: k.varovani || false,
+        post: p ? '· ' + p.nazev : '· bez postu',
+        wearLabel: k.wear + '%',
+        wearStyle: 'width:' + k.wear + '%;height:100%;background:' + wc + ';border-radius:2px;',
+        rowStyle: 'padding:13px 14px;border-radius:10px;background:' + (sel ? '#2A221C' : '#1F1915') + ';border:1px solid ' + (sel ? '#D4A24C' : (k.varovani ? 'rgba(201,80,63,.45)' : '#3A2F26')) + ';box-shadow:' + (sel ? '0 14px 30px -14px rgba(212,162,76,.45)' : '0 10px 24px -16px rgba(0,0,0,.9)') + ';cursor:grab;user-select:none;' + (k.varovani ? 'background-image:linear-gradient(180deg,rgba(201,80,63,.10),rgba(201,80,63,0) 60%);' : ''),
+        onClick: () => this.setState(s => ({ vybrany: s.vybrany === k.id ? null : k.id })),
+        onDragStart: (e) => { e.dataTransfer.setData('text/plain', k.id); this.setState({ vybrany: k.id }); }
+      };
+    });
+
+    const zasahy = this.zasahyDef.map(z => {
+      const on = zasah === z.id;
+      return {
+        znak: z.znak, popisek: z.popisek,
+        style: 'display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;height:66px;border-radius:10px;cursor:pointer;background:' + (on ? '#2A221C' : '#1F1915') + ';border:1px solid ' + (on ? '#D4A24C' : '#3A2F26') + ';color:' + (on ? '#D4A24C' : '#F5EFE7') + ';box-shadow:' + (on ? '0 12px 26px -14px rgba(212,162,76,.5)' : 'none') + ';',
+        onClick: () => this.setState(s => ({ zasah: s.zasah === z.id ? null : z.id }))
+      };
+    });
+
+    const zvoleny = this.zasahyDef.find(z => z.id === zasah);
+    const prekroceno = posty.filter(p => p.over).length;
+
+    return {
+      podezreniDash: (0.38 * 113.1).toFixed(1) + ' 113.1',
+      posty, kuchari, zasahy,
+      nasazeno: obsazeno + '/6 nasazeno',
+      napoveda: vybrany ? 'Vyber post' : 'Klepni nebo přetáhni na post',
+      zasahPopis: zvoleny ? zvoleny.popis : 'Vyber jediný. Během servisu už ho nezměníš.',
+      stavRadek: prekroceno > 0 ? prekroceno + ' post přetížen · ' + (zasah ? 'zásah zvolen' : 'zásah nezvolen') : 'Pas srovnán · ' + (zasah ? 'zásah zvolen' : 'zásah nezvolen'),
+      zahajit: () => {}
+    };
+  }
+}
+
+</script>
+</body>
+</html>

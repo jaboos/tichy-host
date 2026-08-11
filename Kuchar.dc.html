@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;1,600&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  html, body { margin:0; padding:0; background:#14100D; }
+  a { color:#D4A24C; text-decoration:none; }
+  a:hover { color:#F5EFE7; }
+</style>
+</helmet>
+<div style="min-height:100vh;background:#14100D;background-image:url(&quot;data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='140' height='140'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/></filter><rect width='140' height='140' filter='url(%23n)' opacity='0.022'/></svg>&quot;);display:flex;justify-content:center;font-family:Inter,sans-serif;color:#F5EFE7;">
+<div style="width:100%;max-width:390px;padding:22px 20px 40px;box-sizing:border-box;">
+
+  <div style="display:flex;align-items:flex-end;gap:6px;padding-left:14px;">
+    <div style="background:#2A221C;border:1px solid #3A2F26;border-bottom:none;border-radius:6px 6px 0 0;padding:6px 14px 5px;font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:#A89A88;">Složka 04 · brigáda</div>
+    <div style="flex:1;height:1px;background:#3A2F26;margin-bottom:1px;"></div>
+  </div>
+
+  <div style="position:relative;border-radius:10px;border:1px solid #3A2F26;background:#2A221C;padding:10px 10px 12px;box-shadow:0 28px 56px -26px rgba(0,0,0,.95);">
+    <div style="position:absolute;left:-1px;top:44px;display:flex;flex-direction:column;gap:56px;">
+      <div style="width:9px;height:14px;border-radius:0 7px 7px 0;background:#14100D;border:1px solid #3A2F26;border-left:none;"></div>
+      <div style="width:9px;height:14px;border-radius:0 7px 7px 0;background:#14100D;border:1px solid #3A2F26;border-left:none;"></div>
+    </div>
+
+    <div style="border-radius:6px;background:#1F1915;background-image:url(&quot;data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='120' height='120'><filter id='p'><feTurbulence type='fractalNoise' baseFrequency='1.1' numOctaves='2'/></filter><rect width='120' height='120' filter='url(%23p)' opacity='0.03'/></svg>&quot;);border:1px solid #3A2F26;padding:20px 18px 20px;">
+
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;">
+        <div style="display:flex;flex-direction:column;gap:6px;min-width:0;">
+          <div style="font-family:'Cormorant Garamond',serif;font-weight:600;font-size:32px;line-height:1.02;letter-spacing:.005em;">Ilona Bartáková</div>
+          <div style="font-family:'IBM Plex Mono',monospace;font-variant-numeric:tabular-nums;font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:#A89A88;">{{ podtitul }}</div>
+        </div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.14em;color:#A89A88;border:1px solid #3A2F26;border-radius:4px;padding:3px 7px;flex:none;">{{ sluzba }}</div>
+      </div>
+
+      <div style="font-family:'Cormorant Garamond',serif;font-style:italic;font-weight:600;font-size:19px;line-height:1.35;color:#F5EFE7;margin-top:14px;padding-left:12px;border-left:2px solid rgba(212,162,76,.45);text-wrap:pretty;">„Nejlepší ruce v podniku a ví to. Nesnese, když jí někdo pomáhá."</div>
+
+      <div style="display:flex;align-items:center;gap:8px;margin:18px 0 14px;">
+        <div style="height:1px;flex:1;background:linear-gradient(to right,rgba(212,162,76,0),#D4A24C);"></div>
+        <div style="width:3px;height:3px;border-radius:50%;background:#D4A24C;"></div>
+        <div style="height:1px;flex:1;background:linear-gradient(to left,rgba(212,162,76,0),#D4A24C);"></div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:#3A2F26;border:1px solid #3A2F26;border-radius:6px;overflow:hidden;">
+        <sc-for list="{{ staty }}" as="s" hint-placeholder-count="3">
+          <div style="background:#1F1915;padding:13px 6px 11px;display:flex;flex-direction:column;align-items:center;gap:5px;">
+            <div style="{{ s.cisloStyle }}">{{ s.hodnota }}</div>
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:8.5px;letter-spacing:.2em;color:#A89A88;">{{ s.nazev }}</div>
+          </div>
+        </sc-for>
+      </div>
+
+      <div style="display:flex;align-items:center;gap:16px;margin-top:14px;">
+        <div style="display:flex;align-items:center;gap:7px;flex:none;">
+          <div style="font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:#A89A88;">Forma</div>
+          <div style="{{ formaStyle }}">{{ formaSipka }}</div>
+        </div>
+        <div style="flex:1;display:flex;flex-direction:column;gap:5px;">
+          <div style="display:flex;justify-content:space-between;font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:#A89A88;">
+            <div>Opotřebení</div>
+            <div style="font-family:'IBM Plex Mono',monospace;font-variant-numeric:tabular-nums;letter-spacing:.04em;">{{ opotrebeniLabel }}</div>
+          </div>
+          <div style="height:3px;border-radius:2px;background:#3A2F26;overflow:hidden;">
+            <div style="{{ opotrebeniStyle }}"></div>
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-top:16px;border:1px solid rgba(212,162,76,.35);background:rgba(212,162,76,.06);border-radius:6px;padding:11px 13px;display:flex;flex-direction:column;gap:6px;">
+        <div style="display:flex;align-items:baseline;gap:9px;">
+          <div style="font-family:'Cormorant Garamond',serif;font-weight:600;font-size:18px;color:#D4A24C;">Nožířka</div>
+          <div style="font-size:8.5px;letter-spacing:.16em;text-transform:uppercase;color:#A89A88;">vlastnost</div>
+        </div>
+        <div style="display:flex;gap:14px;font-family:'IBM Plex Mono',monospace;font-variant-numeric:tabular-nums;font-size:11px;">
+          <div style="color:#6FA36B;">sama na postu +2</div>
+          <div style="color:#C9503F;">s pomocníkem −2</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div style="display:flex;align-items:baseline;justify-content:space-between;margin:26px 0 12px;">
+    <div style="font-family:'Cormorant Garamond',serif;font-weight:600;font-size:20px;">Chtění</div>
+    <div style="font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:#A89A88;">{{ chteniStav }}</div>
+  </div>
+
+  <div style="display:flex;flex-direction:column;gap:10px;">
+    <div style="background:#1F1915;border:1px solid rgba(212,162,76,.4);border-radius:10px;padding:14px 16px;box-shadow:0 14px 30px -18px rgba(0,0,0,.95);">
+      <div style="display:flex;align-items:baseline;justify-content:space-between;gap:10px;">
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:#D4A24C;">Krok 1</div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-variant-numeric:tabular-nums;font-size:10px;color:#A89A88;">{{ pokrokLabel }}</div>
+      </div>
+      <div style="font-family:'Cormorant Garamond',serif;font-weight:600;font-size:20px;line-height:1.2;margin-top:7px;text-wrap:pretty;">Nech ji 3× samotnou na rybách</div>
+      <div style="display:flex;align-items:center;gap:12px;margin-top:12px;">
+        <div style="display:flex;gap:7px;">
+          <sc-for list="{{ tecky }}" as="t" hint-placeholder-count="3">
+            <div onClick="{{ t.onClick }}" style="{{ t.style }}"></div>
+          </sc-for>
+        </div>
+        <div style="height:1px;flex:1;background:#3A2F26;"></div>
+        <div style="display:flex;align-items:center;gap:6px;flex:none;">
+          <div style="font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:#A89A88;">Odměna</div>
+          <div style="{{ odmenaStyle }}">Sólo+</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="{{ krok2Style }}">
+      <div style="display:flex;align-items:baseline;justify-content:space-between;gap:10px;">
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:#A89A88;">Krok 2</div>
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:#A89A88;">{{ krok2Stav }}</div>
+      </div>
+      <div style="{{ krok2NazevStyle }}">{{ krok2Nazev }}</div>
+      <div style="font-size:11.5px;line-height:1.4;color:#A89A88;margin-top:7px;text-wrap:pretty;">{{ krok2Popis }}</div>
+    </div>
+  </div>
+
+  <div style="display:flex;align-items:baseline;justify-content:space-between;margin:26px 0 10px;">
+    <div style="font-family:'Cormorant Garamond',serif;font-weight:600;font-size:20px;">Historie večerů</div>
+    <div style="font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:#A89A88;">7 posledních</div>
+  </div>
+
+  <div style="display:flex;gap:7px;">
+    <sc-for list="{{ historie }}" as="h" hint-placeholder-count="7">
+      <div style="{{ h.style }}">{{ h.znak }}</div>
+    </sc-for>
+  </div>
+
+  <div style="display:flex;align-items:center;gap:8px;margin:26px 0 14px;">
+    <div style="height:1px;flex:1;background:linear-gradient(to right,rgba(212,162,76,0),#D4A24C);"></div>
+    <div style="width:3px;height:3px;border-radius:50%;background:#D4A24C;"></div>
+    <div style="height:1px;flex:1;background:linear-gradient(to left,rgba(212,162,76,0),#D4A24C);"></div>
+  </div>
+
+  <div style="display:flex;gap:9px;">
+    <button onClick="{{ povysit }}" style="flex:1;border:none;border-radius:10px;padding:13px 10px;background:linear-gradient(180deg,#E0B25E,#D4A24C);color:#14100D;font-family:Inter,sans-serif;font-size:12px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;box-shadow:0 12px 26px -14px rgba(212,162,76,.6);" style-hover="filter:brightness(1.07)" style-active="transform:translateY(1px)">Povýšit</button>
+    <button onClick="{{ preradit }}" style="flex:1;border:1px solid #3A2F26;border-radius:10px;padding:13px 10px;background:#1F1915;color:#F5EFE7;font-family:Inter,sans-serif;font-size:12px;font-weight:500;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;" style-hover="border-color:#A89A88">Přeřadit</button>
+  </div>
+
+  <div style="display:flex;justify-content:center;margin-top:14px;">
+    <div onClick="{{ propustit }}" style="{{ propustitStyle }}">{{ propustitText }}</div>
+  </div>
+
+  <div style="text-align:center;font-family:'IBM Plex Mono',monospace;font-size:9.5px;letter-spacing:.1em;color:#A89A88;margin-top:14px;">{{ hlaska }}</div>
+
+</div>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:390,&quot;height&quot;:1080},&quot;pokrok&quot;:{&quot;editor&quot;:&quot;int&quot;,&quot;default&quot;:2,&quot;min&quot;:0,&quot;max&quot;:3,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;Chtění&quot;}}">
+class Component extends DCLogic {
+  state = { pokrok: 2, propusteni: 0, hlaska: 'Karta vedena od 3. večera. Poslední zápis: 21. srpna.' };
+
+  historieDef = [
+    { znak: '✓', typ: 'ok' }, { znak: '✓', typ: 'ok' }, { znak: '★', typ: 'hvezda' },
+    { znak: '✕', typ: 'vada' }, { znak: '✓', typ: 'ok' }, { znak: '✓', typ: 'ok' }, { znak: '✓', typ: 'ok' }
+  ];
+
+  renderVals() {
+    const pokrok = Math.min(this.props.pokrok ?? this.state.pokrok, 3);
+    const hotovo = pokrok >= 3;
+    const opotrebeni = 31;
+
+    return {
+      podtitul: '34 let · Studená kuchyně',
+      sluzba: '11 večerů',
+      staty: [
+        { nazev: 'RUKA', hodnota: 3, barva: '#D4A24C' },
+        { nazev: 'HLAVA', hodnota: 4, barva: '#F5EFE7' },
+        { nazev: 'OHEŇ', hodnota: 2, barva: '#A89A88' }
+      ].map(s => ({
+        nazev: s.nazev, hodnota: s.hodnota,
+        cisloStyle: 'font-family:\'IBM Plex Mono\',monospace;font-variant-numeric:tabular-nums;font-size:30px;font-weight:500;line-height:1;color:' + s.barva + ';'
+      })),
+      formaSipka: '↗',
+      formaStyle: 'font-family:\'IBM Plex Mono\',monospace;font-size:17px;line-height:1;color:#6FA36B;',
+      opotrebeniLabel: opotrebeni + ' %',
+      opotrebeniStyle: 'width:' + opotrebeni + '%;height:100%;border-radius:2px;background:#6FA36B;',
+      chteniStav: hotovo ? 'krok 1 splněn' : 'krok 1 běží',
+      pokrokLabel: pokrok + '/3',
+      tecky: [0, 1, 2].map(i => ({
+        style: 'width:13px;height:13px;border-radius:50%;cursor:pointer;box-sizing:border-box;border:1.5px solid ' + (i < pokrok ? '#D4A24C' : '#3A2F26') + ';background:' + (i < pokrok ? '#D4A24C' : 'transparent') + ';box-shadow:' + (i < pokrok ? '0 0 12px -3px #D4A24C' : 'none') + ';',
+        onClick: () => this.setState({ pokrok: i + 1 === this.state.pokrok ? i : i + 1 })
+      })),
+      odmenaStyle: 'font-family:\'IBM Plex Mono\',monospace;font-size:11px;letter-spacing:.06em;padding:3px 8px;border-radius:4px;border:1px solid ' + (hotovo ? '#D4A24C' : 'rgba(212,162,76,.35)') + ';color:#D4A24C;background:' + (hotovo ? 'rgba(212,162,76,.14)' : 'transparent') + ';',
+      krok2Style: 'border-radius:10px;padding:14px 16px;background:' + (hotovo ? '#1F1915' : 'rgba(31,25,21,.55)') + ';border:1px ' + (hotovo ? 'solid rgba(212,162,76,.4)' : 'dashed #3A2F26') + ';' + (hotovo ? '' : 'opacity:.8;'),
+      krok2Stav: hotovo ? 'otevřeno' : 'zamčeno',
+      krok2Nazev: hotovo ? 'Postav ji proti Dostálovi na ohni' : 'Ještě neřekla, co chce dál',
+      krok2NazevStyle: 'font-family:\'Cormorant Garamond\',serif;font-weight:600;font-size:20px;line-height:1.2;margin-top:7px;text-wrap:pretty;color:' + (hotovo ? '#F5EFE7' : '#A89A88') + ';' + (hotovo ? '' : 'font-style:italic;'),
+      krok2Popis: hotovo ? 'Jeden večer, dva kuchaři, jeden post. Odměna: Vlastní ruka.' : 'Odemkne se dokončením prvního kroku. Odměna se ukáže až tehdy.',
+      historie: this.historieDef.map(h => {
+        const barva = h.typ === 'ok' ? '#6FA36B' : (h.typ === 'hvezda' ? '#D4A24C' : '#C9503F');
+        return {
+          znak: h.znak,
+          style: 'flex:1;height:34px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-family:\'IBM Plex Mono\',monospace;font-size:14px;color:' + barva + ';background:#1F1915;border:1px solid ' + (h.typ === 'ok' ? '#3A2F26' : barva + '66') + ';'
+        };
+      }),
+      povysit: () => this.setState({ hlaska: 'Povýšena na zástupkyni na studené. Mzda +4 000 Kč.' }),
+      preradit: () => this.setState({ hlaska: 'Přeřazení připraveno. Vyber post na obrazovce Pas.' }),
+      propustitText: this.state.propusteni === 0 ? 'Propustit' : 'Opravdu propustit? Klepni znovu.',
+      propustitStyle: 'font-family:Inter,sans-serif;font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;padding:8px 14px;border-radius:8px;color:' + (this.state.propusteni === 0 ? '#A89A88' : '#C9503F') + ';border:1px solid ' + (this.state.propusteni === 0 ? 'transparent' : 'rgba(201,80,63,.45)') + ';',
+      propustit: () => this.setState(s => (s.propusteni === 0
+        ? { propusteni: 1, hlaska: 'Výpověď zatím nepodepsána.' }
+        : { propusteni: 0, hlaska: 'Ilona odchází po nedělním servisu. Studená zůstává bez ruky.' })),
+      hlaska: this.state.hlaska
+    };
+  }
+}
+
+</script>
+</body>
+</html>
