@@ -83,6 +83,8 @@ export const cs = {
   'intervention.push.cost': 'Stojí jeden z pěti mosazných žetonů na sezónu.',
 
   // --- traits — PRD §4.2 a §6.5 ---------------------------------------------
+  'trait.none.name': 'Bez vlastnosti',
+  'trait.none.desc': 'Nic zvláštního. Vaří přesně tak, jak říkají čísla.',
   'trait.nozirka.name': 'Nožířka',
   'trait.nozirka.desc': 'Sama na postu vaří o 2 lépe. S pomocníkem o 2 hůř.',
   'trait.sampion.name': 'Šampión',

@@ -124,7 +124,21 @@ export const TRAITS: readonly Trait[] = [
   },
 ];
 
-const BY_ID = new Map(TRAITS.map((trait) => [trait.id, trait]));
+/**
+ * A registered trait with no effect. `sim-final.js` models cooks without traits at
+ * all, so the balance harness in `golden.test.ts` needs a way to express "this
+ * brigade is the reference brigade". It is deliberately not in `TRAITS`, so the
+ * draft can never deal it to a player.
+ */
+export const NEUTRAL_TRAIT_ID = 'none';
+
+const NEUTRAL_TRAIT: Trait = {
+  id: NEUTRAL_TRAIT_ID,
+  nameKey: 'trait.none.name',
+  descKey: 'trait.none.desc',
+};
+
+const BY_ID = new Map([...TRAITS, NEUTRAL_TRAIT].map((trait) => [trait.id, trait]));
 
 /** Throws rather than silently cooking a plate without the trait it was promised. */
 export function getTrait(id: string): Trait {

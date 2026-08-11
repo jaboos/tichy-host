@@ -116,6 +116,7 @@ export const C = deepFreeze({
     /** The only output randomness in the game: U(-1, +1), widened by ambition. */
     noiseMin: -1,
     noiseMax: 1,
+    noiseWidthBase: 1,
     noiseDifficultyCoef: 0.25,
     noiseDifficultyPivot: 2,
   },

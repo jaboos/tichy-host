@@ -244,7 +244,13 @@ export interface Plate {
   courseId: string;
   station: Station;
   wave: WaveIndex;
-  q: number;
+  /**
+   * `null` when no quality was computed: an empty station, a station whose lead
+   * has no capacity at all, or a course cut tonight. PRD §9 cases 1, 2 and 8 all
+   * say such a plate "resolves as a defect without computing Q", and a docket with
+   * no number is the honest way to show that. A widening of PRD §4.1's `number`.
+   */
+  q: number | null;
   bar: number;
   outcome: PlateOutcome;
 }

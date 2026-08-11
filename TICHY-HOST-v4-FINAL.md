@@ -175,7 +175,7 @@ Prahy jsou **relativní k laťce**, žádná absolutní čísla:
 |---|---|
 | **vada** | Q < laťka |
 | **prošlo** | Q ≥ laťka |
-| **hvězdný talíř** | Q ≥ laťka + 8,5 |
+| **hvězdný talíř** | Q ≥ laťka + 7,5 |
 
 ### Opotřebení
 
@@ -264,20 +264,20 @@ Simulace prokázala, že rozsáhlá ekonomika nemá na hvězdy vliv. Zůstává 
 
 | Politika | ★ | ★★ | pověst |
 |---|---|---|---|
-| NAIVE | 20,6 % | 0,2 % | 38 |
-| ROTA | 38,4 % | 4,6 % | 95 |
-| REVISE | 41,8 % | 4,2 % | 86 |
-| **SMART** | **60,0 %** | **13,6 %** | 87 |
+| NAIVE | 18,0 % | 0,8 % | 41 |
+| ROTA | 36,8 % | 4,4 % | 95 |
+| REVISE | 46,8 % | 10,8 % | 95 |
+| **SMART** | **60,6 %** | **26,4 %** | 95 |
 
 **Kariéra** (SMART, brigáda přežívá, laťka +0,4 za sezónu):
 
 | | ★ | ★★ | Σ RUKA |
 |---|---|---|---|
-| sezóna 1 | 63,8 % | 14,0 % | 19,8 |
-| sezóna 2 | 57,2 % | 20,2 % | 21,8 |
-| sezóna 3 | 53,6 % | 18,0 % | 22,0 |
+| sezóna 1 | 57,0 % | 22,2 % | 19,9 |
+| sezóna 2 | 57,2 % | 30,0 % | 21,9 |
+| sezóna 3 | 52,8 % | 27,8 % | 22,0 |
 
-Čtení: dovednostní žebřík ★ je monotónní s rozpětím 39 procentních bodů. **★★ vyžaduje čtení znaků** — skok z 4,2 % na 13,6 % je celý rozdíl mezi „hraju pořádně" a „hraju s informací". Kariéra mírně klesá, růst brigády se sytí (14 → 22) a nepřerůstá. Pro srovnání: Balatro má výhru na základní sázce 64,9 % a na zlaté 6,8 %.
+Čtení: dovednostní žebřík je monotónní na ★ i na ★★, s rozpětím 43 procentních bodů. **★★ vyžaduje čtení znaků** — skok z 10,8 % na 26,4 % je celý rozdíl mezi „hraju pořádně" a „hraju s informací". Kariéra mírně klesá, růst brigády se sytí (14 → 22) a nepřerůstá. Pro srovnání: Balatro má výhru na základní sázce 64,9 % a na zlaté 6,8 %.
 
 **Tři skutečné ladicí páky** (vše ostatní je jeden ciferník obtížnosti v mnoha maskách):
 1. **základní konstanta 9,5** — vzdálenost průměrné kvality od laťky, hlavní kalibrace

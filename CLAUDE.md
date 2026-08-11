@@ -41,7 +41,7 @@ Phase 1 must create exactly these scripts in `package.json`. Do not rename them.
 1. **The engine is pure.** Nothing under `src/engine/` may use `Math.random()`, `Date.now()`, `window`, or any DOM/React API. It is `(state, action, rng) → newState` and nothing else. This is what makes the game seed-reproducible and testable.
 2. **No magic numbers.** Every tunable lives in `src/engine/constants.ts` as one frozen object. If a number appears anywhere else, it is a bug.
 3. **Never change a constant without re-running the simulation.** Change `sim-final.js` first, run `node sim-final.js 500`, confirm the skill ladder still holds, then update `constants.ts` and the golden test expectations together, in one commit.
-4. **Golden tests are a gate, not a formality.** `pnpm test:golden` must stay green. Do not start UI work in Phase 3 until Phase 2 tests pass.
+4. **Golden tests are a gate, not a formality.** `pnpm test:golden` must stay green **and non-empty** — `it.todo` counts as failure, a green-but-empty gate is worse than a red one. Do not start UI work in Phase 3 until Phase 2 tests pass. Only the RNG stream must match `sim-final.js` bit-exactly; star rates are statistical, ±3 pp over 500 seasons (PRD §8.2).
 5. **Never touch `design/support.js`.** Vendored third-party runtime, no licence, excluded from tsconfig/eslint/prettier. Nothing in `src/` may import it, and none of its patterns (`DCLogic`, `renderVals()`, `<x-dc>`, `<sc-for>`, `<sc-if>`) may be copied into the app.
 6. **Never lie to the player with numbers.** No hidden difficulty adjustment. If the game helps, it says so on screen.
 7. **Compute before you animate.** Service results are calculated and persisted first; the reveal is a replay. Closing the tab mid-animation must lose nothing.
@@ -66,7 +66,7 @@ Czech in the UI, English in the code. Do not invent alternatives.
 | laťka | `bar` | the moving Lambert threshold — the most important number |
 | kvalita talíře | `plateQuality` / `q` | per-course, per-wave score |
 | vada | `defect` | `q < bar` |
-| hvězdný talíř | `starPlate` | `q >= bar + 8.5` |
+| hvězdný talíř | `starPlate` | `q >= bar + 7.5` |
 | ruka | `hand` | 1–5, the only skill number |
 | domovský post | `homeStation` | `+1` hand at home, `−1` away |
 | post | `station` | `cold` · `fire` · `sauce` · `dessert` |

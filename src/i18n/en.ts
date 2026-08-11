@@ -84,6 +84,8 @@ export const en = {
   'intervention.push.cost': 'Costs one of five brass tokens for the season.',
 
   // --- traits ---------------------------------------------------------------
+  'trait.none.name': 'No trait',
+  'trait.none.desc': 'Nothing special. Cooks exactly the way the numbers say.',
   'trait.nozirka.name': 'Knife hand',
   'trait.nozirka.desc': 'Alone on a station she cooks 2 better. With a helper, 2 worse.',
   'trait.sampion.name': 'Champion',

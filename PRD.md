@@ -49,7 +49,7 @@ This is verified, not asserted. Measured over 500 seasons per policy:
 
 1. A full 40-evening season is playable start to finish without a crash or dead end.
 2. Monday planning → evening decision → service reveal → consequence loop, at 40–60 s per evening.
-3. The scoring engine reproduces `sim-final.js` **exactly** (golden tests, §8.2).
+3. The scoring engine reproduces the measured skill ladder of `sim-final.js` within ±3 pp (golden tests, §8.2). Note: **only the RNG stream is bit-exact** — see §8.2 for what "match the simulation" does and does not mean.
 4. Hidden inspector with correctly calibrated Bayesian suspicion, three mid-season verdicts, final Lambert letter.
 5. Save/resume via `localStorage` after every evening, including RNG state.
 6. Full CZ + EN localisation, switchable at runtime.
@@ -250,7 +250,9 @@ Thresholds are **relative to the bar**, never absolute:
 |---|---|
 | defect | `Q < bar` |
 | passed | `Q >= bar` |
-| star plate | `Q >= bar + 8.5` |
+| star plate | `Q >= bar + 7.5` |
+
+*(Verified: at 8.5 the two-star ladder inverts — weekly menu revision scores **worse** than no revision, 4.2 % vs 4.6 %. At 7.5 it is monotone: 0.8 → 4.4 → 10.8 → 26.4. `sim-final.js` default is 7.5 and it wins.)*
 
 The star-plate ceiling is **unreachable by menu construction alone**. The game must state this in week 1 through a character line: *"Bez rizika se hvězdný talíř neuvaří. Nikdy."*
 
@@ -749,7 +751,7 @@ Contrast `--ink` on `--bg` ≈ 14:1. Colour is never the only signal — defects
 Build in this order. **Do not start a phase before the previous one's exit criteria pass.**
 
 ### Phase 1 — Setup & engine skeleton
-1. `pnpm create vite` (react-ts), add Zustand, Vitest, `@fontsource` packages, `vite-plugin-singlefile`. Create exactly the `package.json` scripts listed in `CLAUDE.md` — do not rename them. Exclude `design` and `docs` in `tsconfig.json`, `.eslintignore` and `.prettierignore`.
+1. `pnpm create vite` (react-ts), add Zustand, Vitest, `@fontsource` packages, `vite-plugin-singlefile`. Create exactly the `package.json` scripts listed in `CLAUDE.md` — do not rename them. Exclude `design` and `docs` in `tsconfig.json`, in the ESLint flat config (`eslint.config.js` — ESLint 9 no longer reads `.eslintignore`) and in `.prettierignore`.
 2. `tsconfig` with `strict`, `noUncheckedIndexedAccess`.
 3. Create the full folder structure from §2.3 with stub files.
 4. Implement `rng.ts` (mulberry32 with serialisable state), `constants.ts` (every number from §3, frozen), `types.ts` (all of §4).
@@ -807,10 +809,28 @@ Build in this order. **Do not start a phase before the previous one's exit crite
 - [ ] Second run has a different brigade and catalogue from the first.
 
 ### 8.2 Engine correctness — hard gate
+
+**What "matching `sim-final.js`" means.** The simulation is a *balance reference*, not a bit-for-bit oracle. Three deliberate divergences already exist, all introduced by this PRD and all expected:
+
+| Divergence | Spec | `sim-final.js` |
+|---|---|---|
+| harmony | neighbour rule, ±2.0 (§3.6) | static per-course value |
+| inspector visits | one per third of the season, never evening 40 (§3.8) | uniform over all 40 |
+| signals | 4 correlating + 5 decoys at LR 1.0 (§3.8) | 4 correlating only |
+
+Therefore:
+
+- **Bit-exact:** the RNG stream only. Same seed → identical sequence. Non-negotiable.
+- **Statistical (±3 pp over 500 seasons):** the star rates below. This is the real gate.
+
+If a divergence pushes a rate outside the band, **report it — do not tune constants to force a fit.** A shifted ladder is a finding about the design, not a bug in the test.
+
 - [ ] `golden.test.ts` reproduces, within ±3 pp over 500 seasons:
       `NAIVE ★18.0/★★0.8 · ROTA ★36.8/★★4.4 · REVISE ★46.8/★★10.8 · SMART ★60.6/★★26.4`
+- [ ] The ladder is **monotone** on both ★ and ★★ — each policy beats the one below it. (This is why the star-plate threshold is `bar + 7.5`, not 8.5: at 8.5 weekly menu revision scores *worse* on ★★ than no revision.)
+- [ ] **No `it.todo` in `golden.test.ts`, `bayes.test.ts` or `edge.test.ts`.** A green-but-empty gate is worse than a red one. `pnpm test:golden` must report passing assertions, not skipped ones.
 - [ ] `bayes.test.ts`: suspicion calibration within ±1 pp; AUC ≥ 0.87.
-- [ ] Career over 3 seasons shows a mild decline, not a runaway (`★ ≈ 57 / 57 / 53`, `Σhand 14 → ~22`).
+- [ ] Career over 3 seasons shows a mild decline, not a runaway (`★ ≈ 57 / 57 / 53`, `★★ ≈ 22 / 30 / 28`, `Σhand 14 → ~22`).
 - [ ] No `Math.random()`, no `Date.now()`, no DOM access anywhere under `src/engine/`.
 
 ### 8.3 Quality
