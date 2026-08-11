@@ -17,6 +17,26 @@ import Verdict from './screens/Verdict';
 /** Screens where the tab bar would be a way to walk out of a decision. */
 const WITHOUT_TABS = new Set(['onboarding', 'service', 'consequence', 'monday', 'verdict']);
 
+/** Screens with a fixed CTA pinned to the bottom. */
+const WITH_CTA = new Set([
+  'onboarding',
+  'pas',
+  'service',
+  'consequence',
+  'monday',
+  'menu',
+  'verdict',
+]);
+
+/**
+ * Measured heights of the two things that can be pinned to the bottom. The CTA
+ * and the tab bar used to occupy the same space — the CTA sat on top of the nav
+ * and over the last row of content. Now the frame reserves room for whatever is
+ * actually there, and the CTA offsets itself above the nav.
+ */
+const NAV_HEIGHT = 56;
+const CTA_HEIGHT = 86;
+
 /**
  * The shell. CLAUDE.md rule 9: no component holds a literal — every string here
  * and below goes through `t()`, and `tests/i18n.test.ts` fails the build if one
@@ -60,8 +80,13 @@ export default function App(): React.JSX.Element {
     }
   };
 
+  const bottom = {
+    '--bottom-nav': `${WITHOUT_TABS.has(screen) ? 0 : NAV_HEIGHT}px`,
+    '--bottom-cta': `${WITH_CTA.has(screen) ? CTA_HEIGHT : 0}px`,
+  } as React.CSSProperties;
+
   return (
-    <main className="frame">
+    <main className="frame" style={bottom}>
       <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
         <button
           type="button"

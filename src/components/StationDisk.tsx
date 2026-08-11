@@ -120,10 +120,14 @@ export default function StationDisk({ setup, station, onPickCook }: Props): Reac
               {setup.viable ? `${percent}%` : '—'}
             </span>
           </div>
-          {/* Labelled, never a bare `4/2,0`. FR-1 item 4. */}
-          <div className="mono muted" style={{ fontSize: 'var(--fs-small)', marginTop: 2 }}>
-            {t('pas.load')} {formatNumber(setup.load, 0)} / {t('pas.capacity')}{' '}
-            {formatNumber(setup.capacity, 1)}
+          {/* Labelled, never a bare `4/2,0` (FR-1 item 4) — but the words sit
+              above the numbers rather than between them, so the figure stops
+              wrapping mid-phrase in a half-width card. */}
+          <div className="label" style={{ fontSize: 'var(--fs-micro)', marginTop: 3 }}>
+            {t('pas.load')} / {t('pas.capacity')}
+          </div>
+          <div className="mono muted" style={{ fontSize: 'var(--fs-small)' }}>
+            {formatNumber(setup.load, 0)} / {formatNumber(setup.capacity, 1)}
           </div>
 
           <div

@@ -33,7 +33,7 @@ export default function Brigade(): React.JSX.Element | null {
                   {t('cook.wear')} {formatNumber(cook.wear, 1)}
                 </div>
               </div>
-              <div style={{ width: 132 }}>
+              <div style={{ width: 150 }}>
                 <CookTriptych cook={cook} />
               </div>
             </div>

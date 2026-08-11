@@ -59,6 +59,14 @@ function looksLikeGame(value: unknown): value is GameState {
     typeof game.rngState === 'number' &&
     typeof game.eveningIndex === 'number' &&
     Array.isArray(game.cooks) &&
+    // Every cook must carry its declined name forms; a save from before they
+    // existed is archived and restarted rather than rendering "undefined".
+    game.cooks.every(
+      (cook: unknown) =>
+        typeof cook === 'object' &&
+        cook !== null &&
+        typeof (cook as { lastNameIns?: unknown }).lastNameIns === 'string',
+    ) &&
     Array.isArray(game.catalogue) &&
     Array.isArray(game.menu) &&
     Array.isArray(game.visitEvenings) &&

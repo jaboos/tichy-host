@@ -47,7 +47,8 @@ Phase 1 must create exactly these scripts in `package.json`. Do not rename them.
 6. **Never lie to the player with numbers.** No hidden difficulty adjustment. If the game helps, it says so on screen.
 7. **Compute before you animate.** Service results are calculated and persisted first; the reveal is a replay. Closing the tab mid-animation must lose nothing.
 8. **Twelve gameplay concepts, no more.** Listed in `TICHY-HOST-v4-FINAL.md` §14. A thirteenth belongs in a later phase.
-9. **Bilingual from the first screen.** The game ships CZ **and** EN. Every user-visible string goes through `t()` from day one — never write a literal into a component and plan to extract it later. `tests/i18n.test.ts` enforces this and must stay green.
+9. **A test that can pass on empty output is not a test.** Two ways this has already happened: `it.todo` in a gate, and a render test that green-lit an empty string because Zustand returns `getInitialState()` under SSR. Every render assertion must name something concrete that has to be on screen — a cook's surname, a specific label — never just "it rendered". Assert presence, not absence of a crash.
+10. **Bilingual from the first screen.** The game ships CZ **and** EN. Every user-visible string goes through `t()` from day one — never write a literal into a component and plan to extract it later. `tests/i18n.test.ts` enforces this and must stay green.
 
 ## Code conventions
 
@@ -92,6 +93,9 @@ Czech in the UI, English in the code. Do not invent alternatives.
 | kód kuchyně | `seed` | **never write "seed" in the UI** — it is developer vocabulary and not one of the twelve concepts |
 
 ## Definition of done for any task
+
+**A phase is not done until the app has been opened in a browser and clicked through.** Tests never open a window: they passed while the main CTA sat on top of the tab bar, while four of six interventions silently auto-targeted, and while the assignment picker was three-quarters disabled. `pnpm dev`, walk one week, then report.
+
 
 `pnpm typecheck` clean · `pnpm test` green · no new `any` in the engine · no new magic numbers · no console errors in the browser.
 

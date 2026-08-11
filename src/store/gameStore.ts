@@ -28,12 +28,18 @@ import {
   type EveningOpening,
 } from '../engine/season';
 import { createStartingBrigade } from '../engine/draft';
-import { setLang as setI18nLang } from '../i18n';
+import { computeBar } from '../engine/bar';
+import { buildSetups } from '../engine/service';
+import { computeHarmony, stationOdds, type EveningContext } from '../engine/plate';
+import { formatNumber, formatPercent, setLang as setI18nLang, t } from '../i18n';
 import * as persistence from './persistence';
 import { STATIONS } from '../engine/types';
 import type {
   Assignment,
+  Cook,
   CookRole,
+  Course,
+  InterventionId,
   GameState,
   Intervention,
   Lang,
@@ -67,14 +73,20 @@ export type RefusalKey =
 /** Where a cook can stand. Rest is a place like any other, never a gesture. */
 export type Placement = Station | 'rest';
 
+/**
+ * A station is exactly one of three rows — PRD §3.1 FR-1a item 4. An occupied
+ * station does not refuse, it offers a swap, and a swap never changes how many
+ * leads or helpers exist, so the cap of two helpers can never block one. That is
+ * what removes the dead rows: every station is always actionable.
+ */
+export type PlacementKind = 'lead' | 'helper' | 'swap' | 'rest';
+
 export interface PlacementOption {
   target: Placement;
-  /** What the cook would become there. null for rest. */
-  role: CookRole | null;
+  kind: PlacementKind;
   current: boolean;
-  disabled: boolean;
-  /** Shown ON the disabled option, so a refusal is never silent. FR-1a item 4. */
-  reasonKey: 'pas.reasonStationFull' | 'pas.reasonHelpersFull' | null;
+  /** For a swap: the cook who moves the other way, in the instrumental. */
+  swapWith: Cook | null;
 }
 
 export function placementOf(
@@ -88,54 +100,184 @@ export function placementOf(
   return { target: 'rest', role: null };
 }
 
-/**
- * The five options under a cook row: four stations and Volno. Nothing is hidden —
- * an option the rules forbid is present, disabled, and carries its reason.
- */
-export function placementOptions(assignment: Assignment, cookId: string): PlacementOption[] {
+/** Five rows, all live: the four stations and Volno. Nothing is ever disabled. */
+export function placementOptions(
+  assignment: Assignment,
+  cooks: readonly Cook[],
+  cookId: string,
+): PlacementOption[] {
   const here = placementOf(assignment, cookId);
   const helperCount = STATIONS.filter(
     (station) => assignment.helpers[station] !== null && assignment.helpers[station] !== cookId,
   ).length;
 
   const options: PlacementOption[] = STATIONS.map((station) => {
-    const leadFree = assignment.leads[station] === null || assignment.leads[station] === cookId;
-    const helperFree =
-      assignment.helpers[station] === null || assignment.helpers[station] === cookId;
+    const lead = assignment.leads[station];
+    const helper = assignment.helpers[station];
     const current = here.target === station;
 
-    if (leadFree) {
-      return { target: station, role: 'lead', current, disabled: false, reasonKey: null };
+    if (lead === null || lead === cookId) {
+      return { target: station, kind: 'lead', current, swapWith: null };
     }
-    if (!helperFree) {
-      return {
-        target: station,
-        role: null,
-        current,
-        disabled: true,
-        reasonKey: 'pas.reasonStationFull',
-      };
+    if ((helper === null || helper === cookId) && helperCount < C.planning.maxHelpers) {
+      return { target: station, kind: 'helper', current, swapWith: null };
     }
-    if (helperCount >= C.planning.maxHelpers) {
-      return {
-        target: station,
-        role: null,
-        current,
-        disabled: true,
-        reasonKey: 'pas.reasonHelpersFull',
-      };
-    }
-    return { target: station, role: 'helper', current, disabled: false, reasonKey: null };
+    // Both slots spoken for, or the helper cap is reached: trade places with the
+    // lead. Counts stay identical, so this is always legal.
+    return {
+      target: station,
+      kind: 'swap',
+      current,
+      swapWith: cooks.find((cook) => cook.id === lead) ?? null,
+    };
   });
 
-  options.push({
-    target: 'rest',
-    role: null,
-    current: here.target === 'rest',
-    disabled: false,
-    reasonKey: null,
-  });
+  options.push({ target: 'rest', kind: 'rest', current: here.target === 'rest', swapWith: null });
   return options;
+}
+
+// ---------------------------------------------------------------------------
+// Interventions — PRD §3.5. One flow for all six: expand, name the targets,
+// show the effect, confirm. A tap never both chooses and commits.
+// ---------------------------------------------------------------------------
+
+export interface InterventionTarget {
+  /** What `Intervention` needs: a cook, a station or a course. */
+  value: Intervention;
+  /** Named, always — even when there is only one legal target. */
+  label: string;
+  /** The effect in units the player already reads off the screen. */
+  effect: string;
+  /** A second line, where the offer has a cost worth stating separately. */
+  note?: string;
+}
+
+function eveningContextFor(
+  game: GameState,
+  menu: readonly Course[],
+  weekIndex: number,
+  pushedStation: Station | null,
+): EveningContext {
+  return {
+    menu,
+    harmony: computeHarmony(menu),
+    weekIndex,
+    eveningIndex: game.eveningIndex,
+    pushedStation,
+    scoldedStation: null,
+    premium: game.weekPlan.premiumIngredients,
+    trialEvening: game.weekPlan.trialEveningsLeft > 0,
+    bar: computeBar(menu, weekIndex, game.reputation, game.seasonNumber),
+  };
+}
+
+/**
+ * The legal targets for one intervention, each named and each carrying its effect
+ * in units the player already reads off the screen — PRD §3.5. Nothing picks its
+ * own target: a screen that silently chooses for the player is not a decision.
+ */
+export function interventionTargets(
+  id: InterventionId,
+  game: GameState,
+  draft: Assignment,
+  menu: readonly Course[],
+  weekIndex: number,
+): InterventionTarget[] {
+  const byId = new Map(game.cooks.map((cook) => [cook.id, cook]));
+  const wearAfter = (cook: Cook, delta: number): string =>
+    formatNumber(Math.max(C.wear.min, Math.min(C.wear.max, cook.wear + delta)), 1);
+  const staffed = STATIONS.filter((station) => draft.leads[station] !== null);
+
+  switch (id) {
+    case 'praise':
+      return game.cooks
+        .filter((cook) => !draft.resting.includes(cook.id))
+        .map((cook) => ({
+          value: { id, cookId: cook.id },
+          label: cook.lastName,
+          effect: t('iv.effectPraise', {
+            name: cook.lastName,
+            from: formatNumber(cook.wear, 1),
+            to: wearAfter(cook, C.intervention.praiseWear),
+          }),
+        }));
+
+    case 'scold':
+      return staffed.map((station) => {
+        const lead = byId.get(draft.leads[station] ?? '');
+        return {
+          value: { id, station },
+          label: t(`station.${station}`),
+          effect: t('iv.effectScold', {
+            station: t(`station.${station}`),
+            q: formatNumber(C.intervention.scoldQuality, 1),
+            name: lead?.lastName ?? '',
+            from: lead === undefined ? '—' : formatNumber(lead.wear, 1),
+            to: lead === undefined ? '—' : wearAfter(lead, C.intervention.scoldWear),
+          }),
+        };
+      });
+
+    case 'push': {
+      const setups = buildSetups(game.cooks, draft, menu);
+      return staffed.map((station) => {
+        const before = stationOdds(
+          station,
+          setups[station],
+          eveningContextFor(game, menu, weekIndex, null),
+        );
+        const after = stationOdds(
+          station,
+          setups[station],
+          eveningContextFor(game, menu, weekIndex, station),
+        );
+        return {
+          value: { id, station },
+          label: t(`station.${station}`),
+          // Both sides of the offer, always. PRD §3.5.
+          effect: t('iv.effectPush', {
+            station: t(`station.${station}`),
+            starFrom: formatPercent(before.star),
+            starTo: formatPercent(after.star),
+            defectFrom: formatPercent(before.defect),
+            defectTo: formatPercent(after.defect),
+          }),
+          note: t('iv.effectPushCost', { n: game.pushTokens - 1 }),
+        };
+      });
+    }
+
+    case 'cutCourse':
+      return menu.map((course) => ({
+        value: { id, courseId: course.id },
+        label: t(course.nameKey),
+        effect: t('iv.effectCut', { course: t(course.nameKey) }),
+      }));
+
+    case 'deferRest':
+      return game.cooks
+        .filter((cook) => draft.resting.includes(cook.id))
+        .map((cook) => ({
+          value: { id, cookId: cook.id },
+          label: cook.lastName,
+          effect: t('iv.effectDefer', { name: cook.lastName }),
+        }));
+
+    case 'swap':
+      return game.cooks
+        .filter((cook) => !draft.resting.includes(cook.id))
+        .map((cook) => {
+          const station = placementOf(draft, cook.id).target;
+          return {
+            value: { id, cookId: cook.id },
+            label: cook.lastName,
+            effect: t('iv.effectSwap', {
+              name: cook.lastName,
+              station: station === 'rest' ? t('pas.resting') : t(`station.${station}`),
+            }),
+          };
+        });
+  }
 }
 
 interface Store {
@@ -146,6 +288,10 @@ interface Store {
   /** The assignment the player is editing, before service starts. */
   draft: Assignment;
   intervention: Intervention | null;
+  /** Which intervention is expanded. Expanding is not choosing (§3.5 step 1). */
+  interventionOpen: InterventionId | null;
+  /** A named target the player has picked but not yet confirmed (§3.5 step 3). */
+  interventionPick: Intervention | null;
   /** Which cook row has its picker open. There is no invisible selection. */
   expandedCookId: string | null;
   focusCookId: string | null;
@@ -164,7 +310,10 @@ interface Store {
   placeCook: (cookId: string, target: Placement) => void;
   openCookCard: (cookId: string) => void;
 
-  setIntervention: (intervention: Intervention | null) => void;
+  openIntervention: (id: InterventionId | null) => void;
+  pickInterventionTarget: (target: Intervention | null) => void;
+  confirmIntervention: () => void;
+  clearIntervention: () => void;
   startService: () => void;
   finishReveal: () => void;
   nextEvening: () => void;
@@ -221,6 +370,8 @@ export const useGame = create<Store>((set, get) => ({
   lastResult: null,
   draft: EMPTY_DRAFT,
   intervention: null,
+  interventionOpen: null,
+  interventionPick: null,
   expandedCookId: null,
   focusCookId: null,
   refusal: null,
@@ -286,6 +437,8 @@ export const useGame = create<Store>((set, get) => ({
       draft: opened.draft,
       lastResult: null,
       intervention: null,
+      interventionOpen: null,
+      interventionPick: null,
       expandedCookId: null,
       refusal: null,
     });
@@ -316,48 +469,73 @@ export const useGame = create<Store>((set, get) => ({
    * refuse — but if it ever does, it says why rather than doing nothing.
    */
   placeCook: (cookId, target) => {
-    const { draft } = get();
+    const { draft, game } = get();
+    if (game === null) return;
+
+    const from = placementOf(draft, cookId);
     const leads = { ...draft.leads };
     const helpers = { ...draft.helpers };
     let resting = draft.resting.filter((id) => id !== cookId);
 
-    for (const station of STATIONS) {
-      if (leads[station] === cookId) leads[station] = null;
-      if (helpers[station] === cookId) helpers[station] = null;
-    }
+    // Who is standing where, captured before anything moves.
+    const displacedLead = target === 'rest' ? null : leads[target];
+    const helperCount = STATIONS.filter(
+      (station) => helpers[station] !== null && helpers[station] !== cookId,
+    ).length;
+
+    const clear = (id: string): void => {
+      for (const station of STATIONS) {
+        if (leads[station] === id) leads[station] = null;
+        if (helpers[station] === id) helpers[station] = null;
+      }
+    };
+    clear(cookId);
 
     if (target === 'rest') {
       resting = [...resting, cookId];
-    } else if (leads[target] === null) {
+    } else if (displacedLead === null || displacedLead === cookId) {
       leads[target] = cookId;
-    } else {
-      const helperCount = STATIONS.filter((s) => helpers[s] !== null).length;
-      if (helpers[target] !== null) {
-        set({ refusal: 'refusal.thirdHelper', expandedCookId: null });
-        return;
-      }
-      if (helperCount >= C.planning.maxHelpers) {
-        set({ refusal: 'refusal.thirdHelper', expandedCookId: null });
-        return;
-      }
+    } else if (
+      (helpers[target] === null || helpers[target] === cookId) &&
+      helperCount < C.planning.maxHelpers
+    ) {
       helpers[target] = cookId;
+    } else {
+      // Swap: the lead takes whatever this cook was doing, including nothing.
+      clear(displacedLead);
+      leads[target] = cookId;
+      resting = resting.filter((id) => id !== displacedLead);
+      if (from.target === 'rest') resting = [...resting, displacedLead];
+      else if (from.role === 'lead') leads[from.target] = displacedLead;
+      else helpers[from.target] = displacedLead;
     }
 
-    set({
-      draft: { leads, helpers, resting },
-      expandedCookId: null,
-      refusal: null,
-    });
+    set({ draft: { leads, helpers, resting }, expandedCookId: null, refusal: null });
   },
 
-  setIntervention: (intervention) => {
+  openIntervention: (id) => {
     const game = get().game;
-    if (intervention?.id === 'push' && game !== null && game.pushTokens <= 0) {
-      set({ refusal: 'refusal.noTokens' });
+    // A push with no token left is the one genuinely impossible case.
+    if (id === 'push' && game !== null && game.pushTokens <= 0) {
+      set({ refusal: 'refusal.noTokens', interventionOpen: null, interventionPick: null });
       return;
     }
-    set({ intervention, refusal: null });
+    set({ interventionOpen: id, interventionPick: null, refusal: null });
   },
+
+  /** Choosing a target shows its effect. It does not commit. */
+  pickInterventionTarget: (target) => set({ interventionPick: target, refusal: null }),
+
+  /** The second tap. */
+  confirmIntervention: () => {
+    const pick = get().interventionPick;
+    if (pick === null) return;
+    set({ intervention: pick, interventionOpen: null, interventionPick: null, refusal: null });
+  },
+
+  /** Tapping away cancels without losing the intervention already confirmed. */
+  clearIntervention: () =>
+    set({ intervention: null, interventionOpen: null, interventionPick: null, refusal: null }),
 
   startService: () => {
     const { game, opening, draft, intervention } = get();
@@ -378,6 +556,8 @@ export const useGame = create<Store>((set, get) => ({
       screen: 'service',
       opening: null,
       intervention: null,
+      interventionOpen: null,
+      interventionPick: null,
       expandedCookId: null,
     });
   },

@@ -72,7 +72,7 @@ export default function Onboarding(): React.JSX.Element {
                   {t(`station.${cook.homeStation}`)}
                 </div>
               </div>
-              <div style={{ width: 132 }}>
+              <div style={{ width: 150 }}>
                 <CookTriptych cook={cook} />
               </div>
             </div>

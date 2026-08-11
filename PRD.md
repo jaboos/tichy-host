@@ -216,7 +216,17 @@ Build it the other way round — **the cook is what you touch, the station is wh
 1. Every `CookRow` carries its current placement on the right as a chip: `Omáčky · vedoucí` · `Oheň · pomocník` · `Volno`. There is no state in which a cook's placement is unknown or invisible.
 2. Tapping the row expands an **inline picker directly beneath it** — not a modal, not a sheet that covers the screen. Five options: the four stations plus **Volno**. The current one is marked.
 3. **Removal is just choosing Volno.** It is a visible option with a name, never a gesture to be discovered.
-4. Unavailable options are shown **disabled with the reason on them** — `Oheň · už jsou tam dva` — never hidden and never silently ignored.
+4. **Occupied stations offer a swap, not a refusal.** The kitchen starts fully staffed, so a picker that only offers empty slots is dead on arrival — playtested: three of four rows disabled, and nobody could move until somebody else moved first. Each station therefore renders as exactly one of:
+
+   | Situation | Row reads |
+   |---|---|
+   | lead slot free | `Oheň · jako vedoucí` |
+   | lead taken, helper slot free and under the cap | `Oheň · jako pomocník` |
+   | both taken | `Oheň · prohodit s Rybou` — swaps the two cooks' placements |
+
+   A swap changes no counts, so it is never blocked by the two-helper cap. To reach a helper specifically, tap that helper's name on the station card, which opens their own picker. This keeps the list at five rows and still reaches every reachable state.
+
+5. Genuinely unavailable options are shown **disabled with the reason on them** — never hidden and never silently ignored. Reasons wrap; chips on this screen may not use `white-space: nowrap`, playtested overflowing the card at 390 px.
 5. Choosing an option collapses the picker and updates the station disks immediately.
 6. The station disks stay read-only display: load, colour ramp, who is there. Tapping a name chip on a disk opens **that cook's** picker, so the gesture from the mockup still does something sensible instead of nothing.
 7. Drag from a cook row onto a station disk remains as an optional accelerator on pointer devices. It is never the only path.
@@ -341,6 +351,15 @@ All numbers above live in `src/engine/constants.ts` as a single exported frozen 
 | `cutCourse` | Škrtnout chod | remove one course tonight; it **counts as a defect** |
 | `deferRest` | Odložit volno | cancel tonight's rest ticket, return it later (queue cap 2) |
 | `push` | **Přitlačit** | `+2.5` Q on one station, variance `×2.2`, `+2.0` wear to its lead |
+
+**Every intervention names its target and shows its effect before it is committed. None of them may pick a target silently.** Playtested regression: all six auto-selected a target and said nothing, which turns the one decision of the evening into theatre. Required flow, identical for all six:
+
+1. Tap the intervention → it expands, it does **not** commit.
+2. It lists the legal targets by name — cooks for `praise` / `scold`, stations for `push`, courses for `cutCourse`, the planned rest for `deferRest`, both endpoints for `swap`.
+3. Selecting a target shows the effect in one line, in the same units the player already reads: `Ryba · opotřebení 6,2 → 4,7`.
+4. A second tap commits. Before that, tapping elsewhere cancels with nothing spent.
+
+If an intervention has exactly one legal target, still name it — `Přitlačit · Omáčky` — never leave the player guessing which one the game chose.
 
 **Přitlačit costs one of five brass tokens per season.** Token count is displayed permanently. Exhaustibility is what turns a threshold rule into a decision: the right answer depends on how many tokens and how many evenings remain.
 

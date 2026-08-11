@@ -9,7 +9,8 @@
  *   · the row always shows where this cook stands — there is no unknown state
  *   · tapping the row opens an inline picker directly beneath it, not a modal
  *   · removal is just choosing Volno, a named option rather than a gesture
- *   · illegal options are shown disabled WITH their reason, never hidden
+ *   · an occupied station offers a SWAP rather than a refusal, so every one of
+ *     the five rows is always actionable (FR-1a item 4)
  */
 import { C } from '../engine/constants';
 import { getTrait } from '../data/traits';
@@ -20,6 +21,8 @@ import type { Assignment, Cook } from '../engine/types';
 
 interface Props {
   cook: Cook;
+  /** The whole brigade, so a swap row can name the cook standing there. */
+  cooks: readonly Cook[];
   assignment: Assignment;
   expanded: boolean;
   onToggle: () => void;
@@ -29,6 +32,7 @@ interface Props {
 
 export default function CookRow({
   cook,
+  cooks,
   assignment,
   expanded,
   onToggle,
@@ -86,36 +90,32 @@ export default function CookRow({
             style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6, marginTop: 6 }}
             role="group"
           >
-            {placementOptions(assignment, cook.id).map((option) => {
-              const label =
+            {placementOptions(assignment, cooks, cook.id).map((option) => {
+              const where =
                 option.target === 'rest' ? t('pas.resting') : t(`station.${option.target}`);
-              const suffix = option.current
+              const how = option.current
                 ? t('pas.here')
-                : option.reasonKey !== null
-                  ? t(option.reasonKey)
-                  : option.role === 'helper'
-                    ? t('pas.helper')
-                    : option.role === 'lead'
-                      ? t('pas.lead')
+                : option.kind === 'lead'
+                  ? t('pas.asLead')
+                  : option.kind === 'helper'
+                    ? t('pas.asHelper')
+                    : option.kind === 'swap'
+                      ? t('pas.swapWith', { name: option.swapWith?.lastNameIns ?? '' })
                       : '';
               return (
                 <button
                   key={option.target}
                   type="button"
-                  disabled={option.disabled}
                   className={option.current ? 'chip chip--brass tap' : 'chip tap'}
-                  style={{
-                    justifyContent: 'space-between',
-                    gap: 6,
-                    opacity: option.disabled ? 0.45 : 1,
-                    cursor: option.disabled ? 'not-allowed' : 'pointer',
-                  }}
+                  style={{ flexDirection: 'column', alignItems: 'flex-start', gap: 2 }}
                   onClick={() => onPlace(option.target)}
                 >
-                  <span>{label}</span>
-                  <span className="label" style={{ fontSize: 'var(--fs-micro)' }}>
-                    {suffix}
-                  </span>
+                  <span>{where}</span>
+                  {how === '' ? null : (
+                    <span className="label" style={{ fontSize: 'var(--fs-micro)' }}>
+                      {how}
+                    </span>
+                  )}
                 </button>
               );
             })}

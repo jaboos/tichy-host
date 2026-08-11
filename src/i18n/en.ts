@@ -315,7 +315,22 @@ export const en = {
   'pas.addHelper': '+ helper',
   'pas.placement': 'Where they stand',
   'pas.tapRow': 'Tap a cook and choose where they stand tonight.',
-  'pas.reasonStationFull': 'station is taken',
-  'pas.reasonHelpersFull': 'already two there',
   'pas.here': 'here',
+
+  // --- placement and interventions, FR-1a item 4 and §3.5 -------------------
+  'pas.asLead': 'as lead',
+  'pas.asHelper': 'as helper',
+  'pas.swapWith': 'swap with {name}',
+  'iv.pickTarget': 'Choose a target',
+  'iv.confirm': 'Confirm',
+  'iv.cancel': 'Cancel',
+  'iv.noTargets': 'nobody to pick',
+  'iv.effectPraise': '{name} · wear {from} → {to}',
+  'iv.effectScold': '{station} · quality +{q} · {name} wear {from} → {to}',
+  'iv.effectPush':
+    '{station} · star plate {starFrom} → {starTo} · defect {defectFrom} → {defectTo}',
+  'iv.effectPushCost': 'Costs a token. {n} left.',
+  'iv.effectCut': '{course} · does not leave the pass tonight, counts as a defect',
+  'iv.effectDefer': '{name} · works tonight, the rest returns later',
+  'iv.effectSwap': '{name} · stands at {station} tonight, against the plan',
 } satisfies Record<TKey, string>;

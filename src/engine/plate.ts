@@ -324,3 +324,67 @@ export function computePlateQuality(
   const roll = rng.uniform(C.plate.noiseMin, C.plate.noiseMax);
   return base + roll * noiseWidth(course, setup, evening, wave);
 }
+
+// ---------------------------------------------------------------------------
+// Outcome odds — PRD §3.5. The push must show BOTH sides of the offer.
+// ---------------------------------------------------------------------------
+
+export interface OutcomeOdds {
+  defect: number;
+  star: number;
+}
+
+/**
+ * Exact probabilities for one plate, not a simulation.
+ *
+ * The roll is uniform on [-1, +1] scaled by the noise width, so
+ * `P(q < threshold)` is just where that threshold falls inside the band. Being
+ * exact matters here: this number is shown to the player before they spend a
+ * brass token, and CLAUDE.md rule 6 says the game may not lie with numbers.
+ */
+export function plateOdds(
+  course: Course,
+  courseIndex: number,
+  setup: StationSetup,
+  evening: EveningContext,
+  wave: WaveIndex,
+): OutcomeOdds {
+  if (!setup.viable) return { defect: 1, star: 0 };
+
+  const base = computeBaseQuality(course, courseIndex, setup, evening, wave);
+  const width = noiseWidth(course, setup, evening, wave);
+  const span = width * (C.plate.noiseMax - C.plate.noiseMin);
+  const lowest = base + width * C.plate.noiseMin;
+
+  // Share of the band below a threshold.
+  const shareBelow = (threshold: number): number =>
+    span <= 0 ? (lowest < threshold ? 1 : 0) : clamp((threshold - lowest) / span, 0, 1);
+
+  return {
+    defect: shareBelow(evening.bar),
+    star: 1 - shareBelow(evening.bar + C.outcome.starPlateOffset),
+  };
+}
+
+/** Averaged across every plate a station cooks tonight, both waves. */
+export function stationOdds(
+  station: Station,
+  setup: StationSetup,
+  evening: EveningContext,
+): OutcomeOdds {
+  let defect = 0;
+  let star = 0;
+  let count = 0;
+
+  for (let index = 0; index < evening.menu.length; index += 1) {
+    const course = evening.menu[index];
+    if (course === undefined || course.station !== station) continue;
+    for (const wave of [0, 1] as readonly WaveIndex[]) {
+      const odds = plateOdds(course, index, setup, evening, wave);
+      defect += odds.defect;
+      star += odds.star;
+      count += 1;
+    }
+  }
+  return count === 0 ? { defect: 0, star: 0 } : { defect: defect / count, star: star / count };
+}

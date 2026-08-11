@@ -10,7 +10,19 @@ import { buildSetups } from '../engine/service';
 import { STATIONS, type InterventionId } from '../engine/types';
 import { SIGNALS } from '../data/signals';
 import { t } from '../i18n';
-import { currentMenu, useGame } from '../store/gameStore';
+import { currentMenu, interventionTargets, useGame } from '../store/gameStore';
+import type { Intervention } from '../engine/types';
+
+/** Two intervention targets are the same when they name the same thing. */
+function sameTarget(a: Intervention | null, b: Intervention): boolean {
+  return (
+    a !== null &&
+    a.id === b.id &&
+    a.cookId === b.cookId &&
+    a.station === b.station &&
+    a.courseId === b.courseId
+  );
+}
 import BarIndicator from '../components/BarIndicator';
 import BrassDivider from '../components/BrassDivider';
 import CookRow from '../components/CookRow';
@@ -43,7 +55,12 @@ export default function Pas(): React.JSX.Element | null {
   const refusal = useGame((s) => s.refusal);
   const expandCook = useGame((s) => s.expandCook);
   const placeCook = useGame((s) => s.placeCook);
-  const setIntervention = useGame((s) => s.setIntervention);
+  const interventionOpen = useGame((s) => s.interventionOpen);
+  const interventionPick = useGame((s) => s.interventionPick);
+  const openIntervention = useGame((s) => s.openIntervention);
+  const pickInterventionTarget = useGame((s) => s.pickInterventionTarget);
+  const confirmIntervention = useGame((s) => s.confirmIntervention);
+  const clearIntervention = useGame((s) => s.clearIntervention);
   const startService = useGame((s) => s.startService);
   const openCookCard = useGame((s) => s.openCookCard);
 
@@ -53,6 +70,11 @@ export default function Pas(): React.JSX.Element | null {
   const setups = buildSetups(game.cooks, draft, menu);
   const overloaded = STATIONS.filter((s) => setups[s].overload > 0 || !setups[s].viable);
   const dayKey = DAY_KEYS[opening.eveningInWeek] ?? DAY_KEYS[0];
+
+  const targets =
+    interventionOpen === null
+      ? []
+      : interventionTargets(interventionOpen, game, draft, menu, opening.weekIndex);
 
   const maitre = SIGNALS.filter((definition) =>
     opening.signals.some((signal) => signal.id === definition.id && signal.present),
@@ -122,6 +144,7 @@ export default function Pas(): React.JSX.Element | null {
           <CookRow
             key={cook.id}
             cook={cook}
+            cooks={game.cooks}
             assignment={draft}
             expanded={expandedCookId === cook.id}
             onToggle={() => expandCook(expandedCookId === cook.id ? null : cook.id)}
@@ -143,40 +166,94 @@ export default function Pas(): React.JSX.Element | null {
           type="button"
           className={intervention === null ? 'chip chip--brass tap' : 'chip tap'}
           style={{ justifyContent: 'center' }}
-          onClick={() => setIntervention(null)}
+          onClick={clearIntervention}
         >
           {t('pas.noIntervention')}
         </button>
         {INTERVENTIONS.map((id) => {
-          const active = intervention?.id === id;
-          // Every intervention needs a target; the station ones default to the
-          // station under the most strain, which is what the disks already show.
-          const worst =
-            [...STATIONS].sort((a, b) => setups[b].overload - setups[a].overload)[0] ?? 'sauce';
+          const chosen = intervention?.id === id;
+          const open = interventionOpen === id;
           return (
             <button
               key={id}
               type="button"
-              className={active ? 'chip chip--brass tap' : 'chip tap'}
+              className={chosen || open ? 'chip chip--brass tap' : 'chip tap'}
               style={{ justifyContent: 'center' }}
-              onClick={() =>
-                setIntervention(
-                  active
-                    ? null
-                    : {
-                        id,
-                        station: worst,
-                        cookId: game.cooks[0]?.id,
-                        courseId: menu[menu.length - 1]?.id,
-                      },
-                )
-              }
+              // Step 1: tapping expands. It never confirms.
+              onClick={() => openIntervention(open ? null : id)}
             >
               {t(`intervention.${id}.name`)}
+              {chosen ? ' ✓' : ''}
             </button>
           );
         })}
       </div>
+
+      {interventionOpen !== null ? (
+        <div className="card card--lifted" style={{ marginTop: 8 }}>
+          <p className="quote" style={{ fontSize: 'var(--fs-small)' }}>
+            {t(`intervention.${interventionOpen}.desc`)}
+          </p>
+          <div className="label" style={{ marginTop: 8 }}>
+            {t('iv.pickTarget')}
+          </div>
+
+          {targets.length === 0 ? (
+            <p className="muted" style={{ fontSize: 'var(--fs-small)', marginTop: 6 }}>
+              {t('iv.noTargets')}
+            </p>
+          ) : (
+            <div className="stack" style={{ marginTop: 6, gap: 6 }}>
+              {targets.map((target) => {
+                const picked = sameTarget(interventionPick, target.value);
+                return (
+                  <div key={target.label}>
+                    <button
+                      type="button"
+                      className={picked ? 'chip chip--brass tap' : 'chip tap'}
+                      style={{ width: '100%', justifyContent: 'space-between' }}
+                      // Step 2 names the target, step 3 shows the effect, and the
+                      // SECOND tap on the same target is step 4 — the commit.
+                      onClick={() =>
+                        picked ? confirmIntervention() : pickInterventionTarget(target.value)
+                      }
+                    >
+                      <span>
+                        {t(`intervention.${interventionOpen}.name`)} · {target.label}
+                      </span>
+                      <span className="label" style={{ fontSize: 'var(--fs-micro)' }}>
+                        {picked ? t('iv.confirm') : ''}
+                      </span>
+                    </button>
+
+                    {picked ? (
+                      <div style={{ marginTop: 4, paddingInline: 4 }}>
+                        <div className="mono" style={{ fontSize: 'var(--fs-small)' }}>
+                          {target.effect}
+                        </div>
+                        {target.note === undefined ? null : (
+                          <div className="mono brass" style={{ fontSize: 'var(--fs-small)' }}>
+                            {target.note}
+                          </div>
+                        )}
+                      </div>
+                    ) : null}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          <button
+            type="button"
+            className="chip tap"
+            style={{ marginTop: 10 }}
+            onClick={() => openIntervention(null)}
+          >
+            {t('iv.cancel')}
+          </button>
+        </div>
+      ) : null}
 
       {refusal !== null ? (
         <p className="bad" style={{ fontSize: 'var(--fs-small)', marginTop: 10 }} role="alert">

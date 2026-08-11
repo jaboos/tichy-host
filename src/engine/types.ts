@@ -44,9 +44,14 @@ export interface Desire {
 export interface Cook {
   id: string;
   firstName: string;
-  /** Nominative. Czech surnames also carry an accusative for narrator templates. */
+  /**
+   * Nominative, plus the two declined forms the UI and the narrator actually
+   * need: accusative ("místo Rybu") and instrumental ("prohodit s Rybou").
+   * Czech will not let a surname be concatenated into a sentence undeclined.
+   */
   lastName: string;
   lastNameAcc: string;
+  lastNameIns: string;
   age: number;
   /** 1–5. The only skill number in the game. */
   hand: number;
@@ -76,6 +81,7 @@ export interface CookArchetype {
   firstName: string;
   lastName: string;
   lastNameAcc: string;
+  lastNameIns: string;
   age: number;
   hand: number;
   homeStation: Station;

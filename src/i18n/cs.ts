@@ -312,9 +312,24 @@ export const cs = {
   'pas.addHelper': '+ pomocník',
   'pas.placement': 'Kam patří',
   'pas.tapRow': 'Klepni na kuchaře a vyber, kam dnes patří.',
-  'pas.reasonStationFull': 'post je obsazený',
-  'pas.reasonHelpersFull': 'už jsou tam dva',
   'pas.here': 'tady',
+
+  // --- placement and interventions, FR-1a item 4 and §3.5 -------------------
+  'pas.asLead': 'jako vedoucí',
+  'pas.asHelper': 'jako pomocník',
+  'pas.swapWith': 'prohodit s {name}',
+  'iv.pickTarget': 'Vyber cíl',
+  'iv.confirm': 'Potvrdit',
+  'iv.cancel': 'Zrušit',
+  'iv.noTargets': 'není koho',
+  'iv.effectPraise': '{name} · opotřebení {from} → {to}',
+  'iv.effectScold': '{station} · kvalita +{q} · {name} opotřebení {from} → {to}',
+  'iv.effectPush':
+    '{station} · hvězdný talíř {starFrom} → {starTo} · vada {defectFrom} → {defectTo}',
+  'iv.effectPushCost': 'Stojí žeton. Zbývají {n}.',
+  'iv.effectCut': '{course} · dnes nejde ven, počítá se jako vada',
+  'iv.effectDefer': '{name} · dnes nastoupí, volno se vrátí později',
+  'iv.effectSwap': '{name} · dnes stojí na {station} mimo pondělní rozpis',
 } as const;
 
 /** Every valid translation key. A typo is a compile error. */
