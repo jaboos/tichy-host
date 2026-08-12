@@ -87,6 +87,63 @@ describe('a whole season through the store', () => {
     expect(run()).toBe(run());
   });
 
+  /**
+   * Found by playing forty evenings, not by a test: a ticket dealt in week 2 was
+   * still resting the same cook in week 8. `advanceWeek` defaults the hand to
+   * empty, but Monday handed its own tickets straight back to it, so the default
+   * never fired and one cook rested free for the rest of the season.
+   */
+  it('a rest ticket is spent by the end of its week', () => {
+    useGame.getState().boot();
+    useGame.getState().newGame('Test', '7K3-MAREN');
+    // Week 1 is locked (§3.2), so the first Monday to plan on is week 2's.
+    for (let i = 0; i < C.season.eveningsPerWeek; i += 1) {
+      useGame.getState().startService();
+      useGame.getState().finishReveal();
+      useGame.getState().nextEvening();
+    }
+    expect(useGame.getState().screen).toBe('monday');
+
+    const cook = useGame.getState().game?.cooks[1];
+    expect(cook).toBeDefined();
+    useGame.getState().toggleRestTicket(cook?.id ?? '', 1);
+    expect(useGame.getState().game?.weekPlan.restTickets).toHaveLength(1);
+
+    useGame.getState().lockKitchen();
+    // The ticket survives the week it was dealt for…
+    expect(useGame.getState().game?.weekPlan.restTickets).toHaveLength(1);
+    for (let i = 0; i < C.season.eveningsPerWeek; i += 1) playEvening();
+    // …and is gone by the next Monday, so it cannot rest anybody twice.
+    expect(useGame.getState().game?.weekPlan.restTickets).toHaveLength(0);
+  });
+
+  it('a career runs three seasons and carries the brigade', () => {
+    useGame.getState().boot();
+    useGame.getState().newGame('Test', '7K3-MAREN');
+    for (let season = 1; season <= C.season.seasonsPerCareer; season += 1) {
+      expect(useGame.getState().game?.seasonNumber, `season ${season}`).toBe(season);
+      for (let i = 0; i < C.season.eveningsPerSeason; i += 1) playEvening();
+      expect(useGame.getState().screen).toBe('verdict');
+      const before = useGame.getState().game?.cooks.map((cook) => cook.id);
+      useGame.getState().nextSeason();
+      if (season < C.season.seasonsPerCareer) {
+        expect(useGame.getState().game?.cooks.map((cook) => cook.id)).toEqual(before);
+        expect(useGame.getState().game?.eveningIndex).toBe(0);
+      }
+    }
+    // The fourth call ran off the end of the career and threw the save away.
+    expect(useGame.getState().screen).toBe('onboarding');
+    expect(useGame.getState().game).toBeNull();
+
+    // And it has to survive a reload. Sending the player to onboarding while the
+    // finished season stayed on disk meant one refresh put them back on the
+    // verdict letter with no way out — that was the bug, not the screen.
+    useGame.setState({ screen: 'pas' });
+    useGame.getState().boot();
+    expect(useGame.getState().screen).toBe('onboarding');
+    expect(useGame.getState().game).toBeNull();
+  });
+
   it('a corrupt save never crashes and never silently wipes', () => {
     store.set(C.storage.gameKey, '{ not json');
     useGame.setState({ screen: 'onboarding', game: null, opening: null, lastResult: null });

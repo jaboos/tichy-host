@@ -344,6 +344,14 @@ export function advanceEvening(
     weekPlan: {
       ...state.weekPlan,
       trialEveningsLeft: Math.max(0, state.weekPlan.trialEveningsLeft - 1),
+      /**
+       * The hand of rest tickets is spent when the week ends. `advanceWeek` also
+       * defaults them to empty, but Monday hands its own tickets straight back to
+       * it, so that default never fired: a ticket dealt in week 2 kept resting the
+       * same cook every week to the end of the season. Found by playing forty
+       * evenings, not by a test.
+       */
+      restTickets: isLastEveningOfWeek ? [] : state.weekPlan.restTickets,
     },
     eveningIndex: opening.eveningIndex + 1,
   };

@@ -464,6 +464,10 @@ interface Store {
 
   boot: () => void;
   newGame: (venueName: string, seed?: string) => void;
+  /** Season n+1 of the same career: the same brigade, one season older. */
+  nextSeason: () => void;
+  /** Throws the save away and returns to onboarding. */
+  startOver: () => void;
   goto: (screen: Screen) => void;
   dismissRefusal: () => void;
   setLang: (lang: Lang) => void;
@@ -600,6 +604,68 @@ export const useGame = create<Store>((set, get) => ({
       game: opened.game,
       opening: opened.opening,
       draft: opened.draft,
+      lastResult: null,
+      intervention: null,
+      interventionOpen: null,
+      interventionPick: null,
+      openSlot: null,
+      refusal: null,
+    });
+  },
+
+  /**
+   * The career, PRD §3.8. It carries exactly what `measureCareer` in the harness
+   * carries, because that is the run the frozen ladder was measured over: the
+   * brigade with whatever it grew into, the season number, and nothing else.
+   * Reputation, cash and the catalogue start over — the bar already charges for
+   * the season through `C.bar.seasonCoef`, and carrying reputation too would
+   * charge twice.
+   *
+   * Until now `newGame` hardcoded season 1 and there was no other way in, so the
+   * three-season career the golden test measures could not be played at all.
+   */
+  nextSeason: () => {
+    const game = get().game;
+    if (game === null) return;
+    const next = game.seasonNumber + 1;
+    if (next > C.season.seasonsPerCareer) {
+      get().startOver();
+      return;
+    }
+    const seed = generateSeed(createRng(seedToRngState(String(Date.now()))));
+    const fresh = startSeason({
+      seed,
+      seasonNumber: next as 1 | 2 | 3,
+      venueName: game.venueName,
+      lang: get().lang,
+      cooks: game.cooks,
+    });
+    const opened = openAndPersist(fresh);
+    set({
+      screen: 'pas',
+      game: opened.game,
+      opening: opened.opening,
+      draft: opened.draft,
+      lastResult: null,
+      intervention: null,
+      interventionOpen: null,
+      interventionPick: null,
+      openSlot: null,
+      refusal: null,
+    });
+  },
+
+  /**
+   * The save has to go, not just the screen. Sending the player to onboarding and
+   * leaving the finished season on disk meant one reload put them back on the
+   * verdict letter with no way out.
+   */
+  startOver: () => {
+    persist(null);
+    set({
+      screen: 'onboarding',
+      game: null,
+      opening: null,
       lastResult: null,
       intervention: null,
       interventionOpen: null,

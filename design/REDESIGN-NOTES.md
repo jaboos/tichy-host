@@ -35,8 +35,7 @@ Zbývá z dřívějška: `pnpm test` 129 zelených, žebřík beze změny, build
 | co | kde |
 |---|---|
 | **kompletní export, jedenáct obrazovek** | `design/redesign/Tichý host - přehled.dc.html` |
-| samostatný Pas (bit-shodný s `redesign-pas/`) | `design/redesign/Tichý host - Pas.dc.html` |
-| původní export (adresář se zmršeným názvem) | `design/# Pas — Večerní služba__…` — ke smazání |
+| samostatný Pas | `design/redesign/Tichý host - Pas.dc.html` |
 | živý design systém | `src/styles/tokens.css` |
 | první iterace (historický záznam) | `design/tokens.css`, `design/*.dc.html` |
 

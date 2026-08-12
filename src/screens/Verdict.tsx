@@ -18,8 +18,11 @@ import { useGame } from '../store/gameStore';
 
 export default function Verdict(): React.JSX.Element | null {
   const game = useGame((s) => s.game);
-  const goto = useGame((s) => s.goto);
+  const nextSeason = useGame((s) => s.nextSeason);
+  const startOver = useGame((s) => s.startOver);
   if (game === null) return null;
+
+  const hasNextSeason = game.seasonNumber < C.season.seasonsPerCareer;
 
   const plates = game.visits.flatMap((visit) => visit.plates);
   const below = plates.filter((plate) => plate.outcome === 'defect').length;
@@ -68,7 +71,10 @@ export default function Verdict(): React.JSX.Element | null {
                 textTransform: 'uppercase',
               }}
             >
-              {t('app.seasonNumber', { n: game.seasonNumber })}
+              {t('verdict.careerStep', {
+                n: game.seasonNumber,
+                total: C.season.seasonsPerCareer,
+              })}
             </span>
           </div>
 
@@ -219,9 +225,23 @@ export default function Verdict(): React.JSX.Element | null {
             </div>
           </div>
         </div>
-        <button type="button" className="cta" onClick={() => goto('onboarding')}>
-          {t('verdict.again')}
-        </button>
+        {/* A career is three seasons (§3.8) and the golden ladder is measured over
+            all three. Until now the only button here restarted at season 1, so the
+            second and third seasons were unreachable. */}
+        {hasNextSeason ? (
+          <>
+            <button type="button" className="cta" onClick={nextSeason}>
+              {t('verdict.nextSeason')}
+            </button>
+            <button type="button" className="btn-ghost" onClick={startOver}>
+              {t('verdict.again')}
+            </button>
+          </>
+        ) : (
+          <button type="button" className="cta" onClick={startOver}>
+            {t('verdict.again')}
+          </button>
+        )}
       </div>
     </>
   );
