@@ -458,6 +458,8 @@ interface Store {
   refusal: RefusalKey | null;
   lang: Lang;
   reducedMotion: boolean;
+  /** Chosen on the Pas, before the evening runs — not a control inside the cascade. */
+  skipReveal: boolean;
   storageBroken: boolean;
 
   boot: () => void;
@@ -475,7 +477,8 @@ interface Store {
   pickInterventionTarget: (target: Intervention | null) => void;
   confirmIntervention: () => void;
   clearIntervention: () => void;
-  startService: () => void;
+  /** `true` jumps straight to the finished board; the reveal is only a replay. */
+  startService: (skipReveal?: boolean) => void;
   finishReveal: () => void;
   nextEvening: () => void;
 
@@ -538,6 +541,7 @@ export const useGame = create<Store>((set, get) => ({
   refusal: null,
   lang: 'cs',
   reducedMotion: false,
+  skipReveal: false,
   storageBroken: false,
 
   boot: () => {
@@ -653,7 +657,7 @@ export const useGame = create<Store>((set, get) => ({
   clearIntervention: () =>
     set({ intervention: null, interventionOpen: null, interventionPick: null, refusal: null }),
 
-  startService: () => {
+  startService: (skipReveal = false) => {
     const { game, opening, draft, intervention } = get();
     if (game === null || opening === null) return;
 
@@ -670,6 +674,7 @@ export const useGame = create<Store>((set, get) => ({
       game: state,
       lastResult: result,
       screen: 'service',
+      skipReveal,
       opening: null,
       intervention: null,
       interventionOpen: null,

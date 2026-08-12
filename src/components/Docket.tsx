@@ -5,6 +5,10 @@
  *
  * A plate with no number at all is a station that could not cook it (§9 cases 1,
  * 2 and 8): struck through, and honest about having no figure.
+ *
+ * Two animations, in order: `najezd` slides the docket in from the right one
+ * `--stagger` after the last one, and only once it has landed does `spad` drop a
+ * plate that came in under the bar. A defect is something you watch fall.
  */
 import { formatSigned, t } from '../i18n';
 import { getCourse } from '../data/courses';
@@ -22,64 +26,113 @@ export default function Docket({ plate, index, animate }: Props): React.JSX.Elem
   const star = plate.outcome === 'star';
   const deviation = plate.q === null ? null : plate.q - plate.bar;
 
+  const arrive = `calc(var(--stagger) * ${index})`;
+  const landed = `calc(var(--stagger) * ${index} + var(--dur-docket))`;
+
   return (
     <div
-      className="card"
       style={{
-        padding: '9px 11px',
-        borderRadius: 'var(--radius-docket)',
-        borderColor: star ? 'var(--brass-a55)' : defect ? 'var(--bad-a45)' : 'var(--line)',
-        position: 'relative',
-        animation: animate ? `najezd var(--dur-docket) var(--ease-out) both` : undefined,
-        animationDelay: animate ? `${index * 80}ms` : undefined,
-        transform: defect ? 'translateX(10px) rotate(-3.2deg)' : undefined,
-        opacity: defect ? 0.75 : 1,
+        animation: animate ? `najezd var(--dur-docket) var(--ease-out) ${arrive} both` : undefined,
       }}
     >
-      <div className="spread">
-        <div style={{ minWidth: 0 }}>
+      <div
+        className="card"
+        style={{
+          position: 'relative',
+          display: 'flex',
+          alignItems: 'center',
+          gap: 10,
+          padding: '10px 12px',
+          borderRadius: 'var(--radius-docket)',
+          background: star
+            ? 'linear-gradient(180deg, rgba(216,162,74,.10), var(--card))'
+            : undefined,
+          borderColor: star ? 'var(--brass)' : defect ? 'var(--bad-a45)' : 'var(--line)',
+          animation: defect && animate ? `spad 260ms var(--ease-drop) ${landed} both` : undefined,
+          transform: defect && !animate ? 'translateY(9px) rotate(-2.4deg)' : undefined,
+          opacity: defect && !animate ? 0.78 : undefined,
+        }}
+      >
+        {/* The stub that clips the docket to the rail. */}
+        <span
+          aria-hidden="true"
+          style={{
+            position: 'absolute',
+            left: -17,
+            top: '50%',
+            width: 17,
+            height: 1,
+            background: star ? 'var(--brass)' : defect ? 'var(--bad-a45)' : 'var(--line)',
+          }}
+        />
+
+        <div style={{ flex: 1, minWidth: 0 }}>
           <div
             className="display"
             style={{
-              fontSize: 'var(--fs-dish)',
+              fontSize: 15,
+              lineHeight: 1.2,
               textDecoration: defect ? 'line-through' : undefined,
-              color: defect ? 'var(--bad)' : undefined,
+              color: defect ? 'var(--ink-muted)' : 'var(--ink)',
             }}
           >
             {t(course.nameKey)}
           </div>
-          <div className="label" style={{ marginTop: 2 }}>
+          <div
+            className="mono muted"
+            style={{
+              marginTop: 3,
+              fontSize: 'var(--fs-micro)',
+              letterSpacing: 'var(--ls-label)',
+              textTransform: 'uppercase',
+            }}
+          >
             {t(`station.${plate.station}`)} ·{' '}
             {plate.wave === 0 ? t('service.wave1') : t('service.wave2')}
           </div>
         </div>
 
-        <div className="row" style={{ gap: 6 }}>
-          {star ? (
-            <span
-              className="brass"
-              aria-label={t('outcome.star')}
-              style={{
-                fontSize: '17px',
-                animation: animate ? 'razba var(--dur-base) var(--ease-out) both' : undefined,
-              }}
-            >
-              ★
-            </span>
-          ) : null}
+        {star ? (
           <span
-            className="mono"
+            aria-label={t('outcome.star')}
             style={{
-              fontSize: '15px',
-              color: defect ? 'var(--bad)' : star ? 'var(--brass)' : 'var(--ok)',
+              flex: 'none',
+              fontSize: 15,
+              color: 'var(--brass-hi)',
+              animation: animate
+                ? `hvezdaVstup var(--dur-base) var(--ease-drop) ${landed} both`
+                : undefined,
             }}
           >
-            {deviation === null ? t('pas.noHands') : formatSigned(deviation, 1)}
+            ★
           </span>
-          {defect && deviation !== null ? (
-            <span className="label bad">{t('outcome.belowBar')}</span>
-          ) : null}
-        </div>
+        ) : null}
+
+        <span
+          className="mono"
+          style={{
+            flex: 'none',
+            fontSize: 20,
+            letterSpacing: '-.02em',
+            color: defect ? 'var(--bad)' : star ? 'var(--brass-hi)' : 'var(--ok)',
+            textDecoration: defect ? 'line-through' : undefined,
+          }}
+        >
+          {deviation === null ? t('pas.noHands') : formatSigned(deviation, 1)}
+        </span>
+
+        {defect && deviation !== null ? (
+          <span
+            className="mono bad"
+            style={{
+              flex: 'none',
+              fontSize: 'var(--fs-micro)',
+              letterSpacing: 'var(--ls-label)',
+            }}
+          >
+            {t('outcome.belowBar')}
+          </span>
+        ) : null}
       </div>
     </div>
   );

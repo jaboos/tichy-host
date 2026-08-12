@@ -7,6 +7,9 @@
  * to the load figure that decides whether it matters. Tapping a place opens the
  * list of people who could stand there; the card stays visible above it, which is
  * the whole point of moving assignment here from the cook rows.
+ *
+ * When the station is overloaded the *card* breathes red — `zar` is a box-shadow
+ * animation, so nothing sits on top of the content to do it.
  */
 import { C } from '../engine/constants';
 import { formatNumber, t } from '../i18n';
@@ -18,7 +21,14 @@ interface Props {
   setup: StationSetup;
   station: Station;
   openSlot: SlotRef | null;
+  /** True when tonight's intervention is aimed here. */
+  targeted?: boolean;
   onOpenSlot: (slot: SlotRef) => void;
+}
+
+function wearTone(wear: number): string {
+  if (wear >= C.wear.warningThreshold) return 'var(--bad)';
+  return wear >= C.wear.max * 0.6 ? 'var(--warn)' : 'var(--ok)';
 }
 
 function Slot({
@@ -34,57 +44,70 @@ function Slot({
   active: boolean;
   onOpen: () => void;
 }): React.JSX.Element {
-  const nearCap = cook !== null && cook.wear >= C.wear.warningThreshold;
   const empty = cook === null;
-  const tone = nearCap ? 'var(--bad)' : 'var(--ink)';
+  const tone = empty ? 'var(--line)' : wearTone(cook.wear);
+  const nearCap = cook !== null && cook.wear >= C.wear.warningThreshold;
 
   return (
     <button
       type="button"
       onClick={onOpen}
-      className={active ? 'chip chip--brass tap' : empty ? 'chip tap' : 'chip tap'}
       style={{
-        width: '100%',
+        display: 'flex',
         flexDirection: 'column',
-        alignItems: 'stretch',
-        gap: 3,
-        borderStyle: empty ? 'dashed' : 'solid',
-        borderColor: nearCap ? 'var(--bad-a45)' : undefined,
-        opacity: empty ? 0.75 : 1,
+        gap: 4,
+        width: '100%',
+        textAlign: 'left',
       }}
       aria-label={`${t(`station.${station}`)} · ${t(role === 'lead' ? 'pas.lead' : 'pas.helper')}`}
     >
-      <span className="spread" style={{ gap: 6, width: '100%' }}>
-        <span style={{ color: tone, overflow: 'hidden', textOverflow: 'ellipsis' }}>
+      <span className="spread" style={{ gap: 6, width: '100%', alignItems: 'baseline' }}>
+        <span
+          style={{
+            fontSize: 'var(--fs-small)',
+            color: empty ? 'var(--ink-muted)' : active ? 'var(--brass)' : 'var(--ink)',
+            border: empty ? '1px dashed var(--line)' : 'none',
+            borderRadius: 'var(--radius-chip)',
+            padding: empty ? '2px 7px' : 0,
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap',
+            // The dashed slot breathes while it waits to be filled.
+            animation: empty ? 'cekani 2.6s var(--ease-out) infinite' : undefined,
+          }}
+        >
           {empty ? (role === 'lead' ? t('pas.noHands') : t('pas.addHelper')) : cook.lastName}
-          {nearCap ? ' !' : ''}
         </span>
-        <span className="label" style={{ fontSize: 'var(--fs-micro)' }}>
-          {t(role === 'lead' ? 'pas.lead' : 'pas.helper')}
+        <span
+          className="mono"
+          style={{ fontSize: 'var(--fs-micro)', color: tone, flex: 'none' }}
+          aria-label={t('common.wear')}
+        >
+          {empty ? t('common.none') : formatNumber(cook.wear, 1)}
+          {nearCap ? ' !' : ''}
         </span>
       </span>
 
       {/* Wear sits with the name, because that is where its consequence lands. */}
-      {cook === null ? null : (
+      <span
+        aria-hidden="true"
+        style={{
+          display: 'block',
+          height: 3,
+          borderRadius: 'var(--radius-pill)',
+          background: 'var(--line)',
+          overflow: 'hidden',
+        }}
+      >
         <span
-          aria-hidden="true"
-          style={{ display: 'block', height: 3, borderRadius: 2, background: 'var(--line)' }}
-        >
-          <span
-            style={{
-              display: 'block',
-              width: `${(cook.wear / C.wear.max) * 100}%`,
-              height: '100%',
-              borderRadius: 2,
-              background: nearCap
-                ? 'var(--bad)'
-                : cook.wear >= C.wear.max * 0.6
-                  ? 'var(--warn)'
-                  : 'var(--ok)',
-            }}
-          />
-        </span>
-      )}
+          style={{
+            display: 'block',
+            width: empty ? '0%' : `${(cook.wear / C.wear.max) * 100}%`,
+            height: '100%',
+            background: tone,
+          }}
+        />
+      </span>
     </button>
   );
 }
@@ -93,106 +116,135 @@ export default function StationDisk({
   setup,
   station,
   openSlot,
+  targeted = false,
   onOpenSlot,
 }: Props): React.JSX.Element {
   const ratio = setup.capacity > 0 ? setup.load / setup.capacity : Number.POSITIVE_INFINITY;
   const overloaded = setup.overload > 0;
   const tone =
-    !setup.viable || overloaded ? 'var(--bad)' : ratio > 0.8 ? 'var(--warn)' : 'var(--ok)';
+    !setup.viable || overloaded ? 'var(--bad)' : ratio > 0.8 ? 'var(--warn)' : 'var(--ink)';
   const percent = Number.isFinite(ratio) ? Math.round(ratio * 100) : 0;
   const touched = openSlot !== null && openSlot.station === station;
 
   return (
     <section
-      className={touched ? 'card card--lifted' : 'card'}
+      className={touched || targeted ? 'card card--lifted' : 'card'}
       style={{
-        padding: 10,
         position: 'relative',
-        overflow: 'hidden',
+        minHeight: 158,
         display: 'flex',
         flexDirection: 'column',
-        gap: 6,
-        height: '100%',
+        gap: 9,
+        padding: '11px 12px 10px',
+        borderColor: overloaded ? 'var(--bad-a45)' : targeted ? 'var(--brass)' : undefined,
+        animation: overloaded ? 'zar 2.2s var(--ease-out) infinite' : undefined,
       }}
       aria-label={t(`station.${station}`)}
     >
-      {overloaded ? (
-        <span
-          aria-hidden="true"
-          style={{
-            position: 'absolute',
-            inset: '-30%',
-            background: 'radial-gradient(circle, rgba(201,80,63,.55), transparent 62%)',
-            animation: 'zar 1.9s ease-in-out infinite',
-            pointerEvents: 'none',
-          }}
-        />
-      ) : null}
-
-      <div
-        style={{ position: 'relative', display: 'flex', flexDirection: 'column', gap: 6, flex: 1 }}
-      >
-        <div className="label">{t(`station.${station}`)}</div>
-
-        <Slot
-          cook={setup.lead}
-          station={station}
-          role="lead"
-          active={slotEquals(openSlot, { station, role: 'lead' })}
-          onOpen={() => onOpenSlot({ station, role: 'lead' })}
-        />
-        <Slot
-          cook={setup.helper}
-          station={station}
-          role="helper"
-          active={slotEquals(openSlot, { station, role: 'helper' })}
-          onOpen={() => onOpenSlot({ station, role: 'helper' })}
-        />
-
-        <div style={{ marginTop: 'auto' }}>
-          <span className="mono" style={{ fontSize: '19px', color: tone }}>
-            {setup.viable ? `${percent}%` : '—'}
-          </span>
-          <div className="label" style={{ fontSize: 'var(--fs-micro)', marginTop: 3 }}>
-            {t('pas.load')} / {t('pas.capacity')}
-          </div>
-          <div className="mono muted" style={{ fontSize: 'var(--fs-small)' }}>
-            {formatNumber(setup.load, 0)} / {formatNumber(setup.capacity, 1)}
-          </div>
-
+      <div className="spread" style={{ alignItems: 'flex-start', gap: 6 }}>
+        <div style={{ minWidth: 0 }}>
+          <div className="label">{t('common.station')}</div>
           <div
-            aria-hidden="true"
-            style={{
-              marginTop: 6,
-              height: 4,
-              borderRadius: 2,
-              background: 'var(--line)',
-              overflow: 'hidden',
-            }}
+            className="display"
+            style={{ fontSize: 'var(--fs-dish)', lineHeight: 1.1, marginTop: 2 }}
           >
-            <div
-              style={{
-                width: `${Math.min(100, Number.isFinite(ratio) ? ratio * 100 : 100)}%`,
-                height: '100%',
-                background: tone,
-              }}
-            />
+            {t(`station.${station}`)}
           </div>
-
-          {overloaded ? (
-            <div
-              className="chip chip--bad"
-              style={{
-                marginTop: 7,
-                display: 'inline-block',
-                animation: 'puls 1.9s ease-in-out infinite',
-              }}
-            >
-              {t('pas.overloaded')}
-            </div>
-          ) : null}
+        </div>
+        <div
+          className="mono"
+          style={{
+            flex: 'none',
+            fontSize: 'var(--fs-num)',
+            lineHeight: 1,
+            whiteSpace: 'nowrap',
+            letterSpacing: '-.02em',
+            color: tone,
+            animation: 'tik var(--dur-count) var(--ease-out) both',
+          }}
+        >
+          {setup.viable ? `${percent} %` : t('common.none')}
         </div>
       </div>
+
+      <Slot
+        cook={setup.lead}
+        station={station}
+        role="lead"
+        active={slotEquals(openSlot, { station, role: 'lead' })}
+        onOpen={() => onOpenSlot({ station, role: 'lead' })}
+      />
+      <Slot
+        cook={setup.helper}
+        station={station}
+        role="helper"
+        active={slotEquals(openSlot, { station, role: 'helper' })}
+        onOpen={() => onOpenSlot({ station, role: 'helper' })}
+      />
+
+      <div
+        style={{
+          marginTop: 'auto',
+          borderTop: '1px solid var(--line)',
+          paddingTop: 7,
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 2,
+        }}
+      >
+        <div
+          className="label"
+          style={{ fontSize: 'var(--fs-micro)', letterSpacing: '.06em', whiteSpace: 'nowrap' }}
+        >
+          {t('pas.load')} / {t('pas.capacity')}
+        </div>
+        <div
+          className="mono"
+          style={{ fontSize: 'var(--fs-num-sm)', whiteSpace: 'nowrap', color: tone }}
+        >
+          {formatNumber(setup.load, 1)} / {formatNumber(setup.capacity, 1)}
+        </div>
+      </div>
+
+      {overloaded ? (
+        <div
+          className="mono"
+          style={{
+            position: 'absolute',
+            top: -7,
+            right: 8,
+            background: 'var(--bad)',
+            color: '#fff3ef',
+            fontSize: 'var(--fs-micro)',
+            letterSpacing: 'var(--ls-label)',
+            padding: '3px 7px',
+            borderRadius: 'var(--radius-chip)',
+            boxShadow: 'var(--shadow-lift)',
+            animation: 'razba var(--dur-base) var(--ease-drop) both',
+          }}
+        >
+          {t('pas.overloaded')}
+        </div>
+      ) : null}
+
+      {targeted ? (
+        <div
+          className="mono"
+          style={{
+            position: 'absolute',
+            bottom: -7,
+            left: 10,
+            background: 'var(--brass)',
+            color: '#14110c',
+            fontSize: 'var(--fs-micro)',
+            letterSpacing: 'var(--ls-label)',
+            padding: '3px 7px',
+            borderRadius: 'var(--radius-chip)',
+          }}
+        >
+          ✓ {t('pas.here')}
+        </div>
+      ) : null}
     </section>
   );
 }

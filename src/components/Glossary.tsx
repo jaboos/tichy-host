@@ -52,28 +52,33 @@ export default function Glossary({ of }: { of: Concept }): React.JSX.Element {
 
   return (
     <>
+      {/* 20 px of ink in a 48 px target: `.hit` pulls the extra height back out of
+          the flow, so the glyph stays small without being un-tappable. */}
       <button
         type="button"
+        className="hit"
         onClick={() => setOpen(!open)}
         aria-expanded={open}
         aria-label={`${t(entry.term)} — ${t('gloss.open')}`}
-        style={{
-          width: 18,
-          height: 18,
-          borderRadius: '50%',
-          border: '1px solid var(--line)',
-          color: 'var(--ink-muted)',
-          fontSize: 11,
-          lineHeight: 1,
-          display: 'inline-flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          flex: '0 0 auto',
-          marginInlineStart: 6,
-          verticalAlign: 'middle',
-        }}
+        style={{ width: 30, flex: '0 0 auto' }}
       >
-        ?
+        <span
+          aria-hidden="true"
+          style={{
+            width: 20,
+            height: 20,
+            borderRadius: 'var(--radius-pill)',
+            border: '1px solid var(--brass-a55)',
+            color: 'var(--brass)',
+            fontSize: 'var(--fs-micro)',
+            lineHeight: 1,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          ?
+        </span>
       </button>
 
       {open ? (

@@ -17,25 +17,13 @@ import Verdict from './screens/Verdict';
 /** Screens where the tab bar would be a way to walk out of a decision. */
 const WITHOUT_TABS = new Set(['onboarding', 'service', 'consequence', 'monday', 'verdict']);
 
-/** Screens with a fixed CTA pinned to the bottom. */
-const WITH_CTA = new Set([
-  'onboarding',
-  'pas',
-  'service',
-  'consequence',
-  'monday',
-  'menu',
-  'verdict',
-]);
-
 /**
- * Measured heights of the two things that can be pinned to the bottom. The CTA
- * and the tab bar used to occupy the same space — the CTA sat on top of the nav
- * and over the last row of content. Now the frame reserves room for whatever is
- * actually there, and the CTA offsets itself above the nav.
+ * The tab bar is the only thing left that is `position: fixed`, so it is the only
+ * height anyone has to know. The bottom dock is sticky and in the flow, which is
+ * what killed the old measured CTA height — that number was a guess, and it was
+ * wrong the moment a dock grew a second button.
  */
 const NAV_HEIGHT = 56;
-const CTA_HEIGHT = 86;
 
 /**
  * The shell. CLAUDE.md rule 9: no component holds a literal — every string here
@@ -82,7 +70,6 @@ export default function App(): React.JSX.Element {
 
   const bottom = {
     '--bottom-nav': `${WITHOUT_TABS.has(screen) ? 0 : NAV_HEIGHT}px`,
-    '--bottom-cta': `${WITH_CTA.has(screen) ? CTA_HEIGHT : 0}px`,
   } as React.CSSProperties;
 
   return (

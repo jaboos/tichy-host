@@ -28,7 +28,7 @@ export default function Calendar(): React.JSX.Element | null {
 
   return (
     <>
-      <h1 className="display" style={{ fontSize: 'var(--fs-h2)', margin: 0 }}>
+      <h1 className="h2" style={{ margin: 0 }}>
         {t('calendar.title')}
       </h1>
 

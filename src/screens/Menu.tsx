@@ -48,7 +48,7 @@ export default function Menu(): React.JSX.Element | null {
 
   return (
     <>
-      <h1 className="display" style={{ fontSize: 'var(--fs-h2)', margin: 0 }}>
+      <h1 className="h2" style={{ margin: 0 }}>
         {t('menu.title')}
       </h1>
       <p className="quote" style={{ marginTop: 4, fontSize: 'var(--fs-small)' }}>
@@ -160,16 +160,18 @@ export default function Menu(): React.JSX.Element | null {
         </p>
       ) : null}
 
-      <button
-        type="button"
-        className="cta tap"
-        onClick={() => {
-          setMenu(selected);
-          if (selected.length === C.menu.courses) goto('pas');
-        }}
-      >
-        {t('menu.save')}
-      </button>
+      <div className="dock">
+        <button
+          type="button"
+          className="cta"
+          onClick={() => {
+            setMenu(selected);
+            if (selected.length === C.menu.courses) goto('pas');
+          }}
+        >
+          {t('menu.save')}
+        </button>
+      </div>
     </>
   );
 }

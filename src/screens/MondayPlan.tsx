@@ -67,7 +67,7 @@ export default function MondayPlan(): React.JSX.Element | null {
     <>
       <header className="spread">
         <div>
-          <h1 className="display" style={{ fontSize: 'var(--fs-h2)', margin: 0 }}>
+          <h1 className="h2" style={{ margin: 0 }}>
             {t('monday.title')}
           </h1>
           <div className="mono muted" style={{ fontSize: 'var(--fs-small)' }}>
@@ -208,16 +208,18 @@ export default function MondayPlan(): React.JSX.Element | null {
       </div>
       <button
         type="button"
-        className="chip tap"
+        className="btn-ghost"
         style={{ marginTop: 8 }}
         onClick={() => goto('menu')}
       >
         {t('monday.editMenu')}
       </button>
 
-      <button type="button" className="cta tap" onClick={lockKitchen}>
-        {t('monday.lock')}
-      </button>
+      <div className="dock">
+        <button type="button" className="cta" onClick={lockKitchen}>
+          {t('monday.lock')}
+        </button>
+      </div>
     </>
   );
 }

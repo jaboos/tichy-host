@@ -30,10 +30,19 @@ export default function SlotPicker({
   onCancel,
 }: Props): React.JSX.Element {
   return (
-    <div className="card card--lifted" style={{ marginTop: 8 }}>
+    <div
+      className="card card--lifted"
+      // The list opens below the fold and the sticky dock covers it, so tapping a
+      // place looked like nothing happened. Centre it, because 'nearest' parks it
+      // under the dock — the dock is outside the scroll calculation.
+      // Optional call: jsdom has no scrollIntoView, and the render tests mount
+      // this for real rather than stubbing it.
+      ref={(el) => el?.scrollIntoView?.({ block: 'center' })}
+      style={{ marginTop: 8 }}
+    >
       <div className="label">
         {t('pas.whoOnSlot', {
-          station: t(`station.${slot.station}`),
+          station: t(`station.${slot.station}.at`),
           role: t(slot.role === 'lead' ? 'pas.lead' : 'pas.helper'),
         })}
       </div>

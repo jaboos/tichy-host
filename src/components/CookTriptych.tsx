@@ -95,7 +95,18 @@ export default function CookTriptych({
   );
 
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', columnGap: 10 }}>
+    // The floor is set here, not by the caller: ODOLNOST and CHTĚNÍ are nowrap and
+    // grew with --fs-micro (7.5 → 9.5 px), so a container narrower than this runs
+    // them into each other. That is exactly how they collided again on the
+    // onboarding roster after the token swap.
+    <div
+      style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(3, 1fr)',
+        columnGap: 10,
+        minWidth: large ? undefined : 176,
+      }}
+    >
       {slot(
         'triptych.hand',
         <>

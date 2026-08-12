@@ -10,7 +10,7 @@ export default function Brigade(): React.JSX.Element | null {
 
   return (
     <>
-      <h1 className="display" style={{ fontSize: 'var(--fs-h2)', margin: 0 }}>
+      <h1 className="h2" style={{ margin: 0 }}>
         {t('brigade.title')}
       </h1>
       <div className="stack" style={{ marginTop: 12 }}>

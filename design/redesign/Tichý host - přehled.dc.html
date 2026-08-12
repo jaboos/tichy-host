@@ -1,0 +1,1261 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<style>
+/* Písma přes @fontsource (balíme lokálně, žádné CDN):
+   @fontsource/spectral · @fontsource/public-sans · @fontsource/ibm-plex-mono */
+:root{
+  --bg:#0E0D0B; --card:#191713; --card-hi:#221F19; --line:#312C25;
+  --ink:#F3EEE4; --ink-muted:#9A9086;
+  --brass:#D8A24A; --brass-hi:#F0C170; --ok:#74936A; --warn:#C86A2A; --bad:#B23A2B; --seal:#7E2A22;
+  --paper:#EFE7D8; --paper-cool:#DCD6C7; --paper-ink:#26221C;
+  --brass-a35:rgba(216,162,74,.35); --brass-a55:rgba(216,162,74,.55);
+  --bad-a45:rgba(178,58,43,.45); --bad-a28:rgba(178,58,43,.28);
+  --radius-card:14px; --radius-docket:10px; --radius-chip:8px; --radius-pill:999px;
+  --shadow-card:0 1px 0 rgba(255,255,255,.035) inset, 0 6px 16px rgba(0,0,0,.45);
+  --shadow-deep:0 18px 44px rgba(0,0,0,.62);
+  --shadow-lift:0 2px 0 rgba(0,0,0,.5);
+  --shadow-cta:0 10px 24px rgba(216,162,74,.26);
+  --font-display:'Spectral',Georgia,'Times New Roman',serif;
+  --font-ui:'Public Sans',ui-sans-serif,system-ui,'Helvetica Neue',sans-serif;
+  --font-mono:'IBM Plex Mono',ui-monospace,'SFMono-Regular',Menlo,monospace;
+  --fs-title:21px; --fs-h2:13px; --fs-dish:16px; --fs-body:13.5px; --fs-small:12px;
+  --fs-label:10.5px; --fs-micro:9.5px;
+  --fs-num:26px; --fs-num-lg:40px; --fs-num-sm:13px;
+  --ls-label:.14em; --ls-mono:.02em;
+  --col-width:390px; --pad-x:16px; --pad-top:14px; --pad-bottom:150px;
+  --dur-fast:120ms; --dur-base:220ms; --dur-docket:420ms; --dur-count:900ms; --stagger:60ms;
+  --ease-out:cubic-bezier(.2,.7,.2,1); --ease-drop:cubic-bezier(.2,1.4,.4,1);
+  --hit:48px; --rail:linear-gradient(180deg,#4A453C,#7C7367 18%,#332F29 52%,#6A6155 82%,#3A362F);
+}
+@keyframes zar{
+  0%,100%{box-shadow:0 0 0 1px var(--bad-a45),0 0 0 0 var(--bad-a28)}
+  50%{box-shadow:0 0 0 1px var(--bad),0 0 22px 4px var(--bad-a28)}
+}
+@keyframes puls{
+  0%,100%{transform:scale(1);opacity:.9}
+  50%{transform:scale(1.05);opacity:.35}
+}
+@keyframes najezd{
+  from{opacity:0;transform:translateX(38px) rotate(1.5deg)}
+  to{opacity:1;transform:none}
+}
+@keyframes tik{
+  0%{opacity:.35;transform:translateY(-2px)}
+  100%{opacity:1;transform:none}
+}
+@keyframes zablesk{
+  0%{transform:translateX(-120%)}
+  55%,100%{transform:translateX(220%)}
+}
+@keyframes razba{
+  0%{transform:scale(1.5) rotate(-7deg);opacity:0}
+  60%{transform:scale(.94) rotate(-2deg);opacity:1}
+  100%{transform:scale(1) rotate(-2deg);opacity:1}
+}
+@keyframes cekani{
+  0%,100%{border-color:var(--line);color:var(--ink-muted)}
+  50%{border-color:var(--brass-a35);color:var(--brass)}
+}
+@keyframes rozlozeni{
+  from{opacity:0;max-height:0;transform:translateY(-6px)}
+  to{opacity:1;max-height:1600px;transform:none}
+}
+@keyframes otisk{
+  from{opacity:0;letter-spacing:.06em}
+  to{opacity:1;letter-spacing:normal}
+}
+@keyframes pecet{
+  0%{transform:scale(1.18);opacity:0}
+  45%{transform:scale(.955);opacity:1}
+  100%{transform:scale(1);opacity:1}
+}
+@keyframes hvezdaVstup{
+  from{opacity:0;transform:scale(.4) rotate(-30deg)}
+  to{opacity:1;transform:none}
+}
+@keyframes vstup{
+  from{opacity:0;transform:translateY(16px)}
+  to{opacity:1;transform:none}
+}
+@keyframes spad{
+  from{transform:none;opacity:1}
+  to{transform:translateY(9px) rotate(-2.4deg);opacity:.78}
+}
+body{margin:0;background:#080706;font-family:var(--font-ui);-webkit-font-smoothing:antialiased}
+div::-webkit-scrollbar{width:0;height:0}
+a{color:var(--brass);text-decoration:none}a:hover{color:var(--brass-hi)}
+</style>
+</helmet>
+
+<section style="min-height:100vh; background:#080706; padding:44px 30px 96px; display:flex; flex-direction:column; gap:46px; font-family:var(--font-ui)">
+
+  <div style="display:flex; flex-direction:column; gap:8px; max-width:900px">
+    <div style="font-family:var(--font-display); font-size:34px; color:var(--ink); line-height:1.1">Tichý host — kompletní přehled obrazovek</div>
+    <div style="font-size:var(--fs-body); color:var(--ink-muted); line-height:1.5; text-wrap:pretty">Textová manažerská hra o fine-dining kuchyni. Šest kuchařů, čtyři posty, šest chodů, čtyřicet večerů. Jedenáct obrazovek 390 px na výšku, čeština, jedna otázka na obrazovku, jeden akcent.</div>
+    <div style="display:flex; flex-wrap:wrap; gap:8px; margin-top:6px">
+      <sc-for list="{{ index }}" as="ix" hint-placeholder-count="6">
+        <div style="display:flex; align-items:center; gap:7px; border:1px solid var(--line); border-radius:var(--radius-pill); padding:6px 12px 6px 7px; background:var(--card)">
+          <div style="font-family:var(--font-mono); font-size:var(--fs-micro); color:#14110C; background:var(--brass); border-radius:var(--radius-pill); padding:2px 7px">{{ ix.id }}</div>
+          <div style="font-size:var(--fs-small); color:var(--ink-muted)">{{ ix.label }}</div>
+        </div>
+      </sc-for>
+    </div>
+  </div>
+
+  <div style="border:1px solid var(--line); border-radius:var(--radius-card); background:var(--card); padding:18px 20px 20px; box-shadow:var(--shadow-card); max-width:1180px">
+    <div style="display:flex; align-items:baseline; gap:12px; flex-wrap:wrap">
+      <div style="font-family:var(--font-mono); font-size:var(--fs-micro); letter-spacing:var(--ls-label); color:#14110C; background:var(--brass); border-radius:var(--radius-chip); padding:4px 8px">BLOK C</div>
+      <div style="font-family:var(--font-display); font-size:19px; color:var(--ink)">Tokeny a keyframes</div>
+      <div style="font-size:var(--fs-small); color:var(--ink-muted)">Přesně tyhle názvy, hodnoty podle návrhu. Písma přes @fontsource, balená lokálně.</div>
+    </div>
+    <div style="display:grid; grid-template-columns:1.15fr .85fr; gap:22px; margin-top:16px">
+      <div style="background:var(--bg); border:1px solid var(--line); border-radius:var(--radius-chip); padding:14px 16px; font-family:var(--font-mono); font-size:11px; line-height:1.65; color:var(--ink-muted); white-space:pre-wrap; overflow:auto; max-height:520px">:root<span style="color:var(--brass)">{</span>
+  --bg:#0E0D0B; --card:#191713; --card-hi:#221F19; --line:#312C25;
+  --ink:#F3EEE4; --ink-muted:#9A9086;
+  --brass:#D8A24A; --brass-hi:#F0C170;
+  --ok:#74936A; --warn:#C86A2A; --bad:#B23A2B; --seal:#7E2A22;
+  --paper:#EFE7D8; --paper-cool:#DCD6C7; --paper-ink:#26221C;
+  --brass-a35:rgba(216,162,74,.35); --brass-a55:rgba(216,162,74,.55);
+  --bad-a45:rgba(178,58,43,.45); --bad-a28:rgba(178,58,43,.28);
+  --radius-card:14px; --radius-docket:10px;
+  --radius-chip:8px; --radius-pill:999px;
+  --shadow-card:0 1px 0 rgba(255,255,255,.035) inset, 0 6px 16px rgba(0,0,0,.45);
+  --shadow-deep:0 18px 44px rgba(0,0,0,.62);
+  --shadow-lift:0 2px 0 rgba(0,0,0,.5);
+  --shadow-cta:0 10px 24px rgba(216,162,74,.26);
+  --font-display:'Spectral',Georgia,serif;      /* @fontsource/spectral */
+  --font-ui:'Public Sans',ui-sans-serif,system-ui;  /* @fontsource/public-sans */
+  --font-mono:'IBM Plex Mono',ui-monospace,Menlo,monospace; /* @fontsource/ibm-plex-mono */
+  --fs-title:21px; --fs-h2:13px; --fs-dish:16px; --fs-body:13.5px;
+  --fs-small:12px; --fs-label:10.5px; --fs-micro:9.5px;
+  --ls-label:.14em; --ls-mono:.02em;
+  --col-width:390px; --pad-x:16px; --pad-top:14px; --pad-bottom:150px;
+  --dur-fast:120ms; --dur-base:220ms; --dur-docket:420ms;
+  --dur-count:900ms; --stagger:60ms;
+  --ease-out:cubic-bezier(.2,.7,.2,1); --ease-drop:cubic-bezier(.2,1.4,.4,1);
+  /* přidané nad rámec zadání */
+  --fs-num:26px; --fs-num-lg:40px; --fs-num-sm:13px; --hit:48px;
+  --rail:linear-gradient(180deg,#4A453C,#7C7367 18%,#332F29 52%,#6A6155 82%,#3A362F);
+<span style="color:var(--brass)">}</span></div>
+      <div style="display:flex; flex-direction:column; gap:8px">
+        <sc-for list="{{ keyframes }}" as="k" hint-placeholder-count="13">
+          <div style="display:flex; align-items:baseline; gap:10px; border-bottom:1px solid var(--line); padding-bottom:7px">
+            <div style="flex:none; width:104px; font-family:var(--font-mono); font-size:var(--fs-small); color:var(--brass)">{{ k.name }}</div>
+            <div style="font-size:var(--fs-small); color:var(--ink-muted); line-height:1.4">{{ k.use }}</div>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+  </div>
+
+  <div style="display:flex; flex-direction:column; gap:16px">
+    <div style="display:flex; align-items:baseline; gap:12px; flex-wrap:wrap; border-top:1px solid var(--line); padding-top:16px">
+      <div style="font-family:var(--font-mono); font-size:var(--fs-micro); letter-spacing:var(--ls-label); color:var(--brass); border:1px solid var(--brass-a55); border-radius:var(--radius-chip); padding:4px 8px">PROMPT 1</div>
+      <div style="font-family:var(--font-display); font-size:22px; color:var(--ink)">Pas — večerní rozhodnutí</div>
+      <div style="font-size:var(--fs-small); color:var(--ink-muted)">Kdo dnes vaří který post a jestli do toho zasáhnu.</div>
+    </div>
+
+    <div style="display:flex; flex-wrap:wrap; gap:38px; align-items:flex-start">
+      <sc-for list="{{ screens }}" as="s" hint-placeholder-count="2">
+        <div id="{{ s.id }}" style="display:flex; flex-direction:column; gap:10px">
+          <div style="display:flex; align-items:center; gap:10px">
+            <div style="font-family:var(--font-mono); font-size:var(--fs-micro); letter-spacing:var(--ls-label); color:#0E0D0B; background:var(--brass); border-radius:var(--radius-chip); padding:4px 8px">{{ s.id }}</div>
+            <div style="font-size:var(--fs-small); color:var(--ink-muted)">{{ s.caption }}</div>
+          </div>
+
+          <div data-screen-label="{{ s.id }}" style="position:relative; width:var(--col-width); height:844px; background:var(--bg); border:1px solid var(--line); border-radius:22px; overflow:hidden; box-shadow:var(--shadow-deep); animation:vstup var(--dur-docket) var(--ease-out) both">
+            <div style="position:absolute; inset:0; overflow:auto; scrollbar-width:none; padding:var(--pad-top) var(--pad-x) var(--pad-bottom)">
+
+              <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:12px">
+                <div style="padding-top:2px">
+                  <div style="font-family:var(--font-display); font-size:var(--fs-title); color:var(--ink); line-height:1.15">U Tichého hosta</div>
+                  <div style="margin-top:5px; font-family:var(--font-mono); font-size:var(--fs-small); color:var(--ink-muted); font-variant-numeric:tabular-nums; letter-spacing:var(--ls-mono)">{{ s.sub }}</div>
+                </div>
+                <div style="display:flex; flex-direction:column; align-items:flex-end; gap:2px">
+                  <div style="display:flex; align-items:center; gap:2px">
+                    <div style="font-size:var(--fs-micro); letter-spacing:var(--ls-label); color:var(--ink-muted)">PODEZŘENÍ</div>
+                    <div onClick="{{ s.tapHead }}" style="height:var(--hit); width:26px; margin:-14px 0; display:flex; align-items:center; justify-content:center; cursor:pointer">
+                      <div style="width:19px; height:19px; border-radius:var(--radius-pill); border:1px solid var(--brass-a55); color:var(--brass); font-size:var(--fs-micro); display:flex; align-items:center; justify-content:center">?</div>
+                    </div>
+                  </div>
+                  <div style="position:relative; width:62px; height:62px; margin-top:2px">
+                    <div style="position:absolute; inset:0; border-radius:var(--radius-pill); background:{{ s.ringBg }}"></div>
+                    <div style="position:absolute; inset:0; border-radius:var(--radius-pill); border:1px solid {{ s.suspRingGlow }}; animation:{{ s.suspPulse }}"></div>
+                    <div style="position:absolute; inset:5px; border-radius:var(--radius-pill); background:var(--card); display:flex; align-items:center; justify-content:center; white-space:nowrap; font-family:var(--font-mono); font-size:14px; letter-spacing:-.02em; color:{{ s.suspColor }}; font-variant-numeric:tabular-nums">{{ s.susp }}</div>
+                  </div>
+                  <div style="font-family:var(--font-mono); font-size:var(--fs-micro); letter-spacing:var(--ls-label); color:{{ s.suspColor }}">{{ s.suspWord }}</div>
+                </div>
+              </div>
+
+              <sc-if value="{{ s.tipHead }}" hint-placeholder-val="{{ false }}">
+                <div style="margin-top:8px; background:var(--card-hi); border:1px solid var(--brass-a35); border-radius:var(--radius-chip); padding:10px 12px; font-size:var(--fs-small); color:var(--ink); line-height:1.45; animation:vstup var(--dur-base) var(--ease-out) both">Jak blízko je inspektor k tomu, aby si dnešní večer vybral — čím vyšší číslo, tím dřív přijde.</div>
+              </sc-if>
+
+              <div style="margin-top:14px; padding:12px 14px; background:var(--card); border:1px solid var(--line); border-left:2px solid var(--brass-a55); border-radius:var(--radius-chip); font-family:var(--font-display); font-style:italic; font-size:var(--fs-dish); color:var(--ink); line-height:1.4">{{ s.maitre }}</div>
+              <div style="margin-top:5px; font-size:var(--fs-micro); letter-spacing:var(--ls-label); color:var(--ink-muted)">MAÎTRE</div>
+
+              <div onClick="{{ s.tapLatka }}" style="margin-top:14px; background:var(--card); border:1px solid var(--line); border-radius:var(--radius-card); padding:12px 14px; box-shadow:var(--shadow-card); cursor:pointer">
+                <div style="display:flex; align-items:center; justify-content:space-between; gap:8px">
+                  <div style="display:flex; align-items:baseline; gap:10px">
+                    <div style="font-size:var(--fs-label); letter-spacing:var(--ls-label); color:var(--ink-muted)">LAŤKA</div>
+                    <div style="font-family:var(--font-mono); font-size:var(--fs-num-lg); line-height:1; color:var(--ink); font-variant-numeric:tabular-nums; letter-spacing:var(--ls-mono); animation:tik var(--dur-count) var(--ease-out) both">{{ s.latka }}</div>
+                  </div>
+                  <div style="display:flex; align-items:center; gap:6px">
+                    <div style="font-family:var(--font-mono); font-size:var(--fs-micro); color:var(--ink-muted)">{{ s.latkaHint }}</div>
+                    <div onClick="{{ s.tapLatkaTip }}" style="height:var(--hit); width:30px; margin:-14px 0; display:flex; align-items:center; justify-content:center; cursor:pointer">
+                      <div style="width:21px; height:21px; border-radius:var(--radius-pill); border:1px solid var(--brass-a55); color:var(--brass); font-size:var(--fs-small); display:flex; align-items:center; justify-content:center">?</div>
+                    </div>
+                  </div>
+                </div>
+                <sc-if value="{{ s.latkaOpen }}" hint-placeholder-val="{{ false }}">
+                  <div style="margin-top:12px; border-top:1px solid var(--line); padding-top:10px; overflow:hidden; animation:rozlozeni var(--dur-base) var(--ease-out) both">
+                    <sc-for list="{{ s.rozpad }}" as="r" hint-placeholder-count="4">
+                      <div style="display:flex; align-items:baseline; justify-content:space-between; gap:10px; padding:5px 0">
+                        <div style="font-size:var(--fs-small); color:var(--ink-muted)">{{ r.label }}</div>
+                        <div style="font-family:var(--font-mono); font-size:var(--fs-num-sm); color:{{ r.color }}; font-variant-numeric:tabular-nums">{{ r.val }}</div>
+                      </div>
+                    </sc-for>
+                    <div style="display:flex; align-items:center; gap:8px; margin-top:6px; padding-top:8px; border-top:1px dashed var(--line)">
+                      <div style="color:var(--brass); font-size:var(--fs-small); animation:hvezdaVstup var(--dur-base) var(--ease-drop) both">★</div>
+                      <div style="font-size:var(--fs-small); color:var(--ink-muted)">Pod laťkou večer končí vadou.</div>
+                    </div>
+                  </div>
+                </sc-if>
+              </div>
+
+              <sc-if value="{{ s.tipLatka }}" hint-placeholder-val="{{ false }}">
+                <div style="margin-top:8px; background:var(--card-hi); border:1px solid var(--brass-a35); border-radius:var(--radius-chip); padding:10px 12px; font-size:var(--fs-small); color:var(--ink); line-height:1.45; animation:vstup var(--dur-base) var(--ease-out) both">Průměr, na který se dnes musí kuchyně dostat, aby večer prošel bez vady.</div>
+              </sc-if>
+
+              <div style="margin-top:18px; display:flex; align-items:center; justify-content:space-between">
+                <div style="font-size:var(--fs-h2); letter-spacing:var(--ls-label); color:var(--ink)">POSTY</div>
+                <div style="display:flex; align-items:center; gap:2px">
+                  <div style="font-size:var(--fs-micro); letter-spacing:var(--ls-label); color:var(--ink-muted)">ZÁTĚŽ / KAPACITA</div>
+                  <div onClick="{{ s.tapPost }}" style="height:var(--hit); width:28px; margin:-14px 0; display:flex; align-items:center; justify-content:center; cursor:pointer">
+                    <div style="width:19px; height:19px; border-radius:var(--radius-pill); border:1px solid var(--brass-a55); color:var(--brass); font-size:var(--fs-micro); display:flex; align-items:center; justify-content:center">?</div>
+                  </div>
+                </div>
+              </div>
+
+              <sc-if value="{{ s.tipPost }}" hint-placeholder-val="{{ false }}">
+                <div style="margin:8px 0; background:var(--card-hi); border:1px solid var(--brass-a35); border-radius:var(--radius-chip); padding:10px 12px; font-size:var(--fs-small); color:var(--ink); line-height:1.45; animation:vstup var(--dur-base) var(--ease-out) both">Kolik chodů post večer utáhne proti tomu, kolik jich má vydat; nad 100 % vaří na dluh.</div>
+              </sc-if>
+
+              <div style="margin-top:10px; display:grid; grid-template-columns:{{ postCols }}; gap:10px">
+                <sc-for list="{{ s.posts }}" as="p" hint-placeholder-count="4">
+                  <div onClick="{{ p.tap }}" style="position:relative; min-height:158px; display:flex; flex-direction:column; gap:9px; background:{{ p.bg }}; border:1px solid {{ p.border }}; border-radius:var(--radius-card); padding:11px 12px 10px; box-shadow:var(--shadow-card); cursor:pointer; animation:{{ p.anim }}">
+                    <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:6px">
+                      <div>
+                        <div style="font-size:var(--fs-label); letter-spacing:var(--ls-label); color:var(--ink-muted)">POST</div>
+                        <div style="font-family:var(--font-display); font-size:var(--fs-dish); color:var(--ink); line-height:1.1; margin-top:2px">{{ p.name }}</div>
+                      </div>
+                      <div style="flex:none; text-align:right">
+                        <div style="font-family:var(--font-mono); font-size:var(--fs-num); line-height:1; white-space:nowrap; color:{{ p.pctColor }}; font-variant-numeric:tabular-nums; letter-spacing:-.02em">{{ p.pct }}</div>
+                      </div>
+                    </div>
+
+                    <sc-for list="{{ p.staff }}" as="k" hint-placeholder-count="2">
+                      <div style="display:flex; flex-direction:column; gap:4px">
+                        <div style="display:flex; align-items:baseline; justify-content:space-between; gap:6px">
+                          <div style="font-size:var(--fs-small); color:{{ k.nameColor }}; border:{{ k.nameBorder }}; border-radius:var(--radius-chip); padding:{{ k.namePad }}; animation:{{ k.anim }}">{{ k.name }}</div>
+                          <div style="font-family:var(--font-mono); font-size:var(--fs-micro); color:{{ k.wearColor }}; font-variant-numeric:tabular-nums">{{ k.wear }}</div>
+                        </div>
+                        <div style="height:3px; border-radius:var(--radius-pill); background:var(--line); overflow:hidden">
+                          <div style="height:100%; width:{{ k.wearW }}; background:{{ k.wearColor }}"></div>
+                        </div>
+                      </div>
+                    </sc-for>
+
+                    <div style="margin-top:auto; display:flex; flex-direction:column; gap:2px; border-top:1px solid var(--line); padding-top:7px">
+                      <div style="font-size:var(--fs-micro); letter-spacing:.06em; white-space:nowrap; color:var(--ink-muted)">ZÁTĚŽ / KAPACITA</div>
+                      <div style="font-family:var(--font-mono); font-size:var(--fs-num-sm); white-space:nowrap; color:{{ p.pctColor }}; font-variant-numeric:tabular-nums">{{ p.load }}</div>
+                    </div>
+
+                    <sc-if value="{{ p.over }}" hint-placeholder-val="{{ false }}">
+                      <div style="position:absolute; top:-7px; right:8px; background:var(--bad); color:#FFF3EF; font-family:var(--font-mono); font-size:var(--fs-micro); letter-spacing:var(--ls-label); padding:3px 7px; border-radius:var(--radius-chip); box-shadow:var(--shadow-lift); animation:razba var(--dur-base) var(--ease-drop) both">PŘETÍŽENO</div>
+                    </sc-if>
+                    <sc-if value="{{ p.picked }}" hint-placeholder-val="{{ false }}">
+                      <div style="position:absolute; bottom:-7px; left:10px; background:var(--brass); color:#14110C; font-family:var(--font-mono); font-size:var(--fs-micro); letter-spacing:var(--ls-label); padding:3px 7px; border-radius:var(--radius-chip)">✓ CÍL</div>
+                    </sc-if>
+                  </div>
+                </sc-for>
+              </div>
+
+              <div style="margin-top:12px; display:flex; align-items:center; gap:2px">
+                <div style="font-family:var(--font-mono); font-size:var(--fs-small); color:var(--ink-muted); font-variant-numeric:tabular-nums">{{ s.strop }}</div>
+                <div onClick="{{ s.tapChoice }}" style="height:var(--hit); width:30px; margin:-14px 0; display:flex; align-items:center; justify-content:center; cursor:pointer">
+                  <div style="width:19px; height:19px; border-radius:var(--radius-pill); border:1px solid var(--brass-a55); color:var(--brass); font-size:var(--fs-micro); display:flex; align-items:center; justify-content:center">?</div>
+                </div>
+              </div>
+
+              <sc-if value="{{ s.tipChoice }}" hint-placeholder-val="{{ false }}">
+                <div style="margin-top:8px; background:var(--card-hi); border:1px solid var(--brass-a35); border-radius:var(--radius-chip); padding:10px 12px; font-size:var(--fs-small); color:var(--ink); line-height:1.45; animation:vstup var(--dur-base) var(--ease-out) both">Na stropu = post jede na maximu; každý další chod jde na úkor kvality. Žeton je jednorázové právo přitlačit, za sezónu jich máš pět.</div>
+              </sc-if>
+
+              <div style="margin-top:16px; display:flex; align-items:baseline; justify-content:space-between">
+                <div style="font-size:var(--fs-h2); letter-spacing:var(--ls-label); color:var(--ink)">VOLBA VEČERA</div>
+                <div style="font-family:var(--font-mono); font-size:var(--fs-micro); color:var(--ink-muted)">1 ze 6</div>
+              </div>
+
+              <div style="margin-top:10px; display:flex; flex-direction:column; gap:8px">
+                <sc-for list="{{ s.choices }}" as="c" hint-placeholder-count="6">
+                  <div onClick="{{ c.tap }}" style="display:flex; align-items:flex-start; gap:11px; min-height:62px; background:{{ c.bg }}; border:1px solid {{ c.border }}; border-radius:var(--radius-docket); padding:12px; cursor:pointer; box-shadow:var(--shadow-card); animation:{{ c.anim }}; transition:background var(--dur-fast) var(--ease-out)">
+                    <div style="flex:none; width:20px; height:20px; margin-top:1px; border-radius:5px; border:1px solid {{ c.boxBorder }}; background:{{ c.boxBg }}; color:{{ c.boxInk }}; font-size:12px; display:flex; align-items:center; justify-content:center">{{ c.mark }}</div>
+                    <div style="flex:1">
+                      <div style="display:flex; align-items:baseline; justify-content:space-between; gap:8px">
+                        <div style="font-family:var(--font-display); font-size:var(--fs-dish); font-weight:600; color:{{ c.ink }}; line-height:1.15">{{ c.name }}</div>
+                        <sc-if value="{{ c.tokens }}" hint-placeholder-val="{{ false }}">
+                          <div style="flex:none; font-family:var(--font-mono); font-size:var(--fs-micro); color:{{ c.tokenInk }}; border:1px solid {{ c.tokenBorder }}; border-radius:var(--radius-pill); padding:2px 7px; font-variant-numeric:tabular-nums">{{ c.tokens }}</div>
+                        </sc-if>
+                      </div>
+                      <div style="margin-top:4px; font-size:var(--fs-body); line-height:1.4; color:{{ c.sub }}; text-wrap:pretty">{{ c.text }}</div>
+                    </div>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+
+            <div style="position:absolute; left:0; right:0; bottom:0; padding:12px var(--pad-x) 16px; background:linear-gradient(180deg, rgba(14,13,11,0) 0%, var(--bg) 34%); display:flex; flex-direction:column; gap:9px">
+              <div style="display:flex; align-items:center; gap:8px; animation:otisk var(--dur-base) var(--ease-out) both">
+                <div style="flex:none; width:6px; height:6px; border-radius:var(--radius-pill); background:{{ s.verdictDot }}"></div>
+                <div style="font-size:var(--fs-small); color:var(--ink-muted); line-height:1.35">{{ s.verdict }}</div>
+              </div>
+              <div onClick="{{ s.start }}" style="position:relative; overflow:hidden; height:56px; border-radius:var(--radius-card); background:var(--brass); color:#14110C; display:flex; align-items:center; justify-content:center; gap:10px; box-shadow:var(--shadow-cta); cursor:pointer; animation:{{ s.ctaAnim }}">
+                <div style="font-family:var(--font-display); font-size:17px; font-weight:600; letter-spacing:.04em">ZAHÁJIT SERVIS</div>
+                <div style="font-family:var(--font-mono); font-size:var(--fs-micro); opacity:.72; font-variant-numeric:tabular-nums">{{ s.ctaMeta }}</div>
+                <div style="position:absolute; top:0; bottom:0; width:38px; background:linear-gradient(90deg, transparent, rgba(255,255,255,.28), transparent); animation:{{ s.sheen }}"></div>
+              </div>
+              <div style="height:48px; border-radius:var(--radius-card); border:1px solid var(--line); color:var(--ink-muted); display:flex; align-items:center; justify-content:center; font-size:var(--fs-small); cursor:pointer" style-hover="border-color:var(--brass-a55); color:var(--ink)">Rovnou výsledek</div>
+            </div>
+          </div>
+        </div>
+      </sc-for>
+    </div>
+  </div>
+
+  <div style="display:flex; flex-direction:column; gap:16px">
+    <div style="display:flex; align-items:baseline; gap:12px; flex-wrap:wrap; border-top:1px solid var(--line); padding-top:16px">
+      <div style="font-family:var(--font-mono); font-size:var(--fs-micro); letter-spacing:var(--ls-label); color:var(--brass); border:1px solid var(--brass-a55); border-radius:var(--radius-chip); padding:4px 8px">PROMPT 2 · 3</div>
+      <div style="font-family:var(--font-display); font-size:22px; color:var(--ink)">Výběr kuchaře &amp; potvrzení přitlačení</div>
+      <div style="font-size:var(--fs-small); color:var(--ink-muted)">Nic není zašedlé. Cena je vždycky vidět dřív než potvrzení.</div>
+    </div>
+
+    <div style="display:flex; flex-wrap:wrap; gap:38px; align-items:flex-start">
+
+      <div id="2a" style="display:flex; flex-direction:column; gap:10px">
+        <div style="display:flex; align-items:center; gap:10px">
+          <div style="font-family:var(--font-mono); font-size:var(--fs-micro); letter-spacing:var(--ls-label); color:#0E0D0B; background:var(--brass); border-radius:var(--radius-chip); padding:4px 8px">2a</div>
+          <div style="font-size:var(--fs-small); color:var(--ink-muted)">Kdo vede Omáčky</div>
+        </div>
+        <div data-screen-label="2a" style="position:relative; width:var(--col-width); height:844px; background:var(--bg); border:1px solid var(--line); border-radius:22px; overflow:hidden; box-shadow:var(--shadow-deep)">
+          <div style="position:absolute; inset:0; overflow:auto; scrollbar-width:none; padding:var(--pad-top) var(--pad-x) 128px">
+
+            <div style="position:sticky; top:-14px; z-index:2; background:var(--bg); padding-top:2px; padding-bottom:10px">
+              <div style="display:flex; align-items:baseline; justify-content:space-between; gap:8px">
+                <div style="font-size:var(--fs-label); letter-spacing:var(--ls-label); color:var(--ink-muted)">VEDOUCÍ POSTU</div>
+                <div style="font-family:var(--font-mono); font-size:var(--fs-micro); color:var(--ink-muted)">Večer 6/40</div>
+              </div>
+              <div style="margin-top:8px; display:flex; gap:12px; background:var(--card-hi); border:1px solid var(--brass-a35); border-radius:var(--radius-card); padding:12px 13px; box-shadow:var(--shadow-card)">
+                <div style="flex:1">
+                  <div style="font-family:var(--font-display); font-size:20px; color:var(--ink); line-height:1.1">Omáčky</div>
+                  <div style="margin-top:6px; font-size:var(--fs-small); color:var(--ink-muted)">Vedoucí <span style="color:var(--brass)">Doubrava</span> · pomocník Nezval</div>
+                  <div style="margin-top:8px; height:3px; border-radius:var(--radius-pill); background:var(--line); overflow:hidden">
+                    <div style="height:100%; width:64%; background:var(--ok)"></div>
+                  </div>
+                </div>
+                <div style="flex:none; text-align:right">
+                  <div style="font-family:var(--font-mono); font-size:var(--fs-num); line-height:1; color:var(--ink); font-variant-numeric:tabular-nums">64 %</div>
+                  <div style="margin-top:4px; font-family:var(--font-mono); font-size:var(--fs-micro); color:var(--ink-muted); font-variant-numeric:tabular-nums">5,6 / 8,8</div>
+                </div>
+              </div>
+            </div>
+
+            <div style="margin-top:6px; display:flex; align-items:center; gap:2px">
+              <div style="font-size:var(--fs-h2); letter-spacing:var(--ls-label); color:var(--ink)">KDO TAM DNES BUDE STÁT</div>
+              <div onClick="{{ vyber.tap }}" style="height:var(--hit); width:32px; margin:-14px 0; display:flex; align-items:center; justify-content:center; cursor:pointer">
+                <div style="width:21px; height:21px; border-radius:var(--radius-pill); border:1px solid var(--brass-a55); color:var(--brass); font-size:var(--fs-small); display:flex; align-items:center; justify-content:center">?</div>
+              </div>
+            </div>
+
+            <sc-if value="{{ vyber.open }}" hint-placeholder-val="{{ false }}">
+              <div style="margin-top:6px; background:var(--card-hi); border:1px solid var(--brass-a35); border-radius:var(--radius-chip); padding:10px 12px; font-size:var(--fs-small); color:var(--ink); line-height:1.5; animation:vstup var(--dur-base) var(--ease-out) both">Ruka = jak dobře kuchař vaří na tomhle postu (1–5), už včetně −1 mimo domovský post. Opotřebení = kolik toho má v nohách; roste každý večer.</div>
+            </sc-if>
+
+            <div style="margin-top:10px; display:flex; flex-direction:column; gap:8px">
+              <sc-for list="{{ vyber.rows }}" as="r" hint-placeholder-count="6">
+                <div onClick="{{ r.tap }}" style="min-height:76px; background:{{ r.bg }}; border:1px solid {{ r.border }}; border-radius:var(--radius-docket); padding:11px 12px; cursor:pointer; box-shadow:var(--shadow-card); animation:{{ r.anim }}">
+                  <div style="display:flex; align-items:baseline; justify-content:space-between; gap:10px">
+                    <div style="display:flex; align-items:baseline; gap:8px">
+                      <div style="font-family:var(--font-display); font-size:17px; font-weight:600; color:{{ r.ink }}">{{ r.name }}</div>
+                      <sc-if value="{{ r.here }}" hint-placeholder-val="{{ false }}">
+                        <div style="font-family:var(--font-mono); font-size:var(--fs-micro); letter-spacing:var(--ls-label); color:#17130C; background:var(--brass-hi); border-radius:var(--radius-chip); padding:2px 6px">TADY</div>
+                      </sc-if>
+                    </div>
+                    <div style="flex:none; font-family:var(--font-mono); font-size:var(--fs-small); color:{{ r.numInk }}; font-variant-numeric:tabular-nums; letter-spacing:var(--ls-mono)">{{ r.stat }}</div>
+                  </div>
+                  <div style="margin-top:5px; font-size:var(--fs-small); color:{{ r.sub }}; line-height:1.4">{{ r.move }}</div>
+                  <sc-if value="{{ r.warn }}" hint-placeholder-val="{{ false }}">
+                    <div style="margin-top:7px; display:inline-flex; align-items:center; gap:6px; border:1px solid var(--bad-a45); background:var(--bad-a28); border-radius:var(--radius-chip); padding:4px 8px">
+                      <div style="color:var(--bad); font-size:11px">▲</div>
+                      <div style="font-family:var(--font-mono); font-size:var(--fs-micro); letter-spacing:var(--ls-label); color:#F0BDB4">{{ r.warn }}</div>
+                    </div>
+                  </sc-if>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+
+          <div style="position:absolute; left:0; right:0; bottom:0; padding:12px var(--pad-x) 16px; background:linear-gradient(180deg, rgba(14,13,11,0) 0%, var(--bg) 34%); display:flex; gap:10px">
+            <div style="flex:1; height:48px; border-radius:var(--radius-card); border:1px solid var(--line); color:var(--ink-muted); display:flex; align-items:center; justify-content:center; font-size:var(--fs-small); cursor:pointer" style-hover="border-color:var(--bad-a45); color:var(--ink)">Uvolnit místo</div>
+            <div style="flex:1; height:48px; border-radius:var(--radius-card); border:1px solid var(--line); color:var(--ink-muted); display:flex; align-items:center; justify-content:center; font-size:var(--fs-small); cursor:pointer" style-hover="border-color:var(--brass-a55); color:var(--ink)">Zrušit</div>
+          </div>
+        </div>
+      </div>
+
+      <div id="3a" style="display:flex; flex-direction:column; gap:10px">
+        <div style="display:flex; align-items:center; gap:10px">
+          <div style="font-family:var(--font-mono); font-size:var(--fs-micro); letter-spacing:var(--ls-label); color:#0E0D0B; background:var(--brass); border-radius:var(--radius-chip); padding:4px 8px">3a</div>
+          <div style="font-size:var(--fs-small); color:var(--ink-muted)">Přitlačit — druhé klepnutí potvrzuje</div>
+        </div>
+        <div data-screen-label="3a" style="position:relative; width:var(--col-width); height:844px; background:var(--bg); border:1px solid var(--line); border-radius:22px; overflow:hidden; box-shadow:var(--shadow-deep)">
+          <div style="position:absolute; inset:0; overflow:auto; scrollbar-width:none; padding:var(--pad-top) var(--pad-x) 40px">
+
+            <div style="font-family:var(--font-display); font-size:var(--fs-title); color:var(--ink)">Kam dnes zatlačíš?</div>
+            <div style="margin-top:5px; font-size:var(--fs-small); color:var(--ink-muted); line-height:1.45">Pět žetonů na celou sezónu. Zpátky se nevracejí.</div>
+
+            <div style="margin-top:14px; display:flex; align-items:center; gap:10px">
+              <div style="display:flex; gap:7px">
+                <sc-for list="{{ zetony }}" as="z" hint-placeholder-count="5">
+                  <div style="width:34px; height:34px; border-radius:var(--radius-pill); border:1px solid {{ z.border }}; background:{{ z.bg }}; color:{{ z.ink }}; display:flex; align-items:center; justify-content:center; font-family:var(--font-mono); font-size:13px; box-shadow:{{ z.shadow }}; animation:{{ z.anim }}">{{ z.mark }}</div>
+                </sc-for>
+              </div>
+              <div style="font-family:var(--font-mono); font-size:var(--fs-micro); letter-spacing:var(--ls-label); color:var(--ink-muted); font-variant-numeric:tabular-nums">{{ zetonyLabel }}</div>
+            </div>
+            <div style="margin-top:6px; font-size:var(--fs-micro); color:var(--ink-muted)">Vyčerpaná ražba zhasne.</div>
+
+            <div style="margin-top:16px; display:flex; align-items:center; gap:2px">
+              <div style="font-size:var(--fs-h2); letter-spacing:var(--ls-label); color:var(--ink)">HVĚZDNÝ TALÍŘ / VADA</div>
+              <div onClick="{{ pritlac.tap }}" style="height:var(--hit); width:32px; margin:-14px 0; display:flex; align-items:center; justify-content:center; cursor:pointer">
+                <div style="width:21px; height:21px; border-radius:var(--radius-pill); border:1px solid var(--brass-a55); color:var(--brass); font-size:var(--fs-small); display:flex; align-items:center; justify-content:center">?</div>
+              </div>
+            </div>
+
+            <sc-if value="{{ pritlac.open }}" hint-placeholder-val="{{ false }}">
+              <div style="margin-top:6px; background:var(--card-hi); border:1px solid var(--brass-a35); border-radius:var(--radius-chip); padding:10px 12px; font-size:var(--fs-small); color:var(--ink); line-height:1.5; animation:vstup var(--dur-base) var(--ease-out) both">Hvězdný talíř = chod tak dobrý, že si ho inspektor zapíše. Vada = chod pod laťkou, který si zapíše taky.</div>
+            </sc-if>
+
+            <div style="margin-top:10px; display:flex; flex-direction:column; gap:10px">
+              <sc-for list="{{ pritlac.cards }}" as="p" hint-placeholder-count="4">
+                <div onClick="{{ p.tap }}" style="position:relative; background:{{ p.bg }}; border:1px solid {{ p.border }}; border-radius:var(--radius-card); padding:13px 14px; cursor:pointer; box-shadow:var(--shadow-card); animation:{{ p.anim }}">
+                  <div style="display:flex; align-items:baseline; justify-content:space-between; gap:8px">
+                    <div style="font-family:var(--font-display); font-size:var(--fs-dish); font-weight:600; color:{{ p.ink }}">Přitlačit · {{ p.post }}</div>
+                    <div style="font-family:var(--font-mono); font-size:var(--fs-micro); color:{{ p.metaInk }}; font-variant-numeric:tabular-nums">{{ p.load }}</div>
+                  </div>
+
+                  <div style="margin-top:10px; display:flex; flex-direction:column; gap:6px; font-family:var(--font-mono); font-size:var(--fs-num-sm); font-variant-numeric:tabular-nums">
+                    <div style="display:flex; align-items:center; gap:8px">
+                      <div style="flex:none; width:15px; color:var(--ok)">★</div>
+                      <div style="flex:1; color:{{ p.rowInk }}">hvězdný talíř</div>
+                      <div style="color:{{ p.dimInk }}">{{ p.starFrom }}</div>
+                      <div style="color:var(--ok)">→</div>
+                      <div style="color:var(--ok)">{{ p.starTo }}</div>
+                    </div>
+                    <div style="display:flex; align-items:center; gap:8px">
+                      <div style="flex:none; width:15px; color:var(--bad)">▲</div>
+                      <div style="flex:1; color:{{ p.rowInk }}">vada</div>
+                      <div style="color:{{ p.dimInk }}">{{ p.badFrom }}</div>
+                      <div style="color:var(--bad)">→</div>
+                      <div style="color:var(--bad)">{{ p.badTo }}</div>
+                    </div>
+                  </div>
+
+                  <div style="margin-top:11px; padding-top:9px; border-top:1px solid {{ p.rule }}; display:flex; align-items:center; justify-content:space-between; gap:10px">
+                    <div style="font-size:var(--fs-small); color:{{ p.costInk }}">Stojí žeton. Zbývají 4.</div>
+                    <sc-if value="{{ p.confirmable }}" hint-placeholder-val="{{ false }}">
+                      <div onClick="{{ p.confirm }}" style="height:44px; padding:0 18px; border-radius:var(--radius-chip); background:#17130C; color:var(--brass-hi); display:flex; align-items:center; font-family:var(--font-mono); font-size:var(--fs-small); letter-spacing:var(--ls-label); animation:vstup var(--dur-base) var(--ease-out) both">POTVRDIT</div>
+                    </sc-if>
+                  </div>
+
+                  <sc-if value="{{ p.done }}" hint-placeholder-val="{{ false }}">
+                    <div style="position:absolute; top:8px; right:10px; font-family:var(--font-mono); font-size:var(--fs-micro); letter-spacing:var(--ls-label); color:var(--seal); border:2px solid var(--seal); border-radius:var(--radius-chip); padding:4px 8px; animation:razba var(--dur-base) var(--ease-drop) both">POTVRZENO</div>
+                  </sc-if>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div style="display:flex; flex-direction:column; gap:16px">
+    <div style="display:flex; align-items:baseline; gap:12px; flex-wrap:wrap; border-top:1px solid var(--line); padding-top:16px">
+      <div style="font-family:var(--font-mono); font-size:var(--fs-micro); letter-spacing:var(--ls-label); color:var(--brass); border:1px solid var(--brass-a55); border-radius:var(--radius-chip); padding:4px 8px">PROMPT 4</div>
+      <div style="font-family:var(--font-display); font-size:22px; color:var(--ink)">Onboarding — tři beaty</div>
+      <div style="font-size:var(--fs-small); color:var(--ink-muted)">Jedna věc na obrazovku. Přeskočit jde všechno.</div>
+    </div>
+
+    <div style="display:flex; flex-wrap:wrap; gap:38px; align-items:flex-start">
+
+      <div id="4a" style="display:flex; flex-direction:column; gap:10px">
+        <div style="display:flex; align-items:center; gap:10px">
+          <div style="font-family:var(--font-mono); font-size:var(--fs-micro); letter-spacing:var(--ls-label); color:#0E0D0B; background:var(--brass); border-radius:var(--radius-chip); padding:4px 8px">4a</div>
+          <div style="font-size:var(--fs-small); color:var(--ink-muted)">Titul</div>
+        </div>
+        <div data-screen-label="4a" style="box-sizing:border-box; position:relative; width:var(--col-width); height:844px; background:var(--bg); border:1px solid var(--line); border-radius:22px; overflow:hidden; box-shadow:var(--shadow-deep); display:flex; flex-direction:column; padding:var(--pad-top) var(--pad-x) 16px">
+          <div style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:18px; text-align:center; padding-bottom:40px">
+            <div style="font-family:var(--font-display); font-size:52px; line-height:1.05; color:var(--ink); animation:otisk 900ms var(--ease-out) both">Tichý host</div>
+            <div style="width:46px; height:1px; background:var(--brass-a55)"></div>
+            <div style="font-family:var(--font-mono); font-size:var(--fs-small); letter-spacing:var(--ls-label); color:var(--brass); animation:vstup var(--dur-docket) var(--ease-out) 300ms both">SEZÓNA 1</div>
+            <div style="font-family:var(--font-display); font-size:19px; font-style:italic; color:var(--ink-muted); animation:vstup var(--dur-docket) var(--ease-out) 520ms both">Kuchyně je tvoje.</div>
+          </div>
+          <div style="display:flex; flex-direction:column; gap:14px; align-items:center">
+            <div style="width:100%; height:56px; border-radius:var(--radius-card); background:var(--brass); color:#14110C; display:flex; align-items:center; justify-content:center; font-family:var(--font-display); font-size:17px; font-weight:600; letter-spacing:.04em; box-shadow:var(--shadow-cta); cursor:pointer">POKRAČOVAT</div>
+            <div style="display:flex; gap:7px">
+              <sc-for list="{{ tecky1 }}" as="d" hint-placeholder-count="3">
+                <div style="width:7px; height:7px; border-radius:var(--radius-pill); background:{{ d.bg }}"></div>
+              </sc-for>
+            </div>
+            <div style="height:36px; display:flex; align-items:center; font-size:var(--fs-small); color:var(--ink-muted); cursor:pointer" style-hover="color:var(--ink)">Přeskočit úvod</div>
+          </div>
+        </div>
+      </div>
+
+      <div id="4b" style="display:flex; flex-direction:column; gap:10px">
+        <div style="display:flex; align-items:center; gap:10px">
+          <div style="font-family:var(--font-mono); font-size:var(--fs-micro); letter-spacing:var(--ls-label); color:#0E0D0B; background:var(--brass); border-radius:var(--radius-chip); padding:4px 8px">4b</div>
+          <div style="font-size:var(--fs-small); color:var(--ink-muted)">Slib sálu</div>
+        </div>
+        <div data-screen-label="4b" style="box-sizing:border-box; position:relative; width:var(--col-width); height:844px; background:var(--bg); border:1px solid var(--line); border-radius:22px; overflow:hidden; box-shadow:var(--shadow-deep); display:flex; flex-direction:column; padding:var(--pad-top) var(--pad-x) 16px">
+          <div style="padding-top:14px">
+            <div style="font-size:var(--fs-h2); letter-spacing:var(--ls-label); color:var(--ink-muted)">CO SLÍBÍŠ SÁLU</div>
+            <div style="margin-top:8px; font-family:var(--font-display); font-size:19px; font-style:italic; color:var(--ink); line-height:1.35">Slib drží celou sezónu. Průvodce si ho pamatuje.</div>
+          </div>
+          <div style="flex:1; display:flex; flex-direction:column; justify-content:center; gap:12px; padding:18px 0">
+            <sc-for list="{{ sliby }}" as="s2" hint-placeholder-count="3">
+              <div onClick="{{ s2.tap }}" style="min-height:104px; display:flex; flex-direction:column; justify-content:center; gap:7px; background:{{ s2.bg }}; border:1px solid {{ s2.border }}; border-radius:var(--radius-card); padding:16px; cursor:pointer; box-shadow:var(--shadow-card); animation:{{ s2.anim }}">
+                <div style="display:flex; align-items:center; gap:10px">
+                  <div style="flex:none; width:20px; height:20px; border-radius:5px; border:1px solid {{ s2.boxBorder }}; background:{{ s2.boxBg }}; color:{{ s2.boxInk }}; font-size:12px; display:flex; align-items:center; justify-content:center">{{ s2.mark }}</div>
+                  <div style="font-family:var(--font-display); font-size:19px; font-weight:600; color:{{ s2.ink }}; line-height:1.15">{{ s2.name }}</div>
+                </div>
+                <div style="padding-left:30px; font-size:var(--fs-body); line-height:1.45; color:{{ s2.sub }}; text-wrap:pretty">{{ s2.text }}</div>
+              </div>
+            </sc-for>
+          </div>
+          <div style="display:flex; flex-direction:column; gap:14px; align-items:center">
+            <div style="display:flex; gap:7px">
+              <sc-for list="{{ tecky2 }}" as="d" hint-placeholder-count="3">
+                <div style="width:7px; height:7px; border-radius:var(--radius-pill); background:{{ d.bg }}"></div>
+              </sc-for>
+            </div>
+            <div style="height:36px; display:flex; align-items:center; font-size:var(--fs-small); color:var(--ink-muted); cursor:pointer" style-hover="color:var(--ink)">PŘESKOČIT OTÁZKU</div>
+          </div>
+        </div>
+      </div>
+
+      <div id="4c" style="display:flex; flex-direction:column; gap:10px">
+        <div style="display:flex; align-items:center; gap:10px">
+          <div style="font-family:var(--font-mono); font-size:var(--fs-micro); letter-spacing:var(--ls-label); color:#0E0D0B; background:var(--brass); border-radius:var(--radius-chip); padding:4px 8px">4c</div>
+          <div style="font-size:var(--fs-small); color:var(--ink-muted)">Tvoji lidé</div>
+        </div>
+        <div data-screen-label="4c" style="position:relative; width:var(--col-width); height:844px; background:var(--bg); border:1px solid var(--line); border-radius:22px; overflow:hidden; box-shadow:var(--shadow-deep)">
+          <div style="position:absolute; inset:0; overflow:auto; scrollbar-width:none; padding:var(--pad-top) var(--pad-x) 132px">
+            <div style="padding-top:8px; display:flex; align-items:center; justify-content:space-between; gap:8px">
+              <div style="font-size:var(--fs-h2); letter-spacing:var(--ls-label); color:var(--ink)">TVOJI LIDÉ</div>
+              <div style="display:flex; align-items:center; gap:2px">
+                <div style="font-family:var(--font-mono); font-size:var(--fs-micro); color:var(--ink-muted)">ruka · odolnost</div>
+                <div onClick="{{ lide.tap }}" style="height:var(--hit); width:30px; margin:-14px 0; display:flex; align-items:center; justify-content:center; cursor:pointer">
+                  <div style="width:19px; height:19px; border-radius:var(--radius-pill); border:1px solid var(--brass-a55); color:var(--brass); font-size:var(--fs-micro); display:flex; align-items:center; justify-content:center">?</div>
+                </div>
+              </div>
+            </div>
+
+            <sc-if value="{{ lide.open }}" hint-placeholder-val="{{ false }}">
+              <div style="margin-top:8px; background:var(--card-hi); border:1px solid var(--brass-a35); border-radius:var(--radius-chip); padding:10px 12px; font-size:var(--fs-small); color:var(--ink); line-height:1.5; animation:vstup var(--dur-base) var(--ease-out) both">Ruka 1–5 říká, jak vysoko kuchař dosáhne. Odolnost říká, jak dlouho to vydrží: ● tvrdý · ◐ běžný · ○ křehký.</div>
+            </sc-if>
+
+            <div style="margin-top:10px; display:flex; flex-direction:column; gap:8px">
+              <sc-for list="{{ kucharI }}" as="k2" hint-placeholder-count="6">
+                <div style="background:var(--card); border:1px solid var(--line); border-radius:var(--radius-docket); padding:11px 12px; box-shadow:var(--shadow-card); animation:{{ k2.anim }}">
+                  <div style="display:flex; align-items:baseline; justify-content:space-between; gap:10px">
+                    <div style="display:flex; align-items:baseline; gap:9px">
+                      <div style="font-family:var(--font-display); font-size:17px; font-weight:600; color:var(--ink)">{{ k2.name }}</div>
+                      <div style="font-size:var(--fs-micro); letter-spacing:var(--ls-label); color:var(--ink-muted)">{{ k2.post }}</div>
+                    </div>
+                    <div style="flex:none; display:flex; align-items:baseline; gap:9px; font-family:var(--font-mono); font-size:var(--fs-small); font-variant-numeric:tabular-nums">
+                      <div style="color:var(--brass)">ruka {{ k2.ruka }}</div>
+                      <div style="color:{{ k2.odolInk }}">{{ k2.odol }} {{ k2.odolWord }}</div>
+                    </div>
+                  </div>
+                  <div style="margin-top:5px; font-family:var(--font-display); font-style:italic; font-size:var(--fs-body); color:var(--ink-muted); line-height:1.4; text-wrap:pretty">{{ k2.veta }}</div>
+                </div>
+              </sc-for>
+            </div>
+
+            <div style="margin-top:12px; font-size:var(--fs-small); color:var(--ink-muted); line-height:1.45">Rozepisovat je začneš až v druhém týdnu.</div>
+          </div>
+
+          <div style="position:absolute; left:0; right:0; bottom:0; padding:12px var(--pad-x) 16px; background:linear-gradient(180deg, rgba(14,13,11,0) 0%, var(--bg) 30%); display:flex; flex-direction:column; gap:12px; align-items:center">
+            <div style="width:100%; height:56px; border-radius:var(--radius-card); background:var(--brass); color:#14110C; display:flex; align-items:center; justify-content:center; font-family:var(--font-display); font-size:17px; font-weight:600; letter-spacing:.04em; box-shadow:var(--shadow-cta); cursor:pointer">OTEVŘÍT KUCHYNI</div>
+            <div style="display:flex; gap:7px">
+              <sc-for list="{{ tecky3 }}" as="d" hint-placeholder-count="3">
+                <div style="width:7px; height:7px; border-radius:var(--radius-pill); background:{{ d.bg }}"></div>
+              </sc-for>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div style="display:flex; flex-direction:column; gap:16px">
+    <div style="display:flex; align-items:baseline; gap:12px; flex-wrap:wrap; border-top:1px solid var(--line); padding-top:16px">
+      <div style="font-family:var(--font-mono); font-size:var(--fs-micro); letter-spacing:var(--ls-label); color:var(--brass); border:1px solid var(--brass-a55); border-radius:var(--radius-chip); padding:4px 8px">PROMPT 5</div>
+      <div style="font-family:var(--font-display); font-size:22px; color:var(--ink)">Servis a následek</div>
+      <div style="font-size:var(--fs-small); color:var(--ink-muted)">Bony najíždějí zprava po --stagger. Číslo je odchylka od laťky, ne absolutní hodnota.</div>
+    </div>
+
+    <div style="display:flex; flex-wrap:wrap; gap:38px; align-items:flex-start">
+
+      <div id="5a" style="display:flex; flex-direction:column; gap:10px">
+        <div style="display:flex; align-items:center; gap:10px">
+          <div style="font-family:var(--font-mono); font-size:var(--fs-micro); letter-spacing:var(--ls-label); color:#0E0D0B; background:var(--brass); border-radius:var(--radius-chip); padding:4px 8px">5a</div>
+          <div style="font-size:var(--fs-small); color:var(--ink-muted)">Servis · dvanáct bonů</div>
+          <div onClick="{{ servis.replay }}" style="height:30px; padding:0 12px; border:1px solid var(--line); border-radius:var(--radius-pill); display:flex; align-items:center; font-size:var(--fs-micro); color:var(--ink-muted); cursor:pointer" style-hover="border-color:var(--brass-a55); color:var(--ink)">↻ přehrát</div>
+        </div>
+        <div data-screen-label="5a" style="position:relative; width:var(--col-width); height:844px; background:var(--bg); border:1px solid var(--line); border-radius:22px; overflow:hidden; box-shadow:var(--shadow-deep)">
+          <div style="position:absolute; left:0; right:0; top:0; z-index:3; padding:var(--pad-top) var(--pad-x) 10px; background:var(--bg); border-bottom:1px solid var(--line)">
+            <div style="display:flex; align-items:baseline; justify-content:space-between; gap:8px">
+              <div style="display:flex; align-items:baseline; gap:9px">
+                <div style="font-size:var(--fs-label); letter-spacing:var(--ls-label); color:var(--ink-muted)">LAŤKA</div>
+                <div style="font-family:var(--font-mono); font-size:22px; color:var(--ink); font-variant-numeric:tabular-nums">14,6</div>
+              </div>
+              <div style="font-family:var(--font-mono); font-size:var(--fs-micro); letter-spacing:var(--ls-label); color:var(--ink-muted); font-variant-numeric:tabular-nums">VEČER 6/40 · 12 TALÍŘŮ</div>
+            </div>
+          </div>
+
+          <div style="position:absolute; inset:0; overflow:auto; scrollbar-width:none; padding:64px 14px 96px 30px">
+            <div style="position:absolute; left:14px; top:64px; bottom:96px; width:9px; border-radius:3px; background:var(--rail); overflow:hidden; box-shadow:var(--shadow-lift)">
+              <div style="position:absolute; top:0; bottom:0; width:22px; background:linear-gradient(90deg, transparent, rgba(255,255,255,.5), transparent); animation:{{ servis.sheen }}"></div>
+            </div>
+
+            <div style="display:flex; flex-direction:column; gap:8px">
+              <sc-for list="{{ servis.bony }}" as="b" hint-placeholder-count="12">
+                <div style="animation:{{ b.enter }}">
+                  <div style="position:relative; display:flex; align-items:center; gap:10px; background:{{ b.bg }}; border:1px solid {{ b.border }}; border-radius:var(--radius-docket); padding:10px 12px; box-shadow:var(--shadow-card); animation:{{ b.fall }}">
+                    <div style="position:absolute; left:-19px; top:50%; width:19px; height:1px; background:{{ b.clip }}"></div>
+                    <div style="flex:1; min-width:0">
+                      <div style="font-family:var(--font-display); font-size:15px; color:{{ b.ink }}; line-height:1.2; text-decoration:{{ b.strike }}">{{ b.name }}</div>
+                      <div style="margin-top:3px; font-family:var(--font-mono); font-size:var(--fs-micro); letter-spacing:var(--ls-label); color:var(--ink-muted); font-variant-numeric:tabular-nums">{{ b.meta }}</div>
+                    </div>
+                    <sc-if value="{{ b.star }}" hint-placeholder-val="{{ false }}">
+                      <div style="flex:none; color:var(--brass-hi); font-size:15px; animation:{{ b.starAnim }}">★</div>
+                    </sc-if>
+                    <div style="flex:none; font-family:var(--font-mono); font-size:20px; color:{{ b.numInk }}; font-variant-numeric:tabular-nums; letter-spacing:-.02em; text-decoration:{{ b.strike }}">{{ b.num }}</div>
+                    <sc-if value="{{ b.podLabel }}" hint-placeholder-val="{{ false }}">
+                      <div style="flex:none; font-family:var(--font-mono); font-size:var(--fs-micro); letter-spacing:var(--ls-label); color:var(--bad)">POD</div>
+                    </sc-if>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+
+          <div style="position:absolute; left:0; right:0; bottom:0; padding:12px var(--pad-x) 16px; background:linear-gradient(180deg, rgba(14,13,11,0) 0%, var(--bg) 40%); display:flex; align-items:center; justify-content:space-between; gap:12px">
+            <div>
+              <div style="font-size:var(--fs-micro); letter-spacing:var(--ls-label); color:var(--ink-muted)">PRŮMĚRNÁ ODCHYLKA</div>
+              <div style="margin-top:2px; font-family:var(--font-mono); font-size:26px; color:{{ servis.soucetInk }}; font-variant-numeric:tabular-nums; animation:tik var(--dur-fast) var(--ease-out)">{{ servis.soucet }}</div>
+            </div>
+            <div onClick="{{ servis.skip }}" style="height:48px; padding:0 20px; border-radius:var(--radius-card); border:1px solid var(--line); color:var(--ink-muted); display:flex; align-items:center; font-size:var(--fs-small); cursor:pointer" style-hover="border-color:var(--brass-a55); color:var(--ink)">PŘESKOČIT</div>
+          </div>
+        </div>
+      </div>
+
+      <div id="5b" style="display:flex; flex-direction:column; gap:10px">
+        <div style="display:flex; align-items:center; gap:10px">
+          <div style="font-family:var(--font-mono); font-size:var(--fs-micro); letter-spacing:var(--ls-label); color:#0E0D0B; background:var(--brass); border-radius:var(--radius-chip); padding:4px 8px">5b</div>
+          <div style="font-size:var(--fs-small); color:var(--ink-muted)">Následek</div>
+          <div style="display:flex; gap:6px">
+            <div onClick="{{ nasl.setRusny }}" style="height:30px; padding:0 12px; border:1px solid {{ nasl.rusnyBorder }}; border-radius:var(--radius-pill); display:flex; align-items:center; font-size:var(--fs-micro); color:{{ nasl.rusnyInk }}; cursor:pointer">rušný</div>
+            <div onClick="{{ nasl.setTichy }}" style="height:30px; padding:0 12px; border:1px solid {{ nasl.tichyBorder }}; border-radius:var(--radius-pill); display:flex; align-items:center; font-size:var(--fs-micro); color:{{ nasl.tichyInk }}; cursor:pointer">tichý</div>
+          </div>
+        </div>
+        <div data-screen-label="5b" style="box-sizing:border-box; position:relative; width:var(--col-width); height:844px; background:var(--bg); border:1px solid var(--line); border-radius:22px; overflow:hidden; box-shadow:var(--shadow-deep); display:flex; flex-direction:column; padding:var(--pad-top) var(--pad-x) 16px">
+          <div style="display:flex; align-items:baseline; justify-content:space-between; gap:8px; padding-top:6px">
+            <div style="font-size:var(--fs-h2); letter-spacing:var(--ls-label); color:var(--ink-muted)">PO SERVISU</div>
+            <div style="font-family:var(--font-mono); font-size:var(--fs-micro); color:var(--ink-muted); font-variant-numeric:tabular-nums">VEČER 6/40 · ÚT</div>
+          </div>
+
+          <div style="flex:1; display:flex; align-items:center">
+            <div style="width:100%; background:var(--card); border:1px solid var(--line); border-radius:var(--radius-card); padding:20px 18px; box-shadow:var(--shadow-card); animation:vstup var(--dur-docket) var(--ease-out) both">
+              <div style="display:flex; flex-direction:column; gap:12px">
+                <sc-for list="{{ nasl.lines }}" as="l" hint-placeholder-count="3">
+                  <div style="font-family:var(--font-display); font-style:italic; font-size:17px; line-height:1.45; color:var(--ink); text-wrap:pretty; animation:{{ l.anim }}">{{ l.text }}</div>
+                </sc-for>
+              </div>
+
+              <div style="margin:18px 0 0; height:1px; background:var(--line)"></div>
+
+              <div style="margin-top:16px; display:flex; flex-direction:column; gap:12px">
+                <sc-for list="{{ nasl.nums }}" as="n" hint-placeholder-count="3">
+                  <div style="display:flex; align-items:baseline; justify-content:space-between; gap:10px">
+                    <div style="font-size:var(--fs-label); letter-spacing:var(--ls-label); color:var(--ink-muted)">{{ n.label }}</div>
+                    <div style="display:flex; align-items:baseline; gap:9px; font-family:var(--font-mono); font-variant-numeric:tabular-nums">
+                      <div style="font-size:19px; color:var(--ink)">{{ n.val }}</div>
+                      <div style="font-size:var(--fs-small); color:{{ n.deltaInk }}">{{ n.delta }}</div>
+                    </div>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </div>
+
+          <div style="height:56px; border-radius:var(--radius-card); background:var(--brass); color:#14110C; display:flex; align-items:center; justify-content:center; font-family:var(--font-display); font-size:17px; font-weight:600; letter-spacing:.04em; box-shadow:var(--shadow-cta); cursor:pointer">DALŠÍ VEČER</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div style="display:flex; flex-direction:column; gap:16px">
+    <div style="display:flex; align-items:baseline; gap:12px; flex-wrap:wrap; border-top:1px solid var(--line); padding-top:16px">
+      <div style="font-family:var(--font-mono); font-size:var(--fs-micro); letter-spacing:var(--ls-label); color:var(--brass); border:1px solid var(--brass-a55); border-radius:var(--radius-chip); padding:4px 8px">PROMPT 6</div>
+      <div style="font-family:var(--font-display); font-size:22px; color:var(--ink)">Verdikt — jediná světlá obrazovka</div>
+      <div style="font-size:var(--fs-small); color:var(--ink-muted)">Dopis se rozloží, pečeť se otiskne, teprve pak přiletí hvězda.</div>
+    </div>
+
+    <div style="display:flex; flex-wrap:wrap; gap:38px; align-items:flex-start">
+      <sc-for list="{{ dopisy }}" as="d2" hint-placeholder-count="2">
+        <div id="{{ d2.id }}" style="display:flex; flex-direction:column; gap:10px">
+          <div style="display:flex; align-items:center; gap:10px">
+            <div style="font-family:var(--font-mono); font-size:var(--fs-micro); letter-spacing:var(--ls-label); color:#0E0D0B; background:var(--brass); border-radius:var(--radius-chip); padding:4px 8px">{{ d2.id }}</div>
+            <div style="font-size:var(--fs-small); color:var(--ink-muted)">{{ d2.caption }}</div>
+            <div onClick="{{ d2.replay }}" style="height:30px; padding:0 12px; border:1px solid var(--line); border-radius:var(--radius-pill); display:flex; align-items:center; font-size:var(--fs-micro); color:var(--ink-muted); cursor:pointer" style-hover="border-color:var(--brass-a55); color:var(--ink)">↻ přehrát</div>
+          </div>
+          <div data-screen-label="{{ d2.id }}" style="position:relative; width:var(--col-width); height:844px; background:var(--bg); border:1px solid var(--line); border-radius:22px; overflow:hidden; box-shadow:var(--shadow-deep); display:flex; flex-direction:column">
+            <div style="flex:1; overflow:auto; scrollbar-width:none; padding:20px 16px 16px; background:linear-gradient(180deg,#0B0A09,#131110)">
+              <div style="overflow:hidden; border-radius:6px; animation:{{ d2.unfold }}">
+                <div style="background:var(--paper); border-radius:6px; padding:26px 24px 22px; box-shadow:0 20px 40px rgba(0,0,0,.55), 0 1px 0 rgba(255,255,255,.4) inset; background-image:linear-gradient(180deg, rgba(255,255,255,.5), rgba(0,0,0,0) 22%), linear-gradient(180deg, rgba(0,0,0,0) 78%, rgba(120,110,90,.10))">
+                  <div style="display:flex; align-items:baseline; justify-content:space-between; gap:10px; border-bottom:1px solid var(--paper-cool); padding-bottom:12px">
+                    <div style="font-family:var(--font-display); font-size:13px; letter-spacing:var(--ls-label); color:var(--paper-ink)">PRŮVODCE LAMBERT</div>
+                    <div style="font-family:var(--font-mono); font-size:var(--fs-micro); letter-spacing:var(--ls-label); color:#6B6355">SEZÓNA 1</div>
+                  </div>
+
+                  <div style="margin-top:16px; font-family:var(--font-display); font-size:15.5px; line-height:1.62; color:var(--paper-ink); text-wrap:pretty">
+                    <div style="animation:{{ d2.t0 }}">{{ d2.osloveni }}</div>
+                    <sc-for list="{{ d2.odstavce }}" as="o" hint-placeholder-count="4">
+                      <div style="margin-top:12px; animation:{{ o.anim }}">{{ o.text }}</div>
+                    </sc-for>
+                  </div>
+
+                  <div style="margin-top:20px; display:flex; align-items:flex-end; justify-content:space-between; gap:14px">
+                    <div style="font-family:var(--font-display); font-style:italic; font-size:13.5px; color:#5C5548; line-height:1.4; animation:{{ d2.tsig }}">{{ d2.podpis }}</div>
+                    <div style="position:relative; flex:none; width:74px; height:74px; animation:{{ d2.seal }}">
+                      <div style="position:absolute; inset:0; border-radius:var(--radius-pill); background:radial-gradient(circle at 34% 30%, #A33A2E, var(--seal) 58%, #5E1E18); box-shadow:0 6px 14px rgba(60,15,10,.45), 0 1px 0 rgba(255,255,255,.25) inset"></div>
+                      <div style="position:absolute; inset:9px; border-radius:var(--radius-pill); border:1px dashed rgba(255,220,210,.35); display:flex; align-items:center; justify-content:center">
+                        <div style="font-family:var(--font-display); font-size:28px; color:#F6D9D2; line-height:1">L</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div style="margin-top:18px; padding-top:14px; border-top:1px solid var(--paper-cool); display:flex; align-items:center; gap:12px">
+                    <div style="flex:none; font-size:{{ d2.starSize }}; color:{{ d2.starInk }}; line-height:1; animation:{{ d2.star }}">{{ d2.starGlyph }}</div>
+                    <div style="flex:1">
+                      <div style="font-family:var(--font-mono); font-size:var(--fs-small); letter-spacing:var(--ls-label); color:var(--paper-ink); animation:{{ d2.tverdikt }}">{{ d2.verdictLabel }}</div>
+                      <div style="margin-top:3px; font-family:var(--font-display); font-size:13px; font-style:italic; color:#5C5548; animation:{{ d2.tverdikt }}">{{ d2.verdictNote }}</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div style="flex:none; border-top:1px solid var(--line); background:var(--bg); padding:14px var(--pad-x) 16px; display:flex; flex-direction:column; gap:12px">
+              <div style="display:flex; align-items:baseline; justify-content:space-between; gap:10px">
+                <div>
+                  <div style="font-size:var(--fs-micro); letter-spacing:var(--ls-label); color:var(--ink-muted)">SEED</div>
+                  <div style="margin-top:3px; font-family:var(--font-mono); font-size:15px; color:var(--brass); letter-spacing:var(--ls-mono)">7K3-MAREN</div>
+                </div>
+                <div style="text-align:right">
+                  <div style="font-size:var(--fs-micro); letter-spacing:var(--ls-label); color:var(--ink-muted)">TALÍŘŮ POD LAŤKOU</div>
+                  <div style="margin-top:3px; font-family:var(--font-mono); font-size:15px; color:var(--ink); font-variant-numeric:tabular-nums">{{ d2.pod }}</div>
+                </div>
+              </div>
+              <div style="display:flex; gap:10px">
+                <div onClick="{{ d2.copy }}" style="flex:1; height:48px; border-radius:var(--radius-card); border:1px solid var(--line); color:var(--ink-muted); display:flex; align-items:center; justify-content:center; font-size:var(--fs-small); cursor:pointer" style-hover="border-color:var(--brass-a55); color:var(--ink)">{{ d2.copyLabel }}</div>
+                <div style="flex:1; height:48px; border-radius:var(--radius-card); background:var(--brass); color:#14110C; display:flex; align-items:center; justify-content:center; font-family:var(--font-display); font-size:15px; font-weight:600; letter-spacing:.03em; box-shadow:var(--shadow-cta); cursor:pointer">Nová sezóna</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </sc-for>
+    </div>
+  </div>
+
+</section>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;akcent&quot;:{&quot;editor&quot;:&quot;color&quot;,&quot;default&quot;:&quot;#D8A24A&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;options&quot;:[&quot;#D8A24A&quot;,&quot;#B9975B&quot;,&quot;#9FB0A0&quot;,&quot;#C97A3C&quot;],&quot;section&quot;:&quot;Vzhled&quot;},&quot;animace&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Vzhled&quot;},&quot;rozlozeniPostu&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;2×2&quot;,&quot;options&quot;:[&quot;2×2&quot;,&quot;seznam&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Rozvržení&quot;}}">
+const CHOICES = [
+  { key: 'pochvala', name: 'Pochvala', text: 'Jednomu kuchaři ubere 1,5 opotřebení.' },
+  { key: 'servani', name: 'Seřvání', text: 'Post uvaří o 0,5 lépe, vedoucí přibere 1,5 opotřebení.' },
+  { key: 'presun', name: 'Přesun', text: 'Přehodí kuchaře oproti pondělnímu rozpisu.' },
+  { key: 'skrt', name: 'Škrtnout chod', text: 'Chod dnes nejde ven. Počítá se jako vada.' },
+  { key: 'volno', name: 'Odložit volno', text: 'Volno propadá dnes, vrátí se později.' },
+  { key: 'pritlacit', name: 'Přitlačit', text: 'O 2,5 lépe, dvojnásobný rozptyl, žeton pryč.' }
+];
+
+const SCREENS = [
+  {
+    id: '1a', caption: 'Klidný večer',
+    sub: 'Večer 6/40 · Út · 22 krytů',
+    susp: '22\u00A0%', suspN: 22, suspWord: 'KLID',
+    maitre: 'Odmítl párování a vybral si víno sám.',
+    latka: '14,6', latkaHint: 'cíl 15,0',
+    rozpad: [
+      { label: 'Základ sezóny', val: '12,0' },
+      { label: 'Očekávání od stolů', val: '+1,4' },
+      { label: 'Únava kuchyně', val: '+0,8' },
+      { label: 'Včerejší vada', val: '+0,4' }
+    ],
+    posts: [
+      { name: 'Předkrmy', pct: '68\u00A0%', load: '6,0\u00A0/\u00A08,8', staff: [['Havel', '2,1', 24], ['Klein', '1,4', 16]] },
+      { name: 'Oheň', pct: '79\u00A0%', load: '7,0\u00A0/\u00A08,8', cap: true, staff: [['Bartáková', '4,2', 48], null] },
+      { name: 'Omáčky', pct: '64\u00A0%', load: '5,6\u00A0/\u00A08,8', staff: [['Doubrava', '3,0', 34], ['Nezval', '1,9', 22]] },
+      { name: 'Dezerty', pct: '55\u00A0%', load: '4,8\u00A0/\u00A08,8', staff: [['Roubalová', '2,6', 30], null] }
+    ],
+    strop: 'Volno: nikdo · Na stropu: Oheň',
+    tokens: 'zbývá 5',
+    verdict: 'Kuchyně drží. Oheň jede sám a na stropu.',
+    ctaMeta: '6 chodů · 22 krytů'
+  },
+  {
+    id: '1b', caption: 'Přetížený post · podezření 62 %',
+    sub: 'Večer 24/40 · Pá · 34 krytů',
+    susp: '62\u00A0%', suspN: 62, suspWord: 'NAPJATO',
+    maitre: 'Zvedl se, když nesli rybu ke stolu čtyři, a šel se podívat do kuchyně.',
+    latka: '15,8', latkaHint: 'cíl 15,0',
+    rozpad: [
+      { label: 'Základ sezóny', val: '12,0' },
+      { label: 'Očekávání od stolů', val: '+1,8' },
+      { label: 'Únava kuchyně', val: '+1,6' },
+      { label: 'Dvě vady v řadě', val: '+0,4' }
+    ],
+    posts: [
+      { name: 'Předkrmy', pct: '82\u00A0%', load: '7,2\u00A0/\u00A08,8', staff: [['Havel', '5,1', 58], ['Klein', '3,4', 39]] },
+      { name: 'Oheň', pct: '96\u00A0%', load: '8,4\u00A0/\u00A08,8', cap: true, staff: [['Bartáková', '6,8', 77], null] },
+      { name: 'Omáčky', pct: '71\u00A0%', load: '6,2\u00A0/\u00A08,8', staff: [['Doubrava', '4,4', 50], ['Nezval', '3,1', 35]] },
+      { name: 'Dezerty', pct: '118\u00A0%', load: '10,4\u00A0/\u00A08,8', over: true, staff: [['Roubalová', '7,9', 89], null] }
+    ],
+    strop: 'Volno: Nezval (odložené) · Na stropu: Oheň, Dezerty',
+    tokens: 'zbývá 3',
+    verdict: 'Dezerty jsou přetížené a nikdo není šetřený.',
+    ctaMeta: '6 chodů · 34 krytů'
+  }
+];
+
+const VYBER = [
+  { name: 'Doubrava', stat: 'ruka 4 · opotřebení 3,0', move: 'Domovský post · Omáčky 13 %', here: true },
+  { name: 'Bartáková', stat: 'ruka 4 · opotřebení 1,2', move: 'z Ohně · Omáčky 13 % → 8 %', warn: 'OHEŇ → BEZ RUKOU' },
+  { name: 'Havel', stat: 'ruka 2 · opotřebení 2,1', move: 'z Předkrmů · Omáčky 13 % → 19 %' },
+  { name: 'Klein', stat: 'ruka 2 · opotřebení 0,8', move: 'z Předkrmů · Omáčky 13 % → 18 %' },
+  { name: 'Nezval', stat: 'ruka 1 · opotřebení 1,4', move: 'z pomocníka tady · Omáčky 13 % → 24 %' },
+  { name: 'Roubalová', stat: 'ruka 3 · opotřebení 2,6', move: 'z Dezertů · Omáčky 13 % → 15 %', warn: 'DEZERTY → BEZ RUKOU' }
+];
+
+const PRITLAC = [
+  { post: 'Předkrmy', load: '68 % · Havel', starFrom: '2 %', starTo: '9 %', badFrom: '6 %', badTo: '15 %' },
+  { post: 'Oheň', load: '79 % · Bartáková', starFrom: '3 %', starTo: '12 %', badFrom: '9 %', badTo: '21 %' },
+  { post: 'Omáčky', load: '64 % · Doubrava', starFrom: '4 %', starTo: '14 %', badFrom: '13 %', badTo: '26 %' },
+  { post: 'Dezerty', load: '118 % · Roubalová', starFrom: '0 %', starTo: '5 %', badFrom: '18 %', badTo: '34 %' }
+];
+
+const SLIBY = [
+  { key: 'nic', name: 'Nic neslibuj', text: 'Necháváš si otevřené dveře. Nikdo nic nečeká.' },
+  { key: 'tri', name: 'Slib hvězdu do tří sezón', text: 'Když ji přineseš, máš volnou ruku.' },
+  { key: 'letos', name: 'Slib ji letos', text: 'Největší sázka, jaká je. A nejkratší vodítko.' }
+];
+
+const KUCHARI = [
+  { name: 'Bartáková', post: 'OHEŇ', ruka: 5, odol: '○', odolWord: 'křehká', veta: 'Umí to nejlíp ze všech a nejdřív ze všech toho nechá.' },
+  { name: 'Doubrava', post: 'OMÁČKY', ruka: 4, odol: '◐', odolWord: 'běžný', veta: 'Nikdy nezvedne hlas a nikdy neuhne.' },
+  { name: 'Roubalová', post: 'DEZERTY', ruka: 4, odol: '◐', odolWord: 'běžná', veta: 'Chce vlastní kuchyni. Zatím ji dělá tady.' },
+  { name: 'Havel', post: 'PŘEDKRMY', ruka: 3, odol: '●', odolWord: 'tvrdý', veta: 'Vydrží celý víkend a je pořád stejně dobrý.' },
+  { name: 'Klein', post: 'OHEŇ', ruka: 3, odol: '●', odolWord: 'tvrdý', veta: 'Mladý, rychlý, nepřesný. Učí se z každého večera.' },
+  { name: 'Nezval', post: 'PŘEDKRMY', ruka: 2, odol: '◐', odolWord: 'běžný', veta: 'Dobře poslouchá. Sám od sebe nezačne.' }
+];
+
+const BONY = [
+  { name: 'Konzomé z pečeného kořene', meta: 'PŘEDKRMY · 19:40', num: '+0,9' },
+  { name: 'Máslová brioška, kaviár', meta: 'PŘEDKRMY · 19:52', num: '+1,4' },
+  { name: 'Candát, křen, syrovátka', meta: 'OHEŇ · 20:05', num: '−0,6', pod: true },
+  { name: 'Telecí brzlík, jalovec', meta: 'OHEŇ · 20:14', num: '+0,4' },
+  { name: 'Holub, višeň, popel', meta: 'OMÁČKY · 20:30', num: '+2,1', star: true },
+  { name: 'Sýry z Vysočiny', meta: 'OMÁČKY · 20:41', num: '+0,2' },
+  { name: 'Konzomé z pečeného kořene', meta: 'PŘEDKRMY · 20:55', num: '+1,1' },
+  { name: 'Máslová brioška, kaviár', meta: 'PŘEDKRMY · 21:03', num: '+0,7' },
+  { name: 'Candát, křen, syrovátka', meta: 'OHEŇ · 21:18', num: '+1,6' },
+  { name: 'Telecí brzlík, jalovec', meta: 'OHEŇ · 21:26', num: '−1,2', pod: true },
+  { name: 'Holub, višeň, popel', meta: 'OMÁČKY · 21:39', num: '+0,8' },
+  { name: 'Bezinka, smetana, med', meta: 'DEZERTY · 21:58', num: '+1,3' }
+];
+
+const DOPISY = [
+  {
+    id: '6a', caption: 'S hvězdou',
+    osloveni: 'Vážený pane šéfkuchaři,',
+    odstavce: [
+      'navštívili jsme Vás třikrát a pokaždé jsme si sedli jinam.',
+      'Ten čtvrtek v šestém týdnu jste nás nechali čekat — dvacet dva minut mezi třetím a čtvrtým chodem, a nikdo nepřišel říct proč.',
+      'V úterý osmnáctého jsme jedli holuba, který by obstál kdekoli v Evropě.',
+      'Poslední pátek v sezóně se vrátila jistota: šest chodů, ani jeden pod laťkou. Rozhodli jsme se Vám udělit jednu hvězdu.'
+    ],
+    podpis: 'Za Průvodce Lambert · A. Renaudin',
+    star: true, starGlyph: '★', verdictLabel: 'JEDNA HVĚZDA · SEZÓNA 1',
+    verdictNote: 'Kuchyně, kvůli které stojí za to zajet.',
+    pod: '1 z 18'
+  },
+  {
+    id: '6b', caption: 'Bez hvězdy — důstojně',
+    osloveni: 'Vážený pane šéfkuchaři,',
+    odstavce: [
+      'navštívili jsme Vás třikrát a pokaždé jsme si sedli jinam.',
+      'Ten čtvrtek v šestém týdnu jste nás nechali čekat — dvacet dva minut mezi třetím a čtvrtým chodem, a nikdo nepřišel říct proč.',
+      'V úterý osmnáctého jsme jedli holuba, který by obstál kdekoli v Evropě. Takový talíř umíte.',
+      'Letos hvězdu neudělujeme. Ne kvůli tomu, co jste neuvařili, ale kvůli tomu, co jste neuvařili pokaždé. Vraťte se k tomu čtvrtku; zbytek sezóny obstál.'
+    ],
+    podpis: 'Za Průvodce Lambert · A. Renaudin',
+    star: false, starGlyph: '—', verdictLabel: 'BEZ HVĚZDY · SEZÓNA 1',
+    verdictNote: 'Vrátíme se příští rok. Nehlásíme se předem.',
+    pod: '4 z 18'
+  }
+];
+
+const KEYFRAMES = [
+  { name: 'zar', use: 'rudá zář přetíženého postu' },
+  { name: 'puls', use: 'kruh podezření, když je horko' },
+  { name: 'najezd', use: 'bon přijíždí zprava na lištu, po --stagger' },
+  { name: 'tik', use: 'dopočítávání čísla, --dur-count' },
+  { name: 'zablesk', use: 'přejezd světla po mosazi a po liště' },
+  { name: 'razba', use: 'odznak PŘETÍŽENO, žeton, POTVRZENO' },
+  { name: 'cekani', use: 'čárkovaný „+ pomocník“ dýchá' },
+  { name: 'rozlozeni', use: 'rozpad laťky, rozložení dopisu' },
+  { name: 'otisk', use: 'text se otiskne do papíru' },
+  { name: 'pecet', use: 'vosková pečeť dosedne' },
+  { name: 'hvezdaVstup', use: 'hvězda přiletí až po pečeti' },
+  { name: 'vstup', use: 'karta / obrazovka nabíhá zdola' },
+  { name: 'spad', use: 'bon pod laťkou spadne z lišty (navíc)' }
+];
+
+class Component extends DCLogic {
+  state = {
+    sel: { '1a': 'pochvala', '1b': 'presun' },
+    post: { '1a': null, '1b': 'Dezerty' },
+    tip: { '1a': null, '1b': null },
+    latka: { '1a': false, '1b': true },
+    press: { '1a': false, '1b': false },
+    tips: {},
+    vyberSel: 'Bartáková',
+    pritlacSel: 'Dezerty',
+    pritlacDone: null,
+    slib: 'tri',
+    soucet: 0,
+    skip: false,
+    servisOff: false,
+    tichy: false,
+    letterOff: {},
+    copied: {}
+  };
+
+  componentDidMount() { this.count(); }
+  componentWillUnmount() { clearInterval(this.iv); }
+
+  count() {
+    clearInterval(this.iv);
+    this.setState({ soucet: 0 });
+    const t0 = Date.now();
+    this.iv = setInterval(() => {
+      const t = Math.min(1, (Date.now() - t0) / 900);
+      this.setState({ soucet: t });
+      if (t >= 1) clearInterval(this.iv);
+    }, 40);
+  }
+
+  set(field, id, val) {
+    this.setState(s => ({ [field]: Object.assign({}, s[field], { [id]: val }) }));
+  }
+  toggleTip(id, key) {
+    this.setState(s => ({ tip: Object.assign({}, s.tip, { [id]: s.tip[id] === key ? null : key }) }));
+  }
+  tipFor(key) {
+    return {
+      open: !!this.state.tips[key],
+      tap: () => this.setState(s => ({ tips: Object.assign({}, s.tips, { [key]: !s.tips[key] }) }))
+    };
+  }
+  fire(id) {
+    this.set('press', id, true);
+    setTimeout(() => this.set('press', id, false), 420);
+  }
+  replayServis() {
+    this.setState({ servisOff: true, skip: false });
+    setTimeout(() => { this.setState({ servisOff: false }); this.count(); }, 50);
+  }
+  replayLetter(id) {
+    this.set('letterOff', id, true);
+    setTimeout(() => this.set('letterOff', id, false), 50);
+  }
+
+  wearTone(v) { return v < 3 ? 'var(--ok)' : v < 6 ? 'var(--warn)' : 'var(--bad)'; }
+
+  renderVals() {
+    const anim = this.props.animace ?? true;
+    const brass = this.props.akcent;
+    if (brass && typeof document !== 'undefined') document.documentElement.style.setProperty('--brass', brass);
+    const ease = ' var(--ease-out) ';
+    const A = (name, dur, delay, e) => anim ? name + ' ' + dur + ' ' + (e || 'var(--ease-out)') + ' ' + delay + ' both' : 'none';
+
+    const screens = SCREENS.map(sc => {
+      const id = sc.id;
+      const sel = this.state.sel[id];
+      const tip = this.state.tip[id];
+      const hot = sc.suspN >= 50;
+      const suspColor = hot ? 'var(--bad)' : 'var(--brass)';
+      return {
+        id: id, caption: sc.caption, sub: sc.sub, susp: sc.susp, suspWord: sc.suspWord,
+        maitre: sc.maitre, latka: sc.latka, latkaHint: sc.latkaHint, strop: sc.strop,
+        verdict: sc.verdict, ctaMeta: sc.ctaMeta, suspColor: suspColor,
+        suspRingGlow: hot ? 'var(--bad-a45)' : 'transparent',
+        suspPulse: hot && anim ? 'puls 2.4s var(--ease-out) infinite' : 'none',
+        sheen: anim ? 'zablesk 3.6s var(--ease-out) infinite' : 'none',
+        ringBg: 'conic-gradient(' + (hot ? 'var(--bad)' : 'var(--brass)') + ' 0% ' + sc.suspN + '%, var(--line) ' + sc.suspN + '% 100%)',
+        verdictDot: hot ? 'var(--bad)' : 'var(--ok)',
+        ctaAnim: this.state.press[id] ? 'pecet var(--dur-base) var(--ease-drop) both' : 'none',
+        latkaOpen: this.state.latka[id],
+        tipHead: tip === 'susp', tipLatka: tip === 'latka', tipPost: tip === 'post', tipChoice: tip === 'choice',
+        tapHead: () => this.toggleTip(id, 'susp'),
+        tapLatkaTip: () => this.toggleTip(id, 'latka'),
+        tapPost: () => this.toggleTip(id, 'post'),
+        tapChoice: () => this.toggleTip(id, 'choice'),
+        tapLatka: () => this.set('latka', id, !this.state.latka[id]),
+        start: () => this.fire(id),
+        rozpad: sc.rozpad.map((r, i) => ({ label: r.label, val: r.val, color: i === 0 ? 'var(--ink-muted)' : 'var(--ink)' })),
+        posts: sc.posts.map((p, i) => {
+          const picked = this.state.post[id] === p.name;
+          return {
+            name: p.name, pct: p.pct, load: p.load, over: !!p.over, picked: picked,
+            pctColor: p.over ? 'var(--bad)' : p.cap ? 'var(--warn)' : 'var(--ink)',
+            bg: picked ? 'var(--card-hi)' : 'var(--card)',
+            border: p.over ? 'var(--bad-a45)' : picked ? 'var(--brass)' : 'var(--line)',
+            anim: p.over && anim ? 'zar 2.2s var(--ease-out) infinite' : A('vstup', 'var(--dur-docket)', (i * 60) + 'ms'),
+            tap: () => this.set('post', id, picked ? null : p.name),
+            staff: p.staff.map(k => k ? {
+              name: k[0], wear: k[1], wearW: k[2] + '%', wearColor: this.wearTone(parseFloat(String(k[1]).replace(',', '.'))),
+              nameColor: 'var(--ink)', nameBorder: 'none', namePad: '0', anim: 'none'
+            } : {
+              name: '+ pomocník', wear: '—', wearW: '0%', wearColor: 'var(--line)',
+              nameColor: 'var(--ink-muted)', nameBorder: '1px dashed var(--line)', namePad: '2px 7px',
+              anim: anim ? 'cekani 2.6s var(--ease-out) infinite' : 'none'
+            })
+          };
+        }),
+        choices: CHOICES.map((c, i) => {
+          const on = sel === c.key;
+          return {
+            name: c.name, text: c.text, mark: on ? '✓' : '',
+            tokens: c.key === 'pritlacit' ? sc.tokens : false,
+            bg: on ? 'var(--brass)' : 'var(--card)',
+            border: on ? 'var(--brass-hi)' : 'var(--line)',
+            ink: on ? '#17130C' : 'var(--ink)',
+            sub: on ? 'rgba(23,19,12,.78)' : 'var(--ink-muted)',
+            boxBg: on ? '#17130C' : 'transparent',
+            boxBorder: on ? '#17130C' : 'var(--line)',
+            boxInk: on ? 'var(--brass-hi)' : 'transparent',
+            tokenInk: on ? '#17130C' : 'var(--brass)',
+            tokenBorder: on ? 'rgba(23,19,12,.4)' : 'var(--brass-a35)',
+            anim: A('vstup', 'var(--dur-docket)', (i * 60) + 'ms'),
+            tap: () => this.set('sel', id, on ? null : c.key)
+          };
+        })
+      };
+    });
+
+    const vyberRows = VYBER.map((r, i) => {
+      const on = this.state.vyberSel === r.name;
+      return {
+        name: r.name, stat: r.stat, move: r.move, warn: r.warn || false, here: !!r.here,
+        bg: r.here ? 'var(--card-hi)' : on ? 'var(--brass)' : 'var(--card)',
+        border: r.here ? 'var(--brass)' : on ? 'var(--brass-hi)' : 'var(--line)',
+        ink: on && !r.here ? '#17130C' : 'var(--ink)',
+        numInk: on && !r.here ? 'rgba(23,19,12,.82)' : 'var(--brass)',
+        sub: on && !r.here ? 'rgba(23,19,12,.72)' : 'var(--ink-muted)',
+        anim: A('vstup', 'var(--dur-docket)', (i * 50) + 'ms'),
+        tap: () => this.setState({ vyberSel: on ? null : r.name })
+      };
+    });
+
+    const zetony = [0, 1, 2, 3, 4].map(i => {
+      const spent = i < 0;
+      return {
+        mark: spent ? '·' : '✦',
+        bg: spent ? 'transparent' : 'radial-gradient(circle at 35% 30%, var(--brass-hi), var(--brass) 62%, #9A6E28)',
+        border: spent ? 'var(--line)' : 'var(--brass-hi)',
+        ink: spent ? 'var(--line)' : '#3A2A0C',
+        shadow: spent ? 'none' : 'var(--shadow-lift)',
+        anim: A('razba', 'var(--dur-base)', (i * 70) + 'ms', 'var(--ease-drop)')
+      };
+    });
+
+    const pritlacCards = PRITLAC.map((p, i) => {
+      const on = this.state.pritlacSel === p.post;
+      const done = this.state.pritlacDone === p.post;
+      return {
+        post: p.post, load: p.load, starFrom: p.starFrom, starTo: p.starTo, badFrom: p.badFrom, badTo: p.badTo,
+        bg: on ? 'var(--card-hi)' : 'var(--card)',
+        border: on ? 'var(--brass)' : 'var(--line)',
+        ink: 'var(--ink)',
+        metaInk: 'var(--ink-muted)',
+        rowInk: on ? 'var(--ink)' : 'var(--ink-muted)',
+        dimInk: 'var(--ink-muted)',
+        rule: on ? 'var(--brass-a35)' : 'var(--line)',
+        costInk: on ? 'var(--ink)' : 'var(--ink-muted)',
+        confirmable: on && !done, done: done,
+        anim: A('vstup', 'var(--dur-docket)', (i * 60) + 'ms'),
+        tap: () => this.setState({ pritlacSel: on ? null : p.post, pritlacDone: null }),
+        confirm: () => this.setState({ pritlacDone: p.post })
+      };
+    });
+
+    const dots = (n) => [0, 1, 2].map(i => ({ bg: i === n ? 'var(--brass)' : 'var(--line)' }));
+
+    const sliby = SLIBY.map((s, i) => {
+      const on = this.state.slib === s.key;
+      return {
+        name: s.name, text: s.text, mark: on ? '✓' : '',
+        bg: on ? 'var(--brass)' : 'var(--card)',
+        border: on ? 'var(--brass-hi)' : 'var(--line)',
+        ink: on ? '#17130C' : 'var(--ink)',
+        sub: on ? 'rgba(23,19,12,.78)' : 'var(--ink-muted)',
+        boxBg: on ? '#17130C' : 'transparent',
+        boxBorder: on ? '#17130C' : 'var(--line)',
+        boxInk: on ? 'var(--brass-hi)' : 'transparent',
+        anim: A('vstup', 'var(--dur-docket)', (i * 70) + 'ms'),
+        tap: () => this.setState({ slib: s.key })
+      };
+    });
+
+    const skip = this.state.skip;
+    const bony = BONY.map((b, i) => {
+      const d = 'calc(var(--stagger) * ' + i + ')';
+      const fallDelay = 'calc(var(--stagger) * ' + i + ' + var(--dur-docket))';
+      const live = anim && !skip && !this.state.servisOff;
+      return {
+        name: b.name, meta: b.meta, num: b.num, star: !!b.star, podLabel: !!b.pod,
+        bg: b.star ? 'linear-gradient(180deg, rgba(216,162,74,.10), var(--card))' : 'var(--card)',
+        border: b.star ? 'var(--brass)' : b.pod ? 'var(--bad-a45)' : 'var(--line)',
+        ink: b.pod ? 'var(--ink-muted)' : 'var(--ink)',
+        numInk: b.pod ? 'var(--bad)' : b.star ? 'var(--brass-hi)' : 'var(--ok)',
+        strike: b.pod ? 'line-through' : 'none',
+        clip: b.star ? 'var(--brass)' : b.pod ? 'var(--bad-a45)' : 'var(--line)',
+        enter: live ? 'najezd var(--dur-docket) var(--ease-out) ' + d + ' both' : 'none',
+        fall: b.pod ? (live ? 'spad 260ms var(--ease-drop) ' + fallDelay + ' both' : 'translate(0)') : 'none',
+        starAnim: live ? 'hvezdaVstup var(--dur-base) var(--ease-drop) ' + fallDelay + ' both' : 'none'
+      };
+    });
+    const total = skip ? 0.72 : 0.72 * this.state.soucet;
+
+    const nums = this.state.tichy
+      ? [
+        { label: 'POVĚST', val: '41', delta: '±0', deltaInk: 'var(--ink-muted)' },
+        { label: 'HOTOVOST', val: '106 200 Kč', delta: '+9 400', deltaInk: 'var(--ok)' },
+        { label: 'PRŮMĚRNÁ ODCHYLKA', val: '+0,10', delta: 'nad laťkou', deltaInk: 'var(--ink-muted)' }
+      ]
+      : [
+        { label: 'POVĚST', val: '43', delta: '+2', deltaInk: 'var(--ok)' },
+        { label: 'HOTOVOST', val: '128 400 Kč', delta: '+18 200', deltaInk: 'var(--ok)' },
+        { label: 'PRŮMĚRNÁ ODCHYLKA', val: '+0,72', delta: '2 talíře pod laťkou', deltaInk: 'var(--bad)' }
+      ];
+    const lines = (this.state.tichy
+      ? ['Tichý servis. Není co hlásit.']
+      : [
+        'Třetí chod se rozpadl. Bartáková držela dvě pánve na jednom plameni.',
+        'Stůl u okna poslal holuba zpátky. Nikdo se nezeptal proč.',
+        'Ve dvacet dva čtyřicet už jen dopíjeli. Zbytek večera byl čistý.'
+      ]).map((t, i) => ({ text: t, anim: A('otisk', 'var(--dur-base)', (i * 120) + 'ms') }));
+
+    const dopisy = DOPISY.map(d => {
+      const off = this.state.letterOff[d.id] || !anim;
+      const at = (name, dur, delay, e) => off ? 'none' : name + ' ' + dur + ' ' + (e || 'var(--ease-out)') + ' ' + delay + ' both';
+      return {
+        id: d.id, caption: d.caption, osloveni: d.osloveni, podpis: d.podpis, pod: d.pod,
+        verdictLabel: d.verdictLabel, verdictNote: d.verdictNote,
+        starGlyph: d.starGlyph, starInk: d.star ? 'var(--brass)' : 'var(--paper-cool)',
+        starSize: d.star ? '34px' : '22px',
+        unfold: at('rozlozeni', '760ms', '0ms'),
+        t0: at('otisk', '420ms', '420ms'),
+        odstavce: d.odstavce.map((o, i) => ({ text: o, anim: at('otisk', '420ms', (560 + i * 130) + 'ms') })),
+        tsig: at('otisk', '420ms', '1180ms'),
+        seal: at('pecet', '520ms', '1400ms', 'var(--ease-drop)'),
+        star: d.star ? at('hvezdaVstup', '520ms', '2100ms', 'var(--ease-drop)') : at('otisk', '420ms', '2100ms'),
+        tverdikt: at('otisk', '420ms', '2200ms'),
+        copyLabel: this.state.copied[d.id] ? 'Zkopírováno ✓' : 'Zkopírovat kroniku',
+        copy: () => {
+          this.set('copied', d.id, true);
+          setTimeout(() => this.set('copied', d.id, false), 1400);
+        },
+        replay: () => this.replayLetter(d.id)
+      };
+    });
+
+    return {
+      index: [
+        { id: '1a·1b', label: 'Pas' }, { id: '2a', label: 'Výběr kuchaře' }, { id: '3a', label: 'Přitlačit' },
+        { id: '4a–c', label: 'Onboarding' }, { id: '5a·5b', label: 'Servis a následek' }, { id: '6a·6b', label: 'Verdikt' }
+      ],
+      keyframes: KEYFRAMES,
+      screens: screens,
+      postCols: (this.props.rozlozeniPostu ?? '2×2') === '2×2' ? '1fr 1fr' : '1fr',
+      vyber: Object.assign(this.tipFor('vyber'), { rows: vyberRows }),
+      zetony: zetony,
+      zetonyLabel: '5 / 5 ŽETONŮ',
+      pritlac: Object.assign(this.tipFor('pritlac'), { cards: pritlacCards }),
+      tecky1: dots(0), tecky2: dots(1), tecky3: dots(2),
+      sliby: sliby,
+      lide: this.tipFor('lide'),
+      kucharI: KUCHARI.map((k, i) => ({
+        name: k.name, post: k.post, ruka: k.ruka, odol: k.odol, odolWord: k.odolWord, veta: k.veta,
+        odolInk: k.odol === '●' ? 'var(--ok)' : k.odol === '◐' ? 'var(--ink-muted)' : 'var(--warn)',
+        anim: A('vstup', 'var(--dur-docket)', (i * 55) + 'ms')
+      })),
+      servis: {
+        bony: bony,
+        soucet: (total >= 0 ? '+' : '') + total.toFixed(2).replace('.', ','),
+        soucetInk: total >= 0 ? 'var(--ok)' : 'var(--bad)',
+        sheen: anim && !this.state.servisOff ? 'zablesk 5s var(--ease-out) infinite' : 'none',
+        skip: () => this.setState({ skip: true, soucet: 1 }),
+        replay: () => this.replayServis()
+      },
+      nasl: {
+        lines: lines, nums: nums,
+        rusnyBorder: this.state.tichy ? 'var(--line)' : 'var(--brass-a55)',
+        rusnyInk: this.state.tichy ? 'var(--ink-muted)' : 'var(--brass)',
+        tichyBorder: this.state.tichy ? 'var(--brass-a55)' : 'var(--line)',
+        tichyInk: this.state.tichy ? 'var(--brass)' : 'var(--ink-muted)',
+        setRusny: () => this.setState({ tichy: false }),
+        setTichy: () => this.setState({ tichy: true })
+      },
+      dopisy: dopisy
+    };
+  }
+}
+
+</script>
+</body>
+</html>

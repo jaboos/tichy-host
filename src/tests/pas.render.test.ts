@@ -148,8 +148,9 @@ describe('the rejected interaction model is gone, FR-1 item 6', () => {
     const expanded = render(() =>
       useGame.getState().openSlotPicker({ station: 'sauce', role: 'lead' }),
     );
+    // `.at` is the locative: "Kdo na Omáčkách", not "Kdo na Omáčky".
     expect(expanded).toContain(
-      t('pas.whoOnSlot', { station: t('station.sauce'), role: t('pas.lead') }),
+      t('pas.whoOnSlot', { station: t('station.sauce.at'), role: t('pas.lead') }),
     );
     for (const cook of game?.cooks ?? []) {
       expect(expanded, `${cook.lastName} is missing from the picker`).toContain(cook.lastName);

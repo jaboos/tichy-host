@@ -34,18 +34,18 @@ export default function CookRow({ cook, onOpenCard }: Props): React.JSX.Element 
       style={{ padding: 10, textAlign: 'left' }}
       onClick={onOpenCard}
     >
-      <div className="spread">
-        <div style={{ minWidth: 0 }}>
-          <div className="display" style={{ fontSize: 'var(--fs-dish)' }}>
-            {cook.firstName} {cook.lastName}
-          </div>
-          <div className="muted" style={{ fontSize: 'var(--fs-small)' }}>
-            {t(`station.${cook.homeStation}`)} · {t(trait.nameKey)}
-          </div>
+      {/* The triptych gets its own line. Three labelled columns need 176 px and
+          the name needs the rest — at 390 px they do not share a row. */}
+      <div style={{ minWidth: 0 }}>
+        <div className="display" style={{ fontSize: 'var(--fs-dish)' }}>
+          {cook.firstName} {cook.lastName}
         </div>
-        <div style={{ width: 150 }}>
-          <CookTriptych cook={cook} />
+        <div className="muted" style={{ fontSize: 'var(--fs-small)' }}>
+          {t(`station.${cook.homeStation}`)} · {t(trait.nameKey)}
         </div>
+      </div>
+      <div style={{ marginTop: 8 }}>
+        <CookTriptych cook={cook} />
       </div>
 
       <div className="row" style={{ marginTop: 8, gap: 8 }}>
