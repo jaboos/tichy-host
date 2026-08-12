@@ -768,8 +768,39 @@ Layout is unchanged from `Pas.dc.html`: three columns, value at 13 px mono (30 p
 
 ### 6.7 Design workflow — what is frozen, what you design yourself
 
-**Frozen. Do not reinvent, do not re-derive.**
-The visual language is settled: `design/tokens.css` is the single source of truth for colours, type, radii, shadows, motion durations and every keyframe. Copy it to `src/styles/tokens.css` in Phase 3 and treat it as canon. The seven mockups in `design/` are canon for layout and component appearance. Rejected variants live in `design/archive/` — **ignore them entirely**; the steel and light-paper directions were evaluated and dropped.
+**Unfrozen as of 2026-08-12.** The visual language is being redesigned.
+`design/tokens.css` and the seven `design/*.dc.html` mockups are now
+HISTORICAL REFERENCE, not canon: they record the first iteration and may
+be departed from. `src/styles/tokens.css` is the live source of truth and
+is expected to be replaced wholesale.
+
+Rejected variants in `design/archive/` stay off-limits — they were
+evaluated and dropped, and unfreezing the current direction is not an
+invitation to revisit them.
+
+**The token contract survives the redesign.** Every component addresses
+the visual language through CSS custom properties, never through literal
+colours. A replacement palette MUST keep these names and may only change
+their values, or the swap stops being one file and becomes a rewrite of
+every component:
+
+```
+  surfaces  --bg --card --card-hi --line
+  ink       --ink --ink-muted
+  accents   --brass --brass-hi --ok --warn --bad
+  alpha     --brass-a35 --brass-a55 --bad-a45
+  radii     --radius-card --radius-docket --radius-chip --radius-pill
+  shadows   --shadow-card --shadow-cta
+  type      --font-display --font-ui --font-mono
+  scale     --fs-title --fs-h2 --fs-dish --fs-body --fs-small
+            --fs-label --fs-micro --ls-label
+  layout    --col-width --pad-x --pad-top --pad-bottom
+  motion    --dur-base --dur-docket --ease-out
+  keyframes zar · puls · najezd · razba
+```
+
+New names may be added freely. Existing ones may not be renamed or
+removed without updating every component that reads them.
 
 `design/support.js` is a **vendored third-party runtime** (69 kB, no licence header) committed only so the mockups can be watched in a browser — the fastest way to understand the docket cascade and the pulse timings. It is **not a dependency of this application**. Nothing under `src/` may import it, no pattern from it (`DCLogic`, `renderVals()`, `<x-dc>`, `<sc-for>`, `<sc-if>`) may be copied into the app, and it must be excluded from `tsconfig`, ESLint and Prettier.
 

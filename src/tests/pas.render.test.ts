@@ -28,7 +28,9 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 const { useGame } = await import('../store/gameStore');
 const { default: Pas } = await import('../screens/Pas');
 const { STATIONS } = await import('../engine/types');
-const { applyToSlot, interventionTargets, slotCandidates } = await import('../store/gameStore');
+const { applyToSlot, eveningVerdict, interventionTargets, slotCandidates } =
+  await import('../store/gameStore');
+const { CONCEPTS, conceptKeys } = await import('../components/Glossary');
 const { resolveMenu, weekIndexOf } = await import('../engine/season');
 const { cs } = await import('../i18n/cs');
 const { t } = await import('../i18n');
@@ -312,5 +314,74 @@ describe('an intervention never picks its own target — PRD §3.5', () => {
 
     render(() => useGame.getState().clearIntervention());
     expect(useGame.getState().intervention).toBeNull();
+  });
+});
+
+describe('the screen explains itself', () => {
+  it('every intervention states its trade on the card, before any tap', () => {
+    for (const id of ['praise', 'scold', 'swap', 'cutCourse', 'deferRest', 'push'] as const) {
+      expect(markup, `${id} has no name on the card`).toContain(t(`intervention.${id}.name`));
+      expect(markup, `${id} states no trade on the card`).toContain(t(`intervention.${id}.desc`));
+    }
+  });
+
+  it('covers all twelve concepts the game is allowed to teach', () => {
+    // v4 §14 caps the game at twelve concepts. Every one of them that reaches the
+    // screen needs a definition; a number with no explanation teaches nothing.
+    expect(CONCEPTS.length).toBeGreaterThanOrEqual(12);
+    for (const concept of CONCEPTS) {
+      const { term, body } = conceptKeys(concept);
+      expect(cs[term], `${concept} has no term`).toBeTruthy();
+      expect(cs[body], `${concept} has no definition`).toBeTruthy();
+      // A definition that only restates the label is not a definition.
+      expect(cs[body].length, `${concept}'s definition is too thin`).toBeGreaterThan(60);
+      expect(cs[body]).not.toBe(cs[term]);
+    }
+  });
+
+  it('offers the glossary next to the bar, the suspicion and the load', () => {
+    for (const concept of ['latka', 'podezreni', 'pretizeni', 'opotrebeni', 'pritlacit'] as const) {
+      const { term } = conceptKeys(concept);
+      expect(markup, `no "?" beside ${concept}`).toContain(`${t(term)} — ${t('gloss.open')}`);
+    }
+  });
+});
+
+describe('the evening carries a verdict, not just numbers', () => {
+  it('renders one on the call to action', () => {
+    const { game, draft, opening } = useGame.getState();
+    if (game === null || opening === null) throw new Error('no game');
+    const verdict = eveningVerdict(game, draft, resolveMenu(game), opening.suspicion, null);
+    expect(markup).toContain(t(verdict.key, verdict.params));
+  });
+
+  it('reports a station with no hands ahead of everything else', () => {
+    const { game, draft, opening } = useGame.getState();
+    if (game === null || opening === null) throw new Error('no game');
+    const menu = resolveMenu(game);
+    const station = menu[0]?.station ?? 'sauce';
+    const blind = { ...draft, leads: { ...draft.leads, [station]: null } };
+    const verdict = eveningVerdict(game, blind, menu, 0.9, null);
+    expect(verdict.key).toBe('verdictLine.noHands');
+    expect(verdict.tone).toBe('bad');
+  });
+
+  it('calls an evening exposed only when nothing was held back', () => {
+    const { game, draft, opening } = useGame.getState();
+    if (game === null || opening === null) throw new Error('no game');
+    const menu = resolveMenu(game);
+    // A push is holding something back, so the same suspicion reads differently.
+    const naked = eveningVerdict(game, draft, menu, 0.9, null);
+    const pushed = eveningVerdict(game, draft, menu, 0.9, { id: 'push', station: 'sauce' });
+    if (naked.key === 'verdictLine.exposed') {
+      expect(pushed.key).not.toBe('verdictLine.exposed');
+    }
+  });
+
+  it('says so plainly when nothing is wrong', () => {
+    const { game, draft, opening } = useGame.getState();
+    if (game === null || opening === null) throw new Error('no game');
+    const calm = eveningVerdict(game, draft, resolveMenu(game), 0, null);
+    expect(['verdictLine.clear', 'verdictLine.overloaded', 'verdictLine.worn']).toContain(calm.key);
   });
 });

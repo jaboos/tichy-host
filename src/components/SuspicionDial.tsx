@@ -4,6 +4,7 @@
  * is decoration pretending to be agency.
  */
 import { formatPercent, t } from '../i18n';
+import Glossary from './Glossary';
 
 const RADIUS = 17;
 const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
@@ -35,7 +36,10 @@ export default function SuspicionDial({ value }: { value: number }): React.JSX.E
         />
       </svg>
       <div>
-        <div className="label">{t('suspicion.title')}</div>
+        <div className="label row" style={{ gap: 0 }}>
+          {t('suspicion.title')}
+          <Glossary of="podezreni" />
+        </div>
         <div className="mono" style={{ fontSize: '17px', color: tone }}>
           {formatPercent(clamped)}
         </div>

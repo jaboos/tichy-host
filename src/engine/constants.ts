@@ -305,6 +305,12 @@ export const C = deepFreeze({
     maxSignalProbability: 0.85,
     /** Guard against a zero denominator in the prior odds. */
     priorEpsilon: 1e-9,
+    /**
+     * The line above which the game calls an evening exposed and says so on the
+     * Pas. It is the same threshold the reference policy in the balance harness
+     * uses to burn a token, so the advice matches the play that measured well.
+     */
+    highSuspicion: 0.35,
     /** ★: at most one of the 18 plates below the bar. */
     starOneMaxBelowBar: 1,
     /** ★★: none below the bar, and at least one star plate in every visit. */

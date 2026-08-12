@@ -346,4 +346,54 @@ export const en = {
   'station.sauce.from': 'from Sauces',
   'station.dessert.from': 'from Desserts',
   'pas.tapSlot': 'Tap a place on a station and choose who stands there tonight.',
+
+  // --- glossary and the evening verdict -------------------------------------
+  'gloss.latka.term': 'The bar',
+  'gloss.latka.body':
+    "Tonight's threshold, not your score. A plate below it is a defect, a plate 7.5 above it is a star plate. An ambitious menu lowers the bar — so timidity is not free.",
+  'gloss.kvalita.term': 'Plate quality',
+  'gloss.kvalita.body':
+    'Computed for every course in both waves. You never see it on a docket — a docket shows the deviation from the bar, because the absolute number says nothing without it.',
+  'gloss.ruka.term': 'Hand',
+  'gloss.ruka.body':
+    'The only skill number, 1 to 5. Plus one at their home station, minus one anywhere else — a four away from home behaves like a three.',
+  'gloss.domov.term': 'Home station',
+  'gloss.domov.body':
+    'The station a cook was trained on. +1 to hand at home, −1 elsewhere. Not a preference — a performance.',
+  'gloss.opotrebeni.term': 'Wear',
+  'gloss.opotrebeni.body':
+    'Fatigue from 0 to 10, not mood. It cuts quality harder in the later wave, at a rate set by endurance. From 9 the game warns in red two evenings ahead.',
+  'gloss.narocnost.term': 'Difficulty',
+  'gloss.narocnost.body':
+    'What a course costs, 1 to 5. It raises quality, but once it outgrows the lead’s hand it takes 2.2 for every point of the gap. An ambitious course is also unstable.',
+  'gloss.pretizeni.term': 'Capacity and overload',
+  'gloss.pretizeni.body':
+    'Capacity is what a station can carry; overload is how far the load passed it. The penalty is squared, so mild overload is not mild. It is not a performance scale — it is a fence.',
+  'gloss.souhra.term': 'Harmony',
+  'gloss.souhra.body':
+    'It happens between neighbouring courses, not inside one. Same station or same flavour side by side hurts, a contrast helps. The bar claws half of it back, so it cannot simply be hoarded.',
+  'gloss.podezreni.term': 'Suspicion',
+  'gloss.podezreni.body':
+    'The chance the inspector is eating tonight, computed from what the maître saw. Not a warning and not a hint — an estimate, and the game never inflates it.',
+  'gloss.pritlacit.term': 'Push',
+  'gloss.pritlacit.body':
+    'Five brass tokens a season. It lifts a station by 2.5 but doubles the variance — a bet, not an upgrade. Without it a star plate is practically unreachable.',
+  'gloss.premiove.term': 'Premium ingredients',
+  'gloss.premiove.body':
+    'A weekly yes or no. Plus 0.8 to every plate for eight points of food cost. The only channel through which money touches quality.',
+  'gloss.chteni.term': 'Desire',
+  'gloss.chteni.body':
+    "A cook's personal arc. Satisfy it and they earn a trait; refuse twice and an offer arrives from elsewhere.",
+  'gloss.hotovost.term': 'Cash',
+  'gloss.hotovost.body':
+    'One number. Below −150,000 CZK an investor takes the restaurant. It cannot buy quality — except as premium ingredients.',
+  'gloss.open': 'What is this?',
+  'gloss.close': 'Close',
+  'verdictLine.noHands': '{station} has no lead. Every course on it is a defect tonight.',
+  'verdictLine.overloaded': '{station} is overloaded. The penalty is squared.',
+  'verdictLine.exposed':
+    'Suspicion {suspicion} and nothing held back — nobody rested, no token spent.',
+  'verdictLine.worn': '{names} at the wear cap.',
+  'verdictLine.trial': 'A trial evening after the menu change. Every plate is 1.0 lower.',
+  'verdictLine.clear': 'Nothing is on fire tonight.',
 } satisfies Record<TKey, string>;

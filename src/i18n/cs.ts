@@ -343,6 +343,55 @@ export const cs = {
   'station.sauce.from': 'z Omáček',
   'station.dessert.from': 'z Dezertů',
   'pas.tapSlot': 'Klepni na místo na postu a vyber, kdo tam dnes stojí.',
+
+  // --- glossary and the evening verdict -------------------------------------
+  'gloss.latka.term': 'Laťka',
+  'gloss.latka.body':
+    'Hranice dnešního večera, ne tvoje skóre. Talíř pod ní je vada, talíř 7,5 nad ní je hvězdný. Ambiciózní menu laťku snižuje — bázlivost tedy není zadarmo.',
+  'gloss.kvalita.term': 'Kvalita talíře',
+  'gloss.kvalita.body':
+    'Číslo, které se počítá každému chodu ve dvou vlnách. Na bonu ho neuvidíš — bon ukazuje odchylku od laťky, protože absolutní číslo bez laťky nic neříká.',
+  'gloss.ruka.term': 'Ruka',
+  'gloss.ruka.body':
+    'Jediné číslo dovednosti, 1 až 5. Na domovském postu +1, na cizím −1 — čtyřka na cizím postu se proto chová jako trojka.',
+  'gloss.domov.term': 'Domovský post',
+  'gloss.domov.body':
+    'Post, na který je kuchař vycvičený. Doma +1 k ruce, jinde −1. Není to preference, je to výkon.',
+  'gloss.opotrebeni.term': 'Opotřebení',
+  'gloss.opotrebeni.body':
+    'Únava 0 až 10, ne nálada. Sráží kvalitu tím víc, čím pozdější je vlna, a rychlostí podle odolnosti. Od 9 hlásí hra červené varování dva večery dopředu.',
+  'gloss.narocnost.term': 'Náročnost',
+  'gloss.narocnost.body':
+    'Kolik chod stojí, 1 až 5. Zvedá kvalitu, ale když přeroste ruku vedoucího, strhne 2,2 za každý bod rozdílu. Náročný chod je navíc nestabilní.',
+  'gloss.pretizeni.term': 'Kapacita a přetížení',
+  'gloss.pretizeni.body':
+    'Kapacita je, co post unese; přetížení je, o kolik ji zátěž překročila. Trest roste s druhou mocninou, takže mírné přetížení není mírné. Není to škála výkonu — je to plot.',
+  'gloss.souhra.term': 'Souhra',
+  'gloss.souhra.body':
+    'Vzniká mezi sousedními chody, ne uvnitř jednoho. Stejný post nebo stejná chuť vedle sebe škodí, protiklad pomáhá. Laťka si polovinu vybere zpátky, takže se nedá jen nasbírat.',
+  'gloss.podezreni.term': 'Podezření',
+  'gloss.podezreni.body':
+    'Šance, že dnes večeří inspektor, spočítaná ze znaků, které maître viděl. Není to varování ani nápověda — je to odhad, a hra ho nikdy nenafukuje.',
+  'gloss.pritlacit.term': 'Přitlačit',
+  'gloss.pritlacit.body':
+    'Pět mosazných žetonů na sezónu. Zvedne post o 2,5, ale zdvojnásobí rozptyl — je to sázka, ne vylepšení. Bez něj se hvězdný talíř prakticky neuvaří.',
+  'gloss.premiove.term': 'Prémiové suroviny',
+  'gloss.premiove.body':
+    'Týdenní ano/ne. Plus 0,8 každému talíři za osm procentních bodů food costu. Jediný kanál, kterým peníze sahají na kvalitu.',
+  'gloss.chteni.term': 'Chtění',
+  'gloss.chteni.body':
+    'Osobní oblouk kuchaře. Splníš ho a získá vlastnost; odmítneš dvakrát a přijde nabídka odjinud.',
+  'gloss.hotovost.term': 'Hotovost',
+  'gloss.hotovost.body':
+    'Jediné číslo. Pod −150 000 Kč přebírá podnik investor. Koupit se za ni kvalita nedá — kromě prémiových surovin.',
+  'gloss.open': 'Co to je?',
+  'gloss.close': 'Zavřít',
+  'verdictLine.noHands': '{station} nemá vedoucího. Každý jeho chod je dnes vada.',
+  'verdictLine.overloaded': '{station} je přetížený. Trest roste s druhou mocninou.',
+  'verdictLine.exposed': 'Podezření {suspicion} a žádná pojistka — nikdo nešetřený, žádný žeton.',
+  'verdictLine.worn': '{names} na stropu opotřebení.',
+  'verdictLine.trial': 'Zkušební večer po změně menu. Každý talíř o 1,0 níž.',
+  'verdictLine.clear': 'Dnes nic nehoří.',
 } as const;
 
 /** Every valid translation key. A typo is a compile error. */

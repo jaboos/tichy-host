@@ -37,7 +37,7 @@ import {
   stationOdds,
   type EveningContext,
 } from '../engine/plate';
-import { formatNumber, formatPercent, setLang as setI18nLang, t } from '../i18n';
+import { formatNumber, formatPercent, setLang as setI18nLang, t, type TKey } from '../i18n';
 import * as persistence from './persistence';
 import { STATIONS } from '../engine/types';
 import type {
@@ -228,6 +228,72 @@ export function slotCandidates(
       emptiedStation: emptied,
     };
   });
+}
+
+/**
+ * One line saying whether tonight's plan is sound. PRD §11.5: the number is
+ * immediate, the story is a tap away — but a screen full of numbers and no verdict
+ * makes the player do arithmetic the game has already done.
+ *
+ * It reports the WORST thing it can find, in that order, because a station with no
+ * hands does not become less urgent just because another one is also overloaded.
+ */
+export interface EveningVerdict {
+  key: TKey;
+  params: Record<string, string | number>;
+  tone: 'bad' | 'warn' | 'ok';
+}
+
+export function eveningVerdict(
+  game: GameState,
+  draft: Assignment,
+  menu: readonly Course[],
+  suspicion: number,
+  intervention: Intervention | null,
+): EveningVerdict {
+  const setups = buildSetups(game.cooks, draft, menu);
+  const carries = (station: Station): boolean => menu.some((course) => course.station === station);
+
+  const blind = STATIONS.find((station) => carries(station) && !setups[station].viable);
+  if (blind !== undefined) {
+    return { key: 'verdictLine.noHands', params: { station: t(`station.${blind}`) }, tone: 'bad' };
+  }
+
+  const strained = STATIONS.find((station) => setups[station].overload > 0);
+  if (strained !== undefined) {
+    return {
+      key: 'verdictLine.overloaded',
+      params: { station: t(`station.${strained}`) },
+      tone: 'bad',
+    };
+  }
+
+  if (game.weekPlan.trialEveningsLeft > 0) {
+    return { key: 'verdictLine.trial', params: {}, tone: 'warn' };
+  }
+
+  // Exposed: the evening smells of a visit and nothing was held back for it.
+  const held = draft.resting.length > 0 || intervention?.id === 'push';
+  if (suspicion >= C.inspector.highSuspicion && !held) {
+    return {
+      key: 'verdictLine.exposed',
+      params: { suspicion: formatPercent(suspicion) },
+      tone: 'warn',
+    };
+  }
+
+  const worn = game.cooks.filter(
+    (cook) => cook.wear >= C.wear.warningThreshold && !draft.resting.includes(cook.id),
+  );
+  if (worn.length > 0) {
+    return {
+      key: 'verdictLine.worn',
+      params: { names: worn.map((cook) => cook.lastName).join(', ') },
+      tone: 'warn',
+    };
+  }
+
+  return { key: 'verdictLine.clear', params: {}, tone: 'ok' };
 }
 
 // ---------------------------------------------------------------------------

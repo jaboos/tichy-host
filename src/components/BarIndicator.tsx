@@ -8,6 +8,7 @@ import { useState } from 'react';
 import { C } from '../engine/constants';
 import { computeBarBreakdown } from '../engine/bar';
 import { formatNumber, formatSigned, t } from '../i18n';
+import Glossary from './Glossary';
 import type { Course } from '../engine/types';
 
 interface Props {
@@ -39,23 +40,29 @@ export default function BarIndicator({
 
   return (
     <div className="card" style={{ padding: '10px 12px' }}>
-      <button
-        type="button"
-        className="spread tap"
-        style={{ width: '100%' }}
-        onClick={() => setOpen(!open)}
-        aria-expanded={open}
-      >
-        <span className="label">{t('bar.title')}</span>
-        <span className="row">
+      {/* The label carries the glossary, the value carries the toggle. Nesting a
+          button inside a button would be invalid, so the row is a plain flex. */}
+      <div className="spread">
+        <span className="label row" style={{ gap: 0 }}>
+          {t('bar.title')}
+          <Glossary of="latka" />
+        </span>
+        <button
+          type="button"
+          className="row tap"
+          style={{ gap: 8 }}
+          onClick={() => setOpen(!open)}
+          aria-expanded={open}
+          aria-label={t('bar.title')}
+        >
           <span className="mono brass" style={{ fontSize: '20px' }}>
             {formatNumber(b.total, 1)}
           </span>
           <span className="muted" style={{ fontSize: 'var(--fs-small)' }}>
             {open ? '▴' : '▾'}
           </span>
-        </span>
-      </button>
+        </button>
+      </div>
 
       {open ? (
         <div style={{ marginTop: 8 }}>

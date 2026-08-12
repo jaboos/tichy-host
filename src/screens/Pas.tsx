@@ -10,7 +10,13 @@ import { buildSetups } from '../engine/service';
 import { STATIONS, type InterventionId } from '../engine/types';
 import { SIGNALS } from '../data/signals';
 import { t } from '../i18n';
-import { currentMenu, interventionTargets, slotCandidates, useGame } from '../store/gameStore';
+import {
+  currentMenu,
+  eveningVerdict,
+  interventionTargets,
+  slotCandidates,
+  useGame,
+} from '../store/gameStore';
 import type { Intervention } from '../engine/types';
 
 /** Two intervention targets are the same when they name the same thing. */
@@ -25,6 +31,7 @@ function sameTarget(a: Intervention | null, b: Intervention): boolean {
 }
 import BarIndicator from '../components/BarIndicator';
 import BrassDivider from '../components/BrassDivider';
+import Glossary from '../components/Glossary';
 import SlotPicker from '../components/SlotPicker';
 import StationDisk from '../components/StationDisk';
 import SuspicionDial from '../components/SuspicionDial';
@@ -67,9 +74,9 @@ export default function Pas(): React.JSX.Element | null {
 
   const menu = currentMenu(game);
   const setups = buildSetups(game.cooks, draft, menu);
-  const overloaded = STATIONS.filter((s) => setups[s].overload > 0 || !setups[s].viable);
   const dayKey = DAY_KEYS[opening.eveningInWeek] ?? DAY_KEYS[0];
 
+  const verdict = eveningVerdict(game, draft, menu, opening.suspicion, intervention);
   const resting = game.cooks.filter((cook) => draft.resting.includes(cook.id));
   const atCap = game.cooks.filter((cook) => cook.wear >= C.wear.warningThreshold);
 
@@ -114,7 +121,10 @@ export default function Pas(): React.JSX.Element | null {
       </div>
 
       <BrassDivider />
-      <div className="label">{t('pas.stations')}</div>
+      <div className="label row" style={{ gap: 0 }}>
+        {t('pas.stations')}
+        <Glossary of="pretizeni" />
+      </div>
       <div
         style={{
           display: 'grid',
@@ -164,16 +174,20 @@ export default function Pas(): React.JSX.Element | null {
             </span>
           </>
         )}
+        <Glossary of="opotrebeni" />
       </div>
 
       <BrassDivider />
       <div className="spread">
-        <span className="label">{t('pas.intervention')}</span>
+        <span className="label row" style={{ gap: 0 }}>
+          {t('pas.intervention')}
+          <Glossary of="pritlacit" />
+        </span>
         <span className="chip chip--brass">
           {t('common.pushTokens')} {game.pushTokens}
         </span>
       </div>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6, marginTop: 8 }}>
+      <div className="stack" style={{ gap: 6, marginTop: 8 }}>
         <button
           type="button"
           className={intervention === null ? 'chip chip--brass tap' : 'chip tap'}
@@ -182,6 +196,7 @@ export default function Pas(): React.JSX.Element | null {
         >
           {t('pas.noIntervention')}
         </button>
+
         {INTERVENTIONS.map((id) => {
           const chosen = intervention?.id === id;
           const open = interventionOpen === id;
@@ -190,12 +205,28 @@ export default function Pas(): React.JSX.Element | null {
               key={id}
               type="button"
               className={chosen || open ? 'chip chip--brass tap' : 'chip tap'}
-              style={{ justifyContent: 'center' }}
+              style={{ flexDirection: 'column', alignItems: 'flex-start', gap: 3, width: '100%' }}
               // Step 1: tapping expands. It never confirms.
               onClick={() => openIntervention(open ? null : id)}
             >
-              {t(`intervention.${id}.name`)}
-              {chosen ? ' ✓' : ''}
+              <span className="spread" style={{ width: '100%', gap: 8 }}>
+                <span
+                  className="display"
+                  style={{ fontSize: 'var(--fs-body)', color: 'var(--ink)' }}
+                >
+                  {t(`intervention.${id}.name`)}
+                  {chosen ? ' ✓' : ''}
+                </span>
+                {id === 'push' ? (
+                  <span className="mono brass" style={{ fontSize: 'var(--fs-small)' }}>
+                    {game.pushTokens}
+                  </span>
+                ) : null}
+              </span>
+              {/* The trade, on the card, before any tap. A bare label teaches nothing. */}
+              <span className="muted" style={{ fontSize: 'var(--fs-small)', textAlign: 'left' }}>
+                {t(`intervention.${id}.desc`)}
+              </span>
             </button>
           );
         })}
@@ -275,17 +306,7 @@ export default function Pas(): React.JSX.Element | null {
 
       <button type="button" className="cta tap" onClick={startService}>
         {t('pas.start')}
-        <span className="cta__note">
-          {overloaded.length === 0
-            ? t('pas.statusClear')
-            : t('pas.statusOverload', {
-                stations: overloaded.map((s) => t(`station.${s}`)).join(', '),
-              })}{' '}
-          ·{' '}
-          {intervention === null
-            ? t('pas.statusNoIntervention')
-            : t('pas.statusIntervention', { name: t(`intervention.${intervention.id}.name`) })}
-        </span>
+        <span className="cta__note">{t(verdict.key, verdict.params)}</span>
       </button>
     </>
   );

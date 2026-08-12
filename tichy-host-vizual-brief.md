@@ -1,7 +1,12 @@
 # Tichý host — vizuální brief + prompty pro Claude Design
 
 > Art direction pro hru a hotový prompt pack k vložení do claude.ai/design.
-> Navazuje na existující Figma mockup (paleta převzata a rozšířena).
+>
+> **ODMRAŽENO 12. 8. 2026.** Vizuální jazyk se předělává. Sekce 2 (tokeny), 3 (typografie),
+> 7 (tři směry) a prompty V2/V3 níže jsou **historický záznam první iterace**, ne kánon —
+> viz PRD §6.7. Co přežívá redesign, je **kontrakt názvů tokenů** (Prompt 0) a strukturní
+> zadání jednotlivých obrazovek (Prompty 1–7): ty popisují, co má obrazovka umět, ne jak má
+> vypadat.
 
 ---
 
@@ -103,15 +108,27 @@ Koncept: „Vytištěný podnik" — každá obrazovka je fyzická tiskovina res
 karta, servis jsou bony z termotiskárny, verdikt průvodce je dopis s voskovou pečetí. Tmavý,
 teplý, intimní vzhled — papír při svíčce, ne dashboard.
 
-Design tokeny:
-pozadí #14100D · karta #1F1915 · zvednutá karta #2A221C · text #F5EFE7 · sekundární text #A89A88
-· akcent mosaz #D4A24C · zelená (prošlo) #6FA36B · jantar (riziko) #D9922E · červená (vada) #C9503F
-· linky #3A2F26 · pečeť #8C3B2E
+VÝSTUP: kromě návrhu vrať i hotový blok CSS custom properties.
 
-Typografie: Cormorant Garamond SemiBold pro nadpisy a názvy jídel (musí unést českou diakritiku),
-Inter pro UI text, IBM Plex Mono s tabulkovými číslicemi pro všechna čísla a bony.
-Radius 10 px karty, 4 px bony. Měkké teplé stíny. Jemná papírová textura (2% šum).
-Jediný ornament: tenká mosazná linka s tečkou uprostřed jako oddělovač.
+Musí definovat přesně tyhle názvy (hodnoty si zvol podle svého návrhu,
+názvy neměň — kód na ně sahá):
+  --bg --card --card-hi --line
+  --ink --ink-muted
+  --brass --brass-hi --ok --warn --bad
+  --brass-a35 --brass-a55 --bad-a45
+  --radius-card --radius-docket --radius-chip --radius-pill
+  --shadow-card --shadow-cta
+  --font-display --font-ui --font-mono
+  --fs-title --fs-h2 --fs-dish --fs-body --fs-small --fs-label --fs-micro
+  --ls-label
+  --col-width --pad-x --pad-top --pad-bottom
+  --dur-base --dur-docket --ease-out
+
+Nové proměnné přidávej, kolik chceš. Písma musí být dostupná přes
+@fontsource (balíme je lokálně, žádné CDN).
+
+`--brass` nemusí zůstat mosazná — je to prostě hlavní akcent. Ale ať
+zůstane JEDEN hlavní akcent, ne tři.
 
 Publikum: hráči Football Manageru a roguelite her (Balatro, Slay the Spire), 25–45 let,
 hrají večer na mobilu nebo notebooku.
