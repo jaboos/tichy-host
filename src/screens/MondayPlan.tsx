@@ -11,7 +11,7 @@ import { useState } from 'react';
 import { C } from '../engine/constants';
 import { buildStationSetup } from '../engine/plate';
 import { autoAssign } from '../engine/season';
-import { coversFor } from '../engine/economy';
+import { coversFor, weeklyOutlook } from '../engine/economy';
 import { STATIONS, type Station } from '../engine/types';
 import { formatCurrency, formatNumber, t } from '../i18n';
 import { currentMenu, useGame } from '../store/gameStore';
@@ -35,6 +35,13 @@ export default function MondayPlan(): React.JSX.Element | null {
   const menu = currentMenu(game);
   const weekIndex = Math.floor(game.eveningIndex / C.season.eveningsPerWeek);
   const tickets = game.weekPlan.restTickets;
+
+  const outlook = weeklyOutlook(game.reputation, menu, game.weekPlan.premiumIngredients);
+  const premiumCost =
+    weeklyOutlook(game.reputation, menu, true).costs -
+    weeklyOutlook(game.reputation, menu, false).costs;
+  const netTone =
+    game.cash + outlook.net < 0 ? 'var(--bad)' : outlook.net < 0 ? 'var(--warn)' : 'var(--ok)';
 
   /** The forecast under the finger: what this evening's kitchen will look like. */
   function forecast(
@@ -211,6 +218,12 @@ export default function MondayPlan(): React.JSX.Element | null {
       ) : null}
 
       <BrassDivider />
+
+      {/* The strongest lever in the game, and until now a bare toggle reading
+          "vypnuto". Measured over 200 seasons it roughly doubles the star rate and
+          costs about a third of the season's profit — a weak brigade that leaves
+          it on goes bankrupt in one season out of twelve. Both halves of that
+          trade belong on the switch, in money the player can check. */}
       <div className="spread tap">
         <span className="label">{t('monday.premium')}</span>
         <button
@@ -220,6 +233,34 @@ export default function MondayPlan(): React.JSX.Element | null {
         >
           {game.weekPlan.premiumIngredients ? t('monday.premiumOn') : t('monday.premiumOff')}
         </button>
+      </div>
+      <p className="quote" style={{ marginTop: 4, fontSize: 'var(--fs-small)' }}>
+        {t('monday.premiumTrade', {
+          q: formatNumber(C.plate.premiumBonus, 1),
+          cost: formatCurrency(premiumCost),
+        })}
+      </p>
+
+      {/* Compute before you commit — the same rule the Pas follows for a push. The
+          investor ending used to arrive with no warning at all. */}
+      <div className="card" style={{ marginTop: 10 }}>
+        <div className="spread">
+          <span className="label">{t('monday.outlook')}</span>
+          <span className="mono" style={{ fontSize: 'var(--fs-num-sm)', color: netTone }}>
+            {outlook.net >= 0 ? '+' : ''}
+            {formatCurrency(outlook.net)}
+          </span>
+        </div>
+        <div className="spread" style={{ marginTop: 4 }}>
+          <span className="mono muted" style={{ fontSize: 'var(--fs-small)' }}>
+            {t('monday.outlookAfter', { cash: formatCurrency(game.cash + outlook.net) })}
+          </span>
+        </div>
+        {game.cash + outlook.net < 0 ? (
+          <p className="bad" style={{ marginTop: 6, fontSize: 'var(--fs-small)' }}>
+            {t('monday.outlookRisk')}
+          </p>
+        ) : null}
       </div>
       <button
         type="button"

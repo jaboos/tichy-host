@@ -49,6 +49,31 @@ export function eveningCosts(
 }
 
 /**
+ * What the coming week is worth, before it is played.
+ *
+ * Premium produce is the strongest single lever in the game — measured over 200
+ * seasons it roughly doubles the star rate — and it is also the only thing money
+ * buys. Its price was invisible: the Monday toggle said "vypnuto" and nothing
+ * else, so the player was asked to spend a third of a season's profit without
+ * being told the figure. Everything here is derived from `eveningRevenue` and
+ * `eveningCosts`; no new tunable.
+ */
+export function weeklyOutlook(
+  reputation: number,
+  menu: readonly Course[],
+  premium: boolean,
+): { revenue: number; costs: number; net: number } {
+  let revenue = 0;
+  let costs = 0;
+  for (let eveningInWeek = 0; eveningInWeek < C.season.eveningsPerWeek; eveningInWeek += 1) {
+    const covers = coversFor(reputation, eveningInWeek);
+    revenue += eveningRevenue(covers);
+    costs += eveningCosts(covers, menu, premium, eveningInWeek === C.season.eveningsPerWeek - 1);
+  }
+  return { revenue, costs, net: revenue - costs };
+}
+
+/**
  * Reputation drives covers and raises the bar. It cannot be spent — only earned
  * and lost. The 0.03 bar coefficient is what stops this loop from running away.
  */
