@@ -11,11 +11,19 @@ import Menu from './screens/Menu';
 import MondayPlan from './screens/MondayPlan';
 import Onboarding from './screens/Onboarding';
 import Pas from './screens/Pas';
+import ReportCard from './screens/ReportCard';
 import Service from './screens/Service';
 import Verdict from './screens/Verdict';
 
 /** Screens where the tab bar would be a way to walk out of a decision. */
-const WITHOUT_TABS = new Set(['onboarding', 'service', 'consequence', 'monday', 'verdict']);
+const WITHOUT_TABS = new Set([
+  'onboarding',
+  'service',
+  'consequence',
+  'monday',
+  'report',
+  'verdict',
+]);
 
 /**
  * The tab bar is the only thing left that is `position: fixed`, so it is the only
@@ -61,6 +69,8 @@ export default function App(): React.JSX.Element {
         return <Brigade />;
       case 'cook':
         return <CookCard />;
+      case 'report':
+        return <ReportCard />;
       case 'verdict':
         return <Verdict />;
       default:

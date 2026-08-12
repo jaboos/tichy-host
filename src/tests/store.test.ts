@@ -33,6 +33,8 @@ function playEvening(): void {
   s.startService();
   useGame.getState().finishReveal();
   useGame.getState().nextEvening();
+  // Sunday can hold a report card before Monday's planning. PRD FR-11
+  if (useGame.getState().screen === 'report') useGame.getState().acknowledgeReport();
   if (useGame.getState().screen === 'monday') useGame.getState().lockKitchen();
 }
 
@@ -101,6 +103,7 @@ describe('a whole season through the store', () => {
       useGame.getState().startService();
       useGame.getState().finishReveal();
       useGame.getState().nextEvening();
+      if (useGame.getState().screen === 'report') useGame.getState().acknowledgeReport();
     }
     expect(useGame.getState().screen).toBe('monday');
 

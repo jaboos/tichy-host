@@ -30,6 +30,7 @@ import {
 import { createStartingBrigade } from '../engine/draft';
 import { computeBar } from '../engine/bar';
 import { buildSetups } from '../engine/service';
+import type { NarratorLine } from '../engine/narrator';
 import {
   buildStationSetup,
   computeHarmony,
@@ -64,6 +65,8 @@ export type Screen =
   | 'calendar'
   | 'brigade'
   | 'cook'
+  /** Sunday, and only when a visit is waiting to be confirmed. PRD FR-11 */
+  | 'report'
   | 'verdict';
 
 /** Why an interaction was refused. Shown inline; never a silent no-op (§3.1). */
@@ -242,6 +245,37 @@ export interface EveningVerdict {
   key: TKey;
   params: Record<string, string | number>;
   tone: 'bad' | 'warn' | 'ok';
+}
+
+/**
+ * The narrator's lines for one evening, in the player's language.
+ *
+ * The engine returns template ids and the ids of who and what they are about; this
+ * is where those become names. It lives in the store rather than in the engine
+ * because `t()` and the current language are the store's business — the engine
+ * stays language-free, which is what stops a bilingual game from growing two
+ * narrators that drift apart.
+ */
+export function narratorText(game: GameState, result: ServiceResult): string[] {
+  const cooks = new Map(game.cooks.map((cook) => [cook.id, cook]));
+  const courses = new Map(game.catalogue.map((course) => [course.id, course]));
+
+  return (result.lines ?? []).map((line: NarratorLine) => {
+    const course = line.courseId === null ? null : courses.get(line.courseId);
+    const params: Record<string, string | number> = {
+      ...Object.fromEntries(
+        Object.entries(line.numbers).map(([key, value]) => [key, formatNumber(value, 1)]),
+      ),
+      station: line.station === null ? '' : t(`station.${line.station}`),
+      // The locative, preposition included: "na Ohni", not "na Oheň". A template
+      // that needs a case other than the nominative uses this and writes no
+      // preposition of its own.
+      stationAt: line.station === null ? '' : t(`station.${line.station}.at`),
+      cook: line.cookId === null ? '' : (cooks.get(line.cookId)?.lastName ?? ''),
+      course: course === undefined || course === null ? '' : t(course.nameKey),
+    };
+    return t(`narrator.${line.templateId}` as TKey, params);
+  });
 }
 
 export function eveningVerdict(
@@ -485,6 +519,8 @@ interface Store {
   startService: (skipReveal?: boolean) => void;
   finishReveal: () => void;
   nextEvening: () => void;
+  /** Marks the visits shown on the report card as confirmed and moves on. */
+  acknowledgeReport: () => void;
 
   toggleRestTicket: (cookId: string, eveningInWeek: number) => void;
   setMenu: (courseIds: readonly string[]) => void;
@@ -755,12 +791,21 @@ export const useGame = create<Store>((set, get) => ({
     const game = get().game;
     if (game === null) return;
 
+    // Sunday, before anything else: a visit is confirmed by the end of the same
+    // week (FR-11). Without this the learning loop for the only outcome that
+    // matters is forty evenings long — a whole season of play produced one
+    // recorded visit that the player was never told about.
+    const isMonday = eveningInWeekOf(game.eveningIndex) === 0;
+    if (isMonday && game.visits.some((visit) => !visit.confirmed)) {
+      set({ screen: 'report', opening: null, refusal: null });
+      return;
+    }
+
     if (isSeasonOver(game)) {
       set({ screen: 'verdict' });
       return;
     }
     // Monday is a planning screen, and week 1 has it locked. PRD §3.2
-    const isMonday = eveningInWeekOf(game.eveningIndex) === 0;
     if (isMonday && weekIndexOf(game.eveningIndex) >= C.season.planningUnlocksAtWeekIndex) {
       // No opening is live on a Monday, which is what lets the planning screen
       // persist its edits directly.
@@ -769,6 +814,23 @@ export const useGame = create<Store>((set, get) => ({
     }
     const opened = openAndPersist(game);
     set({ screen: 'pas', game: opened.game, opening: opened.opening, draft: opened.draft });
+  },
+
+  /**
+   * The player has read the report card. The visit is marked confirmed so it is
+   * never shown twice, and the same routing that sent them here decides where
+   * they go — the last visit of the season lands on the letter, not on a Monday.
+   */
+  acknowledgeReport: () => {
+    const game = get().game;
+    if (game === null) return;
+    const confirmed: GameState = {
+      ...game,
+      visits: game.visits.map((visit) => ({ ...visit, confirmed: true })),
+    };
+    persist(confirmed);
+    set({ game: confirmed });
+    get().nextEvening();
   },
 
   toggleRestTicket: (cookId, eveningInWeek) => {

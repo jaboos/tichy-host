@@ -94,7 +94,12 @@ export function buildSetups(
 }
 
 export interface ServiceOutcome {
-  result: ServiceResult;
+  /**
+   * Without `lines`: one evening's service knows nothing about the season's
+   * repetition budget, so the narrator cannot run here. `advanceEvening` holds the
+   * budget and fills them in.
+   */
+  result: Omit<ServiceResult, 'lines'>;
   setups: Record<Station, StationSetup>;
   defectsByStation: Record<Station, number>;
 }
@@ -164,7 +169,7 @@ export function runService(setup: EveningSetup, rng: Rng): ServiceOutcome {
   const revenue = eveningRevenue(covers);
   const costs = eveningCosts(covers, setup.menu, setup.premium, isLastEveningOfWeek);
 
-  const result: ServiceResult = {
+  const result: Omit<ServiceResult, 'lines'> = {
     eveningIndex: setup.eveningIndex,
     bar,
     covers,

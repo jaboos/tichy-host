@@ -291,6 +291,20 @@ export interface NarratorFact {
   params: Record<string, number | string>;
 }
 
+/**
+ * One line the narrator chose to say. `templateId` is an i18n key suffix — the
+ * dictionary holds `narrator.<templateId>` — and the ids are what the caller
+ * resolves to names. The engine never holds prose and never holds a language.
+ */
+export interface NarratorLine {
+  templateId: string;
+  station: Station | null;
+  cookId: string | null;
+  courseId: string | null;
+  /** Already rounded to the decimals the template shows. */
+  numbers: Record<string, number>;
+}
+
 export interface ServiceResult {
   eveningIndex: number;
   bar: number;
@@ -305,6 +319,13 @@ export interface ServiceResult {
   revenue: number;
   costs: number;
   facts: NarratorFact[];
+  /**
+   * What the narrator chose to say about this evening, decided once when the
+   * evening was computed. It belongs to the result rather than to the screen: the
+   * repetition budget is charged at the same moment, so re-deriving the lines at
+   * render time would rank them against a budget that already contains them.
+   */
+  lines: NarratorLine[];
 }
 
 // ---------------------------------------------------------------------------

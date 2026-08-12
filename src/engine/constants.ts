@@ -343,6 +343,36 @@ export const C = deepFreeze({
     maxWordsPerParagraph: 40,
     maxWordsPerEvent: 60,
     maxWordsPerOption: 8,
+
+    /**
+     * Salience = |deviation| × attention × novelty (PRD §3.11).
+     *
+     * `attention` is how much of the evening the player spent on that actor. A
+     * station they pushed or left empty is a decision they made minutes ago; a
+     * station that merely ran hot is weather. Without this the ranking is pure
+     * magnitude and the loudest number always wins — which is how the verdict line
+     * ended up reporting the same worn brigade for twenty-four evenings running.
+     */
+    attention: {
+      /** They chose this, tonight, and spent a token on it. */
+      push: 1.6,
+      /** They chose this too, by leaving a place empty. */
+      emptyStation: 2,
+      /** A single plate is the thing they watched come off the pass. */
+      plate: 1,
+      /** Load and crowding are conditions, not events. */
+      condition: 0.6,
+    },
+
+    /**
+     * WHY a penalty and not a ban: PRD §3.11 says the budget "prevents the same
+     * template twice within a season", and read literally that needs one template
+     * per line — 120 of them for forty evenings. Read as the `novelty` term of the
+     * ranking formula it means what it is for: a line already told this season has
+     * to be nearly three times as interesting to be told again. Deliberate
+     * divergence from the letter of §3.11, reported.
+     */
+    repeatNovelty: 0.35,
   },
 
   // -------------------------------------------------------------------------

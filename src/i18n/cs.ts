@@ -289,6 +289,42 @@ export const cs = {
   'triptych.hand': 'RUKA',
   'triptych.endurance': 'ODOLNOST',
   'triptych.desire': 'CHTĚNÍ',
+  // --- narrator — PRD §3.11 -------------------------------------------------
+  // Not one of these uses a past participle, because a participle agrees in
+  // gender and cooks have no gender in the data: "pustil" would be wrong for
+  // Bartáková on the first evening of the game. Nominal phrases and impersonal
+  // constructions carry the same weight and cannot be wrong.
+  'narrator.defect1': 'Pod laťkou: {course}. {station}, o {gap} níž.',
+  'narrator.defect2': '{course} ven nemá jít. O {gap} pod laťkou.',
+  'narrator.starPlate1': 'Hvězdný talíř: {course}. O {gap} nad laťkou.',
+  'narrator.starPlate2': 'Takhle to má vypadat — {course}, o {gap} nad laťkou.',
+  // `{stationAt}` is the locative and carries its own preposition, so these read
+  // "Na Ohni…" and never "Na Oheň…". `{station}` is the bare nominative.
+  'narrator.emptyStation1': '{stationAt} dnes nikdo nestál. Talíř ven nešel.',
+  'narrator.emptyStation2': '{station} bez rukou. Chod se odepsal, než začal.',
+  'narrator.overload1': '{station} vaří na dluh: {load} na kapacitu {capacity}.',
+  'narrator.overload2': '{stationAt} se dnes nedýchalo. Zátěž {load}, kapacita {capacity}.',
+  'narrator.crowding1': '{stationAt} se sešlo příliš mnoho těžkých chodů najednou.',
+  'narrator.crowding2': '{station} — tlačenice. Těžké chody se srazily do jedné vlny.',
+  'narrator.push1': '{stationAt} se dnes přitlačilo. {cook} to zaplatí.',
+  'narrator.push2': '{stationAt} padl žeton. Zítra to bude {cook} cítit.',
+
+  // --- report card — PRD FR-11 ----------------------------------------------
+  'report.title': 'Vysvědčení',
+  'report.subtitle': 'Návštěva {n} · večer {evening} · {wave}',
+  'report.confirmed': 'Volali z redakce průvodce. Chtěli jméno šéfkuchaře.',
+  'report.barThatDay': 'Laťka toho večera',
+  'report.suspicionThen': 'Tvoje podezření v tu chvíli',
+  // No second-person participle: "přitlačil jsi" agrees with a gender the player
+  // never gave the game. Impersonal is the only form that cannot be wrong.
+  'report.pushedThen': '{stationAt} tehdy padl žeton.',
+  'report.pushedNothing': 'Žádný žeton tehdy nepadl.',
+  'report.shortBy': 'Chybělo {gap}.',
+  'report.clean': 'Ani jeden talíř pod laťkou.',
+  'report.belowSoFar': 'Pod laťkou zatím {n} z {total}.',
+  'report.next': 'Rozumím',
+  'report.noVisit': 'Tenhle týden nikdo nepřišel.',
+
   'verdict.title': 'Verdikt',
   'verdict.guide': 'Průvodce Lambert',
   'verdict.platesBelow': 'Talířů pod laťkou',

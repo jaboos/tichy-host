@@ -290,6 +290,37 @@ export const en = {
   'triptych.hand': 'HAND',
   'triptych.endurance': 'ENDURANCE',
   'triptych.desire': 'DESIRE',
+  // --- narrator — PRD §3.11 -------------------------------------------------
+  'narrator.defect1': 'Under the bar: {course}. {station}, {gap} short.',
+  'narrator.defect2': '{course} should not have gone out. {gap} under the bar.',
+  'narrator.starPlate1': 'A star plate: {course}. {gap} over the bar.',
+  'narrator.starPlate2': 'That is how it is done — {course}, {gap} over the bar.',
+  // English needs no locative; `{stationAt}` carries the preposition anyway so the
+  // two dictionaries interpolate the same names.
+  'narrator.emptyStation1': 'Nobody stood {stationAt} tonight. The plate never went out.',
+  'narrator.emptyStation2':
+    '{station} with no hands. The course was written off before it started.',
+  'narrator.overload1': '{station} is cooking on credit: {load} against a capacity of {capacity}.',
+  'narrator.overload2': 'No room to breathe {stationAt}. Load {load}, capacity {capacity}.',
+  'narrator.crowding1': 'Too many hard courses landed {stationAt} at once.',
+  'narrator.crowding2': '{station} — crowded. The heavy courses collided in one wave.',
+  'narrator.push1': 'A push landed {stationAt} tonight. {cook} pays for it.',
+  'narrator.push2': 'A token went {stationAt}. {cook} will feel it tomorrow.',
+
+  // --- report card — PRD FR-11 ----------------------------------------------
+  'report.title': 'Report card',
+  'report.subtitle': 'Visit {n} · evening {evening} · {wave}',
+  'report.confirmed': 'The guide’s office called. They wanted the chef’s name.',
+  'report.barThatDay': 'The bar that evening',
+  'report.suspicionThen': 'Your suspicion at the time',
+  'report.pushedThen': 'A token went {stationAt} that evening.',
+  'report.pushedNothing': 'No token went anywhere that evening.',
+  'report.shortBy': 'Short by {gap}.',
+  'report.clean': 'Not one plate under the bar.',
+  'report.belowSoFar': '{n} of {total} under the bar so far.',
+  'report.next': 'Understood',
+  'report.noVisit': 'Nobody came this week.',
+
   'verdict.title': 'Verdict',
   'verdict.guide': 'The Lambert Guide',
   'verdict.platesBelow': 'Plates under the bar',

@@ -16,6 +16,7 @@ import { computeBar } from './bar';
 import { coversFor, isBankrupt, updateReputation } from './economy';
 import { computePrior, computeSuspicion, drawSignals, drawVisitEvenings } from './inspector';
 import { runService, type EveningSetup } from './service';
+import { tellEvening } from './narrator';
 import { applyEveningWear, applyMondayRecovery } from './wear';
 import { draftBrigade, draftCatalogue, defaultMenu } from './draft';
 import { createRng, seedToRngState, type Rng } from './rng';
@@ -297,7 +298,13 @@ export function advanceEvening(
     inspectedWave: opening.inspectedWave,
   };
 
-  const { result, setups, defectsByStation } = runService(setup, rng);
+  const { result: served, setups, defectsByStation } = runService(setup, rng);
+
+  // The narrator runs here, once, against the budget as it stood before tonight.
+  // Deciding the lines at render time instead would rank them against a budget
+  // that already contained them, and a reload would tell a different story.
+  const lines = tellEvening(served.facts, state.narratorUsed);
+  const result: ServiceResult = { ...served, lines };
 
   let cooks = applyEveningWear({
     cooks: state.cooks,
@@ -354,6 +361,8 @@ export function advanceEvening(
       restTickets: isLastEveningOfWeek ? [] : state.weekPlan.restTickets,
     },
     eveningIndex: opening.eveningIndex + 1,
+    /** Charged in the same breath the lines were chosen. PRD §3.11. */
+    narratorUsed: [...new Set([...state.narratorUsed, ...lines.map((line) => line.templateId)])],
   };
 
   return { state: { ...next, stars: judge(next) }, result };

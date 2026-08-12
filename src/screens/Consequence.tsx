@@ -6,7 +6,7 @@
  * because this is a beat, not a dashboard.
  */
 import { formatCurrency, formatNumber, formatSigned, t } from '../i18n';
-import { useGame } from '../store/gameStore';
+import { narratorText, useGame } from '../store/gameStore';
 
 export default function Consequence(): React.JSX.Element | null {
   const game = useGame((s) => s.game);
@@ -14,9 +14,10 @@ export default function Consequence(): React.JSX.Element | null {
   const nextEvening = useGame((s) => s.nextEvening);
   if (game === null || result === null) return null;
 
-  const lines: string[] = [];
-  if (result.defects > 0) lines.push(t('consequence.defectLine', { n: result.defects }));
-  if (result.starPlates > 0) lines.push(t('consequence.starLine', { n: result.starPlates }));
+  // The narrator, not a counter. `Vad dnes: 6` told the player a number they had
+  // just watched arrive twelve times; these three lines say which plates and why.
+  // An evening with nothing worth saying says nothing — silence is information.
+  const lines = narratorText(game, result);
   if (lines.length === 0) lines.push(t('consequence.quiet'));
 
   const deviation = result.avgQ - result.bar;
