@@ -192,6 +192,9 @@ export const en = {
   'app.continue': 'Continue',
   'app.skipIntro': 'Skip the intro',
   'app.venueQuestion': 'What the place is called',
+  'app.haveCode': 'I have a kitchen code',
+  'app.codeHelp':
+    'If somebody sent you their kitchen, paste the code here. You get the same brigade and the same catalogue.',
   'app.start': 'Open the kitchen',
   'app.brigadeIntro': 'Your brigade',
   'app.storageBroken':
@@ -306,6 +309,34 @@ export const en = {
   'narrator.crowding2': '{station} — crowded. The heavy courses collided in one wave.',
   'narrator.push1': 'A push landed {stationAt} tonight. {cook} pays for it.',
   'narrator.push2': 'A token went {stationAt}. {cook} will feel it tomorrow.',
+
+  // --- the Lambert letter — PRD §3.8 FR-12 ----------------------------------
+  'letter.letterOpen': 'We visited you {visits} times and sat somewhere different each time.',
+  'letter.letterWorst':
+    'On evening {evening} a plate came out {stationAt}: {course}. It was {gap} short, and it showed.',
+  'letter.letterBest': 'On evening {evening} we ate {course}. That plate would hold up anywhere.',
+  'letter.letterVerdict0':
+    'We are not awarding a star this year. Not for what you failed to cook, but for what you failed to cook every time: {below} of {total} plates under the bar.',
+  'letter.letterVerdict1':
+    'Of {total} plates, {below} came in under the bar. We have decided to award one star.',
+  'letter.letterVerdict2':
+    'Not one of {total} plates under the bar, and something memorable on every visit. Two stars.',
+  'letter.salutation': 'Dear Chef,',
+  'letter.signature': 'For the Lambert Guide · A. Renaudin',
+
+  // --- chronicle — PRD §5.1, §5.2 -------------------------------------------
+  'chronicle.title': 'Chronicle',
+  'chronicle.copy': 'Copy the text',
+  'chronicle.copied': 'Copied',
+  'chronicle.copyFailed': 'Copying did not work. You can select the text and copy it by hand.',
+  'chronicle.png': 'Download the image',
+  'chronicle.pngFailed': 'The image could not be created.',
+  'chronicle.back': 'Back to the verdict',
+  'chronicle.open': 'Chronicle',
+  'chronicle.stars': 'Stars',
+  'chronicle.season': 'Season',
+  'chronicle.headline': '{venue} · season {season}',
+  'chronicle.line': '{label}: {value}',
 
   // --- report card — PRD FR-11 ----------------------------------------------
   'report.title': 'Report card',

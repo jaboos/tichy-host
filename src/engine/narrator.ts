@@ -21,7 +21,7 @@
  * fact, so the same season replays to the same words.
  */
 import { C } from './constants';
-import type { NarratorFact, NarratorFactKind, NarratorLine } from './types';
+import type { NarratorFact, NarratorFactKind, NarratorLine, Visit } from './types';
 
 export type { NarratorLine };
 
@@ -92,6 +92,72 @@ function numbersFor(fact: NarratorFact): Record<string, number> {
     default:
       return {};
   }
+}
+
+/**
+ * The Lambert letter, PRD §3.8 FR-12: "citing three concrete evenings".
+ *
+ * It cites the evenings the guide actually sat through, and only those — the
+ * eighteen inspected plates are the whole of what the letter may know. An evening
+ * the player thought went badly but the guide never saw does not appear, which is
+ * the point of the mechanic and the reason the letter cannot be written from
+ * `history`.
+ *
+ * Returns the paragraphs in reading order. The verdict paragraph comes last and is
+ * the only one chosen by the star count rather than by an event.
+ */
+export function tellSeason(visits: readonly Visit[], stars: 0 | 1 | 2): NarratorLine[] {
+  const inspected = visits.flatMap((visit) =>
+    visit.plates.map((plate) => ({ plate, evening: visit.eveningIndex })),
+  );
+
+  const lines: NarratorLine[] = [
+    {
+      templateId: 'letterOpen',
+      station: null,
+      cookId: null,
+      courseId: null,
+      numbers: { visits: visits.length },
+    },
+  ];
+
+  const worst = inspected
+    .filter((entry) => entry.plate.outcome === 'defect')
+    .sort((a, b) => (a.plate.q ?? 0) - (b.plate.q ?? 0))[0];
+  if (worst !== undefined) {
+    lines.push({
+      templateId: 'letterWorst',
+      station: worst.plate.station,
+      cookId: null,
+      courseId: worst.plate.courseId,
+      numbers: {
+        evening: worst.evening + 1,
+        gap: Math.round((worst.plate.bar - (worst.plate.q ?? worst.plate.bar)) * 10) / 10,
+      },
+    });
+  }
+
+  const best = inspected.sort((a, b) => (b.plate.q ?? 0) - (a.plate.q ?? 0))[0];
+  if (best !== undefined && best.plate.q !== null && best.plate.outcome !== 'defect') {
+    lines.push({
+      templateId: 'letterBest',
+      station: best.plate.station,
+      cookId: null,
+      courseId: best.plate.courseId,
+      numbers: { evening: best.evening + 1 },
+    });
+  }
+
+  const below = inspected.filter((entry) => entry.plate.outcome === 'defect').length;
+  lines.push({
+    templateId: `letterVerdict${stars}`,
+    station: null,
+    cookId: null,
+    courseId: null,
+    numbers: { below, total: inspected.length },
+  });
+
+  return lines;
 }
 
 /**

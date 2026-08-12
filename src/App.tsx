@@ -5,6 +5,7 @@ import { useGame } from './store/gameStore';
 import TabBar from './components/TabBar';
 import Brigade from './screens/Brigade';
 import Calendar from './screens/Calendar';
+import Chronicle from './screens/Chronicle';
 import Consequence from './screens/Consequence';
 import CookCard from './screens/CookCard';
 import Menu from './screens/Menu';
@@ -22,6 +23,7 @@ const WITHOUT_TABS = new Set([
   'consequence',
   'monday',
   'report',
+  'chronicle',
   'verdict',
 ]);
 
@@ -69,6 +71,8 @@ export default function App(): React.JSX.Element {
         return <Brigade />;
       case 'cook':
         return <CookCard />;
+      case 'chronicle':
+        return <Chronicle />;
       case 'report':
         return <ReportCard />;
       case 'verdict':

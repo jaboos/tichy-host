@@ -43,6 +43,7 @@ export default function Onboarding(): React.JSX.Element {
   const [beat, setBeat] = useState(0);
   const [venueName, setVenueName] = useState('');
   const [seed, setSeed] = useState('');
+  const [codeOpen, setCodeOpen] = useState(false);
   const brigade = createStartingBrigade();
 
   const open = (): void =>
@@ -134,19 +135,40 @@ export default function Onboarding(): React.JSX.Element {
             />
           </div>
 
-          <div>
-            <label className="label" htmlFor="seed">
-              {t('app.seedLabel')}
-            </label>
-            <input
-              id="seed"
-              className="card mono"
-              style={{ width: '100%', marginTop: 6, color: 'var(--ink)', fontSize: 16 }}
-              value={seed}
-              placeholder="7K3-MAREN"
-              onChange={(event) => setSeed(event.target.value.toUpperCase())}
-            />
-          </div>
+          {/* FR-15: the field is revealed, not offered. And it carries no
+              placeholder — `7K3-MAREN` sitting in the box reads as "type something
+              like this", which is exactly what an optional field must not say. */}
+          {codeOpen ? (
+            <div>
+              <label className="label" htmlFor="seed">
+                {t('app.kitchenCode')}
+              </label>
+              <input
+                id="seed"
+                className="card mono"
+                style={{ width: '100%', marginTop: 6, color: 'var(--ink)', fontSize: 16 }}
+                value={seed}
+                onChange={(event) => setSeed(event.target.value.toUpperCase())}
+              />
+              <p className="quote" style={{ marginTop: 6, fontSize: 'var(--fs-small)' }}>
+                {t('app.codeHelp')}
+              </p>
+            </div>
+          ) : (
+            <button
+              type="button"
+              className="tap"
+              style={{
+                color: 'var(--ink-muted)',
+                fontSize: 'var(--fs-small)',
+                textDecoration: 'underline',
+                textUnderlineOffset: 3,
+              }}
+              onClick={() => setCodeOpen(true)}
+            >
+              {t('app.haveCode')}
+            </button>
+          )}
         </div>
 
         <div className="dock">

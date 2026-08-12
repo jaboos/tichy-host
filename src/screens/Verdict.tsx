@@ -5,24 +5,25 @@
  * game, a wax seal that lands before the star arrives, and the kitchen code in a
  * dark footer under the paper. That shape is here.
  *
- * What is NOT here is Lambert's prose. The letter's paragraphs are generated from
- * the season's own events by `narrator.ts`, which is Phase 4 (§7) — writing
- * plausible-sounding paragraphs by hand now would put sentences on screen that the
- * season did not earn. Until then the paper carries the figures the season really
- * produced, in the letter's own typography.
+ * Lambert's paragraphs come from `tellSeason`, written from the eighteen plates
+ * the guide actually ate and nothing else. An evening the player remembers as a
+ * disaster does not appear unless the guide was sitting there — which is the whole
+ * mechanic, and the reason the letter cannot be written from `history`.
  */
 import { C } from '../engine/constants';
 import { isBankrupt } from '../engine/economy';
 import { formatCurrency, formatNumber, t } from '../i18n';
-import { useGame } from '../store/gameStore';
+import { letterText, useGame } from '../store/gameStore';
 
 export default function Verdict(): React.JSX.Element | null {
   const game = useGame((s) => s.game);
   const nextSeason = useGame((s) => s.nextSeason);
   const startOver = useGame((s) => s.startOver);
+  const goto = useGame((s) => s.goto);
   if (game === null) return null;
 
   const hasNextSeason = game.seasonNumber < C.season.seasonsPerCareer;
+  const paragraphs = letterText(game);
 
   const plates = game.visits.flatMap((visit) => visit.plates);
   const below = plates.filter((plate) => plate.outcome === 'defect').length;
@@ -78,21 +79,42 @@ export default function Verdict(): React.JSX.Element | null {
             </span>
           </div>
 
+          {/* The letter, written from the eighteen plates the guide actually ate.
+              Every paragraph cites an evening it sat through; an evening the
+              player thought went badly but the guide never saw does not appear. */}
+          <div
+            className="display"
+            style={{ marginTop: 16, fontSize: 15.5, fontWeight: 400, lineHeight: 1.62 }}
+          >
+            <p style={{ margin: 0, animation: 'otisk 420ms var(--ease-out) 420ms both' }}>
+              {t('letter.salutation')}
+            </p>
+            {paragraphs.map((paragraph, index) => (
+              <p
+                key={paragraph}
+                style={{
+                  marginTop: 12,
+                  marginBottom: 0,
+                  animation: `otisk 420ms var(--ease-out) ${560 + index * 130}ms both`,
+                }}
+              >
+                {paragraph}
+              </p>
+            ))}
+          </div>
+
           <p
             className="display"
             style={{
-              marginTop: 16,
+              marginTop: 20,
               marginBottom: 0,
-              fontSize: 15.5,
-              fontWeight: 400,
-              lineHeight: 1.62,
-              animation: 'otisk 420ms var(--ease-out) 420ms both',
+              fontStyle: 'italic',
+              fontSize: 13.5,
+              color: '#5c5548',
+              animation: 'otisk 420ms var(--ease-out) 1180ms both',
             }}
           >
-            {t('verdict.plates', {
-              n: below,
-              total: C.inspector.visitsPerSeason * C.inspector.platesPerVisit,
-            })}
+            {t('letter.signature')}
           </p>
 
           {isBankrupt(game.cash) ? (
@@ -228,6 +250,9 @@ export default function Verdict(): React.JSX.Element | null {
         {/* A career is three seasons (§3.8) and the golden ladder is measured over
             all three. Until now the only button here restarted at season 1, so the
             second and third seasons were unreachable. */}
+        <button type="button" className="btn-ghost" onClick={() => goto('chronicle')}>
+          {t('chronicle.open')}
+        </button>
         {hasNextSeason ? (
           <>
             <button type="button" className="cta" onClick={nextSeason}>

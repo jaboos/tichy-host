@@ -14,7 +14,7 @@
 import { create } from 'zustand';
 
 import { C } from '../engine/constants';
-import { createRng, generateSeed, normalizeSeed, seedToRngState } from '../engine/rng';
+import { createRng, formatSeed, generateSeed, seedToRngState } from '../engine/rng';
 import {
   advanceEvening,
   advanceWeek,
@@ -30,6 +30,7 @@ import {
 import { createStartingBrigade } from '../engine/draft';
 import { computeBar } from '../engine/bar';
 import { buildSetups } from '../engine/service';
+import { tellSeason } from '../engine/narrator';
 import type { NarratorLine } from '../engine/narrator';
 import {
   buildStationSetup,
@@ -38,7 +39,14 @@ import {
   stationOdds,
   type EveningContext,
 } from '../engine/plate';
-import { formatNumber, formatPercent, setLang as setI18nLang, t, type TKey } from '../i18n';
+import {
+  formatCurrency,
+  formatNumber,
+  formatPercent,
+  setLang as setI18nLang,
+  t,
+  type TKey,
+} from '../i18n';
 import * as persistence from './persistence';
 import { STATIONS } from '../engine/types';
 import type {
@@ -65,6 +73,8 @@ export type Screen =
   | 'calendar'
   | 'brigade'
   | 'cook'
+  /** The shareable season summary. PRD §5.1, §5.2 */
+  | 'chronicle'
   /** Sunday, and only when a visit is waiting to be confirmed. PRD FR-11 */
   | 'report'
   | 'verdict';
@@ -276,6 +286,49 @@ export function narratorText(game: GameState, result: ServiceResult): string[] {
     };
     return t(`narrator.${line.templateId}` as TKey, params);
   });
+}
+
+/** The Lambert letter's paragraphs, in the player's language. PRD §3.8 FR-12. */
+export function letterText(game: GameState): string[] {
+  const courses = new Map(game.catalogue.map((course) => [course.id, course]));
+  return tellSeason(game.visits, game.stars).map((line) => {
+    const course = line.courseId === null ? undefined : courses.get(line.courseId);
+    return t(`letter.${line.templateId}` as TKey, {
+      ...Object.fromEntries(
+        Object.entries(line.numbers).map(([key, value]) => [
+          key,
+          Number.isInteger(value) ? String(value) : formatNumber(value, 1),
+        ]),
+      ),
+      station: line.station === null ? '' : t(`station.${line.station}`),
+      stationAt: line.station === null ? '' : t(`station.${line.station}.at`),
+      course: course === undefined ? '' : t(course.nameKey),
+    });
+  });
+}
+
+/**
+ * The shareable season summary. PRD §5.1 — plain text, kept short enough to paste
+ * anywhere, and it is the one place the kitchen code is met unprompted (FR-15).
+ */
+export function chronicleText(game: GameState): string {
+  const below = game.visits.flatMap((visit) => visit.plates).filter((p) => p.outcome === 'defect');
+  const total = C.inspector.visitsPerSeason * C.inspector.platesPerVisit;
+  const starsKey = (['verdict.stars0', 'verdict.stars1', 'verdict.stars2'] as const)[game.stars];
+  const line = (label: TKey, value: string): string =>
+    t('chronicle.line', { label: t(label), value });
+
+  return [
+    t('chronicle.headline', {
+      venue: game.venueName === '' ? t('app.venuePlaceholder') : game.venueName,
+      season: game.seasonNumber,
+    }),
+    t(starsKey ?? 'verdict.stars0'),
+    t('verdict.plates', { n: below.length, total }),
+    line('consequence.reputation', formatNumber(game.reputation, 0)),
+    line('consequence.cash', formatCurrency(game.cash)),
+    line('app.kitchenCode', game.seed),
+  ].join('\n');
 }
 
 export function eveningVerdict(
@@ -624,7 +677,11 @@ export const useGame = create<Store>((set, get) => ({
   },
 
   newGame: (venueName, seed) => {
-    const normalized = seed === undefined ? null : normalizeSeed(seed);
+    // `formatSeed`, not `normalizeSeed`: a typed code was stored stripped of its
+    // dash and handed back to the player as 7K3MAREN, which is not the shape the
+    // game asks for. Generated codes always carried the dash, so the two forms
+    // differed depending on how the season started.
+    const normalized = seed === undefined ? null : formatSeed(seed);
     // The clock is entropy, and it lives here rather than in the engine.
     const chosen = normalized ?? generateSeed(createRng(seedToRngState(String(Date.now()))));
     const fresh = startSeason({

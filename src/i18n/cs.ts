@@ -191,6 +191,9 @@ export const cs = {
   'app.continue': 'Pokračovat',
   'app.skipIntro': 'Přeskočit úvod',
   'app.venueQuestion': 'Jak se podnik jmenuje',
+  'app.haveCode': 'Mám kód kuchyně',
+  'app.codeHelp':
+    'Když ti někdo poslal svou kuchyni, vlož kód sem. Dostaneš stejnou partu i stejný katalog.',
   'app.start': 'Otevřít kuchyni',
   'app.brigadeIntro': 'Tvoje brigáda',
   'app.storageBroken':
@@ -308,6 +311,37 @@ export const cs = {
   'narrator.crowding2': '{station} — tlačenice. Těžké chody se srazily do jedné vlny.',
   'narrator.push1': '{stationAt} se dnes přitlačilo. {cook} to zaplatí.',
   'narrator.push2': '{stationAt} padl žeton. Zítra to bude {cook} cítit.',
+
+  // --- the Lambert letter — PRD §3.8 FR-12 ----------------------------------
+  // Every paragraph cites something the guide actually ate. Nothing here is
+  // generic praise or generic blame; if the season did not produce the event, the
+  // paragraph does not appear.
+  'letter.letterOpen': 'Navštívili jsme Vás {visits}krát a pokaždé jsme si sedli jinam.',
+  'letter.letterWorst':
+    'Večer {evening} nám {stationAt} přinesli {course}. Chybělo {gap} a bylo to poznat.',
+  'letter.letterBest': 'Večer {evening} jsme jedli {course}. Takový talíř obstojí kdekoli.',
+  'letter.letterVerdict0':
+    'Letos hvězdu neudělujeme. Ne kvůli tomu, co jste neuvařili, ale kvůli tomu, co jste neuvařili pokaždé: {below} z {total} talířů pod laťkou.',
+  'letter.letterVerdict1':
+    'Z {total} talířů byl pod laťkou {below}. Rozhodli jsme se udělit jednu hvězdu.',
+  'letter.letterVerdict2':
+    'Ani jeden z {total} talířů pod laťkou, a v každé návštěvě něco, co si pamatujeme. Dvě hvězdy.',
+  'letter.salutation': 'Vážený pane šéfkuchaři,',
+  'letter.signature': 'Za Průvodce Lambert · A. Renaudin',
+
+  // --- chronicle — PRD §5.1, §5.2 -------------------------------------------
+  'chronicle.title': 'Kronika',
+  'chronicle.copy': 'Zkopírovat text',
+  'chronicle.copied': 'Zkopírováno',
+  'chronicle.copyFailed': 'Kopírování neprošlo. Text můžeš označit a zkopírovat ručně.',
+  'chronicle.png': 'Stáhnout obrázek',
+  'chronicle.pngFailed': 'Obrázek se nepodařilo vytvořit.',
+  'chronicle.back': 'Zpět na verdikt',
+  'chronicle.open': 'Kronika',
+  'chronicle.stars': 'Hvězdy',
+  'chronicle.season': 'Sezóna',
+  'chronicle.headline': '{venue} · sezóna {season}',
+  'chronicle.line': '{label}: {value}',
 
   // --- report card — PRD FR-11 ----------------------------------------------
   'report.title': 'Vysvědčení',

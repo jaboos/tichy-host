@@ -133,6 +133,12 @@ export default function Docket({ plate, index, animate }: Props): React.JSX.Elem
             {t('outcome.belowBar')}
           </span>
         ) : null}
+
+        {/* Read aloud, the number means nothing on its own: "+0,9" could be money,
+            wear or a rating. The outcome is said in a word, for ears only. */}
+        <span className="sr-only">
+          {t(defect ? 'outcome.defect' : star ? 'outcome.star' : 'outcome.passed')}
+        </span>
       </div>
     </div>
   );

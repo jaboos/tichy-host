@@ -104,16 +104,30 @@ export default function MondayPlan(): React.JSX.Element | null {
         </span>
       </div>
       <div className="row" style={{ marginTop: 8, flexWrap: 'wrap', gap: 6 }}>
-        {game.cooks.map((cook) => (
-          <button
-            key={cook.id}
-            type="button"
-            className={selectedCookId === cook.id ? 'chip chip--brass tap' : 'chip tap'}
-            onClick={() => setSelectedCookId(selectedCookId === cook.id ? null : cook.id)}
-          >
-            {cook.lastName}
-          </button>
-        ))}
+        {/* Wear on the chip. This is the screen where you decide who rests, and
+            until now it was the one screen that did not say who was tired. */}
+        {game.cooks.map((cook) => {
+          const tone =
+            cook.wear >= C.wear.warningThreshold
+              ? 'var(--bad)'
+              : cook.wear >= C.wear.max * 0.6
+                ? 'var(--warn)'
+                : 'var(--ok)';
+          return (
+            <button
+              key={cook.id}
+              type="button"
+              className={selectedCookId === cook.id ? 'chip chip--brass tap' : 'chip tap'}
+              style={{ gap: 7 }}
+              onClick={() => setSelectedCookId(selectedCookId === cook.id ? null : cook.id)}
+            >
+              {cook.lastName}{' '}
+              <span style={{ color: tone }} aria-label={t('common.wear')}>
+                {formatNumber(cook.wear, 1)}
+              </span>
+            </button>
+          );
+        })}
       </div>
 
       <div className="stack" style={{ marginTop: 12 }}>
@@ -122,27 +136,29 @@ export default function MondayPlan(): React.JSX.Element | null {
           const view = forecast(eveningInWeek);
           const overloaded = view !== null && view.capacity > 0 && view.load / view.capacity > 1;
           return (
-            <button
-              key={dayKey}
-              type="button"
-              className="card"
-              style={{ textAlign: 'left', padding: 10 }}
-              onClick={() => {
-                setFocusEvening(eveningInWeek);
-                if (selectedCookId !== null) {
-                  toggleRestTicket(selectedCookId, eveningInWeek);
-                  setSelectedCookId(null);
-                }
-              }}
-            >
-              <div className="spread">
+            /* A div, not a button. The dealt tickets have to be removable, and a
+               button inside a button is invalid markup — which is why they were a
+               span with a click handler and no keyboard path at all. */
+            <div key={dayKey} className="card" style={{ textAlign: 'left', padding: 10 }}>
+              <button
+                type="button"
+                className="spread"
+                style={{ width: '100%' }}
+                onClick={() => {
+                  setFocusEvening(eveningInWeek);
+                  if (selectedCookId !== null) {
+                    toggleRestTicket(selectedCookId, eveningInWeek);
+                    setSelectedCookId(null);
+                  }
+                }}
+              >
                 <span className="display" style={{ fontSize: 'var(--fs-dish)' }}>
                   {t(dayKey)}
                 </span>
                 <span className="mono muted" style={{ fontSize: 'var(--fs-small)' }}>
                   {t('pas.covers', { n: coversFor(game.reputation, eveningInWeek) })}
                 </span>
-              </div>
+              </button>
 
               <div
                 className="row"
@@ -150,18 +166,17 @@ export default function MondayPlan(): React.JSX.Element | null {
               >
                 {dealt.map((ticket) => {
                   const cook = game.cooks.find((c) => c.id === ticket.cookId);
+                  const name = cook?.lastName ?? ticket.cookId;
                   return (
-                    <span
+                    <button
                       key={ticket.cookId}
+                      type="button"
                       className="chip chip--ok"
-                      onClick={(event) => {
-                        event.stopPropagation();
-                        toggleRestTicket(ticket.cookId, eveningInWeek);
-                      }}
-                      role="presentation"
+                      aria-label={`${name} — ${t('monday.rail')}`}
+                      onClick={() => toggleRestTicket(ticket.cookId, eveningInWeek)}
                     >
-                      {cook?.lastName ?? ticket.cookId} ✕
-                    </span>
+                      {name} ✕
+                    </button>
                   );
                 })}
               </div>
@@ -184,7 +199,7 @@ export default function MondayPlan(): React.JSX.Element | null {
                   {overloaded ? ` → ${t('pas.overloaded')}` : ''}
                 </div>
               ) : null}
-            </button>
+            </div>
           );
         })}
       </div>
