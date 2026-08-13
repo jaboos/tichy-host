@@ -47,6 +47,8 @@ function Slot({
   const empty = cook === null;
   const tone = empty ? 'var(--line)' : wearTone(cook.wear);
   const nearCap = cook !== null && cook.wear >= C.wear.warningThreshold;
+  const who = empty ? t(role === 'lead' ? 'pas.noHands' : 'pas.addHelper') : cook.lastName;
+  const wearSaid = empty ? t('common.none') : `${t('common.wear')} ${formatNumber(cook.wear, 1)}`;
 
   return (
     <button
@@ -59,7 +61,10 @@ function Slot({
         width: '100%',
         textAlign: 'left',
       }}
-      aria-label={`${t(`station.${station}`)} · ${t(role === 'lead' ? 'pas.lead' : 'pas.helper')}`}
+      // The name goes in the label. Without it a screen reader announced
+      // "Studená · vedoucí" and never said who was standing there — the one fact
+      // the whole station-first rewrite exists to put on the card.
+      aria-label={`${t(`station.${station}`)} · ${t(role === 'lead' ? 'pas.lead' : 'pas.helper')} · ${who} · ${wearSaid}`}
     >
       <span className="spread" style={{ gap: 6, width: '100%', alignItems: 'baseline' }}>
         <span
@@ -78,11 +83,10 @@ function Slot({
         >
           {empty ? (role === 'lead' ? t('pas.noHands') : t('pas.addHelper')) : cook.lastName}
         </span>
-        <span
-          className="mono"
-          style={{ fontSize: 'var(--fs-micro)', color: tone, flex: 'none' }}
-          aria-label={t('common.wear')}
-        >
+        {/* No aria-label here: it replaced the figure with the bare word
+            "opotřebení" and the number was never read out. The button's own label
+            says both. */}
+        <span className="mono" style={{ fontSize: 'var(--fs-micro)', color: tone, flex: 'none' }}>
           {empty ? t('common.none') : formatNumber(cook.wear, 1)}
           {nearCap ? ' !' : ''}
         </span>

@@ -57,7 +57,8 @@ export default function BarIndicator({
           style={{ gap: 10, alignItems: 'baseline' }}
           onClick={() => setOpen(!open)}
           aria-expanded={open}
-          aria-label={t('bar.title')}
+          // No aria-label: it said only "Laťka" and so hid the number from screen
+          // readers entirely. The button's own content is already the better name.
         >
           <span className="label">{t('bar.title')}</span>
           <span

@@ -16,23 +16,33 @@ import type { Plate } from '../engine/types';
 
 interface Props {
   plate: Plate;
-  index: number;
+  /** False until this plate's turn in the cascade. Its space is reserved either way. */
+  arrived: boolean;
   animate: boolean;
 }
 
-export default function Docket({ plate, index, animate }: Props): React.JSX.Element {
+export default function Docket({ plate, arrived, animate }: Props): React.JSX.Element {
   const course = getCourse(plate.courseId);
   const defect = plate.outcome === 'defect';
   const star = plate.outcome === 'star';
   const deviation = plate.q === null ? null : plate.q - plate.bar;
 
-  const arrive = `calc(var(--stagger) * ${index})`;
-  const landed = `calc(var(--stagger) * ${index} + var(--dur-docket))`;
+  /**
+   * No stagger delay here: the reveal timer in `Service` already spaces the
+   * arrivals one `--stagger` apart, and letting the CSS delay them again landed
+   * the twelfth docket at 1320 ms instead of 660. `spad` and the star still wait
+   * for this docket's own slide to finish.
+   */
+  const landed = 'var(--dur-docket)';
 
   return (
     <div
       style={{
-        animation: animate ? `najezd var(--dur-docket) var(--ease-out) ${arrive} both` : undefined,
+        // Hidden, not absent. Adding the dockets to the DOM one at a time pushed
+        // everything below them down twelve times over — CLS 0.21 measured during
+        // the cascade, against §8.3's "no layout shift during docket reveal".
+        visibility: arrived ? undefined : 'hidden',
+        animation: arrived && animate ? 'najezd var(--dur-docket) var(--ease-out) both' : undefined,
       }}
     >
       <div

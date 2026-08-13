@@ -131,7 +131,9 @@ describe('the Pas names the people standing at each station', () => {
 
   it('offers a helper slot inside every station card that has no helper', () => {
     const withHelper = STATIONS.filter((s) => useGame.getState().draft.helpers[s] !== null).length;
-    const slots = markup.split(t('pas.addHelper')).length - 1;
+    // Count the aria-labels, not raw occurrences: the phrase now appears twice per
+    // empty slot — once as the visible chip and once inside the button's label.
+    const slots = markup.split(`${t('pas.helper')} · ${t('pas.addHelper')} · `).length - 1;
     expect(slots).toBe(STATIONS.length - withHelper);
   });
 });
@@ -167,7 +169,10 @@ describe('the station card is the control — FR-1a as amended', () => {
     for (const station of STATIONS) {
       for (const role of ['lead', 'helper'] as const) {
         const label = `${t(`station.${station}`)} · ${t(role === 'lead' ? 'pas.lead' : 'pas.helper')}`;
-        expect(markup, `${label} is not tappable`).toContain(`aria-label="${label}"`);
+        // A prefix, because the label also names whoever is standing there — a
+        // screen reader that says the place but not the person is no use on a
+        // screen whose whole point is naming the person.
+        expect(markup, `${label} is not tappable`).toContain(`aria-label="${label} · `);
       }
     }
   });

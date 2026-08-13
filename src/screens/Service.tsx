@@ -54,7 +54,6 @@ export default function Service(): React.JSX.Element | null {
   const done = shown >= total;
 
   // Reveal order affects display only; it never touches the computed data.
-  const visible = result.plates.slice(0, shown);
   const deviation = result.avgQ - result.bar;
 
   return (
@@ -103,12 +102,15 @@ export default function Service(): React.JSX.Element | null {
           />
         </div>
 
+        {/* Every plate is in the DOM from the first frame; the cascade only
+            uncovers them. Slicing the list instead made the page grow twelve
+            times and shifted everything below it — §8.3 asks for none of that. */}
         <div className="stack" style={{ gap: 8 }}>
-          {visible.map((plate, index) => (
+          {result.plates.map((plate, index) => (
             <Docket
               key={`${plate.courseId}-${plate.wave}-${index}`}
               plate={plate}
-              index={index}
+              arrived={index < shown}
               animate={!skipAnimation}
             />
           ))}
