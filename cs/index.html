@@ -1,0 +1,214 @@
+<!doctype html>
+<html lang="cs">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="color-scheme" content="dark" />
+    <meta name="theme-color" content="#0E0D0B" />
+    <title>Tichý host — tři večery ze čtyřiceti se hodnotí</title>
+    <meta
+      name="description"
+      content="Manažerská hra v prohlížeči o kuchyni luxusní restaurace. Šest kuchařů, čtyři posty, čtyřicet večerů a kritik, který si rezervuje stůl na cizí jméno. Zdarma, bez registrace."
+    />
+    <meta property="og:title" content="Tichý host" />
+    <meta
+      property="og:description"
+      content="Tři večery ze čtyřiceti se hodnotí. Nikdy se nedozvíš, které."
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:image" content="/pas-cs.jpg" />
+
+    <link rel="stylesheet" href="/src/styles/tokens.css" />
+    <link rel="stylesheet" href="/src/styles/landing.css" />
+
+    <script>
+      document.documentElement.classList.add('js');
+    </script>
+  </head>
+
+  <body>
+    <div class="ambience" aria-hidden="true"></div>
+
+    <nav class="langbar" aria-label="Jazyk">
+      <a href="/en/" hreflang="en" lang="en">
+        <svg class="flag" viewBox="0 0 60 30" aria-hidden="true">
+          <rect width="60" height="30" fill="#012169" />
+          <path d="M0 0l60 30M60 0L0 30" stroke="#fff" stroke-width="6" />
+          <path d="M0 0l60 30M60 0L0 30" stroke="#C8102E" stroke-width="3.5" />
+          <path d="M30 0v30M0 15h60" stroke="#fff" stroke-width="10" />
+          <path d="M30 0v30M0 15h60" stroke="#C8102E" stroke-width="6" />
+        </svg>
+        EN
+      </a>
+      <span class="langbar__on" aria-current="true">
+        <svg class="flag" viewBox="0 0 60 30" aria-hidden="true">
+          <rect width="60" height="15" fill="#fff" />
+          <rect y="15" width="60" height="15" fill="#D7141A" />
+          <path d="M0 0l30 15L0 30z" fill="#11457E" />
+        </svg>
+        CZ
+      </span>
+    </nav>
+
+    <main>
+      <section class="hero">
+        <div class="hero__copy">
+          <p class="eyebrow reveal">Hra v prohlížeči · Zdarma · Bez registrace</p>
+
+          <h1 class="reveal">
+            Tři večery ze čtyřiceti
+            <em>se hodnotí.</em>
+          </h1>
+
+          <!-- Hook nahoře smí překvapit, tahle věta ne: musí odpovědět "co to je"
+               dřív, než se čte cokoli dalšího. -->
+          <p class="lede reveal">
+            Nikdy se nedozvíš, které. Je to manažerská hra o kuchyni luxusní restaurace — šest
+            kuchařů, čtyři posty, šest chodů za večer a kritik, který si rezervuje stůl na cizí
+            jméno.
+          </p>
+
+          <div class="cta-row reveal">
+            <a class="cta" href="/hra/?lang=cs">
+              <span>Otevřít kuchyni</span>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                <path
+                  d="M5 12h14M13 6l6 6-6 6"
+                  stroke="currentColor"
+                  stroke-width="2.2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </svg>
+            </a>
+            <p class="cta-note">Jedna sezóna zabere asi čtyřicet minut.<br />Nic se neinstaluje.</p>
+          </div>
+        </div>
+
+        <figure class="shot reveal">
+          <span class="shot__glow" aria-hidden="true"></span>
+          <img
+            src="/pas-cs.jpg"
+            width="640"
+            height="1385"
+            alt="Obrazovka pasu: laťka 12,8, čtyři karty postů s tím, kdo kde stojí a jaká je zátěž proti kapacitě, a Dezerty označené jako přetížené na 117 %."
+            fetchpriority="high"
+          />
+          <figcaption>Každý večer začíná na pasu.</figcaption>
+        </figure>
+      </section>
+
+      <section class="counts reveal">
+        <div><b>40</b><span>večerů</span></div>
+        <div class="counts__accent"><b>3</b><span>se hodnotí</span></div>
+        <div><b>0</b><span>varování</span></div>
+      </section>
+
+      <section class="features">
+        <!-- Důkaz před mechanikou: první pochybnost u hry složené z čísel je,
+             jestli ta čísla nejsou jenom počasí. -->
+        <article class="feature reveal">
+          <span class="feature__index">01</span>
+          <h2>Že to umíš, je vidět v číslech</h2>
+          <p>
+            Bot, který obsazuje posty náhodně, dostane hvězdný talíř u <b>10,6 %</b> chodů. Bot,
+            který se před rozdělením podívá na tabuli, u <b>66,4 %</b>. Obě čísla vycházejí z 500
+            odehraných sezón a jakmile se ten rozdíl pohne o víc než tři body, testy hru ven
+            nepustí.
+          </p>
+        </article>
+
+        <article class="feature reveal">
+          <span class="feature__index">02</span>
+          <h2>Laťka roste s tebou</h2>
+          <p>
+            Každý talíř se poměřuje s jedním číslem a to číslo stoupá s pověstí podniku. Volba
+            obtížnosti tu není žádná, protože obtížnost <em>je</em> to číslo.
+          </p>
+        </article>
+
+        <article class="feature reveal">
+          <span class="feature__index">03</span>
+          <h2>Nic se před tebou neskrývá</h2>
+          <p>
+            Když na post přitlačíš, hra nejdřív ukáže, jak se změní šance — hvězdný talíř
+            <b>4 % → 14 %</b>, vada <b>13 % → 26 %</b> — a teprve pak naúčtuje opotřebení. Žádné
+            skryté nadlehčování, nic zaokrouhleného ve tvůj prospěch. Znaky, podle kterých se host
+            pozná, prošly kontrolou na 100 000 večerech.
+          </p>
+        </article>
+      </section>
+
+      <!-- Věta, kterou vypravěč doopravdy umí vypsat, doslova ze slovníku. -->
+      <blockquote class="pull reveal">
+        <p>Holub na seně ven nemá jít.<br />O 2,1 pod laťkou.</p>
+        <cite>— hra, o večeru, který se nepovedl</cite>
+      </blockquote>
+
+      <section class="honest reveal">
+        <h2>Co to není</h2>
+        <ul>
+          <li><b>Žádná grafika.</b> Text, čísla a jedna mosazná barva.</li>
+          <li><b>Nic v reálném čase.</b> Rozhodneš se a pak se díváš, jak večer dopadl.</li>
+          <li><b>Místy hrubé</b> — dá se to dohrát od začátku do konce a víc neslibuju.</li>
+          <li><b>Jeden člověk.</b> Česky i anglicky, přepnout jde kdykoli během hry.</li>
+        </ul>
+      </section>
+
+      <section class="ask reveal">
+        <h2>Hledám hráče, ne pochvalu</h2>
+        <p>
+          Přestaň ve chvíli, kdy tě to přestane bavit.
+          <b>To, kde tě to přestalo bavit, mi řekne víc než pochvala</b> — a je to jediné, co se sám
+          nedozvím.
+        </p>
+        <ol>
+          <li>Než poprvé zmáčkneš <em>Zahájit servis</em> — co myslíš, že se pokazí?</li>
+          <li>U kolikátého večera to skončilo a co se zrovna dělo?</li>
+          <li>Pošli mi kód kuchyně. Přehraju si podle něj přesně tvoji sezónu.</li>
+        </ol>
+      </section>
+
+      <section class="closing reveal">
+        <p class="closing__line">Čtyřicet večerů. Tři z nich se počítají.</p>
+        <a class="cta cta--big" href="/hra/?lang=cs">
+          <span>Otevřít kuchyni</span>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path
+              d="M5 12h14M13 6l6 6-6 6"
+              stroke="currentColor"
+              stroke-width="2.2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+          </svg>
+        </a>
+        <p class="cta-note">
+          Zdarma, bez registrace.
+          <a class="quiet" href="/en/" hreflang="en" lang="en">The game is also in English →</a>
+        </p>
+      </section>
+    </main>
+
+    <script type="module">
+      const shy = document.querySelectorAll('.reveal');
+      const still = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+      if (still || !('IntersectionObserver' in window)) {
+        shy.forEach((el) => el.classList.add('is-in'));
+      } else {
+        const watcher = new IntersectionObserver(
+          (entries) => {
+            for (const entry of entries) {
+              if (!entry.isIntersecting) continue;
+              entry.target.classList.add('is-in');
+              watcher.unobserve(entry.target);
+            }
+          },
+          { rootMargin: '0px 0px -12% 0px' },
+        );
+        shy.forEach((el) => watcher.observe(el));
+      }
+    </script>
+  </body>
+</html>

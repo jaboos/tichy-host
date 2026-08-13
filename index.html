@@ -8,7 +8,7 @@
     <title>The Silent Guest — three evenings out of forty are graded</title>
     <meta
       name="description"
-      content="A management game about a fine-dining kitchen. Six cooks, four stations, forty evenings, and a critic who never announces himself. Free, no sign-up, plays in the browser."
+      content="A free browser game about running a fine-dining kitchen. Six cooks, four stations, forty evenings, and a critic who books under someone else's name. No sign-up."
     />
     <meta property="og:title" content="The Silent Guest" />
     <meta
@@ -34,19 +34,43 @@
          the page reads as a room rather than a document. -->
     <div class="ambience" aria-hidden="true"></div>
 
+    <nav class="langbar" aria-label="Language">
+      <span class="langbar__on" aria-current="true">
+        <svg class="flag" viewBox="0 0 60 30" aria-hidden="true">
+          <rect width="60" height="30" fill="#012169" />
+          <path d="M0 0l60 30M60 0L0 30" stroke="#fff" stroke-width="6" />
+          <path d="M0 0l60 30M60 0L0 30" stroke="#C8102E" stroke-width="3.5" />
+          <path d="M30 0v30M0 15h60" stroke="#fff" stroke-width="10" />
+          <path d="M30 0v30M0 15h60" stroke="#C8102E" stroke-width="6" />
+        </svg>
+        EN
+      </span>
+      <a href="/cs/" hreflang="cs" lang="cs">
+        <svg class="flag" viewBox="0 0 60 30" aria-hidden="true">
+          <rect width="60" height="15" fill="#fff" />
+          <rect y="15" width="60" height="15" fill="#D7141A" />
+          <path d="M0 0l30 15L0 30z" fill="#11457E" />
+        </svg>
+        CZ
+      </a>
+    </nav>
+
     <main>
       <section class="hero">
         <div class="hero__copy">
-          <p class="eyebrow reveal">Free · No sign-up · Plays in your browser</p>
+          <p class="eyebrow reveal">A browser game · Free · No sign-up</p>
 
           <h1 class="reveal">
             Three evenings out of forty
             <em>are graded.</em>
           </h1>
 
+          <!-- The hook above may surprise; this may not. It is the one sentence
+               that has to answer "what is this" before anything else is read. -->
           <p class="lede reveal">
-            You are never told which. You run the kitchen anyway — six cooks, four stations, six
-            courses a night, and a critic who does not book under his own name.
+            You are never told which. It is a management game about a fine-dining kitchen — six
+            cooks, four stations, six courses a night, and a critic who books under someone else's
+            name.
           </p>
 
           <div class="cta-row reveal">
@@ -62,7 +86,7 @@
                 />
               </svg>
             </a>
-            <p class="cta-note">One season, about forty minutes.<br />Nothing to install.</p>
+            <p class="cta-note">One season runs about forty minutes.<br />Nothing to install.</p>
           </div>
         </div>
 
@@ -88,8 +112,21 @@
       </section>
 
       <section class="features">
+        <!-- Proof before mechanism: the first doubt about a game made of numbers
+             is whether the numbers are just weather. This answers that. -->
         <article class="feature reveal">
           <span class="feature__index">01</span>
+          <h2>Playing well is measurable</h2>
+          <p>
+            A bot that fills the stations at random earns a star plate on <b>10.6%</b> of courses.
+            One that reads the board before it assigns earns <b>66.4%</b>. Both figures come from
+            500 simulated seasons, and the tests refuse the build if that gap moves by more than
+            three points.
+          </p>
+        </article>
+
+        <article class="feature reveal">
+          <span class="feature__index">02</span>
           <h2>The bar rises to meet you</h2>
           <p>
             Every plate is scored against one number, and that number climbs with your reputation.
@@ -98,28 +135,19 @@
         </article>
 
         <article class="feature reveal">
-          <span class="feature__index">02</span>
-          <h2>The suspicion figure is not decoration</h2>
-          <p>
-            It is a posterior over nine tells the room gives off — four that mean something and five
-            that mean nothing. Calibrated to within a point across a hundred thousand evenings.
-          </p>
-        </article>
-
-        <article class="feature reveal">
           <span class="feature__index">03</span>
           <h2>Nothing is hidden from you</h2>
           <p>
-            Lean on a station and it shows the odds first — star plate <b>4 % → 14 %</b>, defect
-            <b>13 % → 26 %</b> — and only then charges you the wear. No rubber-banding. Nothing
-            rounded in your favour.
+            Lean on a station and the game shows the odds first — star plate <b>4% → 14%</b>, defect
+            <b>13% → 26%</b> — and only then charges you the wear. No rubber-banding, nothing
+            rounded in your favour, and the guest's tells were checked against 100,000 evenings.
           </p>
         </article>
       </section>
 
-      <!-- A real line the narrator can produce. Atmosphere that is also proof. -->
+      <!-- A line the narrator actually produces, verbatim from the dictionary. -->
       <blockquote class="pull reveal">
-        <p>The table by the window sent the pigeon back.<br />Nobody asked why.</p>
+        <p>Pigeon on hay should not have gone out.<br />2.1 under the bar.</p>
         <cite>— the game, on an evening that went badly</cite>
       </blockquote>
 
@@ -128,7 +156,7 @@
         <ul>
           <li><b>No graphics.</b> Text, numbers, and one brass colour.</li>
           <li><b>Nothing real-time.</b> You decide, then watch the evening play back.</li>
-          <li><b>Rough in places</b> — finished enough to play end to end, and no further.</li>
+          <li><b>Rough in places</b> — it plays end to end, and I promise nothing beyond that.</li>
           <li><b>One person.</b> Czech and English, switchable mid-game.</li>
         </ul>
       </section>
@@ -136,15 +164,16 @@
       <section class="ask reveal">
         <h2>I want playtesters, not applause</h2>
         <p>
-          Stop the moment you get bored. <b>Where you stopped is worth more to me than a
-          compliment</b> — and it is the one thing only you can tell me.
+          Stop the moment it stops being interesting.
+          <b>Where you stopped tells me more than a compliment does</b> — and it is the one thing I
+          cannot find out on my own.
         </p>
         <ol>
           <li>
             Before your first <em>Start service</em> — what did you think was going to go wrong?
           </li>
           <li>Which evening were you on when you stopped, and what were you doing?</li>
-          <li>Paste your kitchen code. It lets me replay the exact season you played.</li>
+          <li>Send the kitchen code. It replays the exact season you played.</li>
         </ol>
       </section>
 
@@ -164,7 +193,7 @@
         </a>
         <p class="cta-note">
           Free, no sign-up.
-          <a class="quiet" href="/hra/?lang=cs">Also playable in Czech →</a>
+          <a class="quiet" href="/cs/" hreflang="cs" lang="cs">Hra je i česky →</a>
         </p>
       </section>
     </main>

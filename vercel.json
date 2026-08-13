@@ -1,5 +1,25 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "buildCommand": "pnpm build",
-  "outputDirectory": "dist"
+  "outputDirectory": "dist",
+
+  "redirects": [
+    {
+      "source": "/",
+      "has": [{ "type": "header", "key": "x-vercel-ip-country", "value": "CZ" }],
+      "destination": "/cs/",
+      "permanent": false
+    },
+    {
+      "source": "/",
+      "has": [{ "type": "header", "key": "x-vercel-ip-country", "value": "SK" }],
+      "destination": "/cs/",
+      "permanent": false
+    }
+  ],
+
+  "rewrites": [
+    { "source": "/en", "destination": "/index.html" },
+    { "source": "/en/", "destination": "/index.html" }
+  ]
 }

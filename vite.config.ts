@@ -11,19 +11,21 @@ const singleFile = process.env['SINGLEFILE'] === '1';
 
 export default defineConfig({
   plugins: [react(), ...(singleFile ? [viteSingleFile()] : [])],
-  // Two pages: the landing at `/` and the game at `/hra/`. The landing is plain
-  // HTML that links `src/styles/tokens.css` directly, so the two share one set of
-  // tokens rather than growing a second palette that drifts. The single-file build
-  // keeps only the game — a distributable HTML has nothing to land on.
+  // Three pages: the English landing at `/`, the Czech one at `/cs/`, and the
+  // game at `/hra/`. Both landings are plain HTML linking `src/styles/tokens.css`
+  // directly, so all three share one set of tokens rather than growing a second
+  // palette that drifts. The single-file build keeps only the game — a
+  // distributable HTML has nothing to land on.
   build: {
     rollupOptions: {
-      // The distributable is the GAME, not the landing page — the root entry is
-      // now a page to read, and a one-file HTML of it would be a leaflet with
-      // nothing to click. Caught by grepping the output rather than trusting it.
+      // The distributable is the GAME, not a landing page — the root entry is a
+      // page to read, and a one-file HTML of it would be a leaflet with nothing
+      // to click. Caught by grepping the output rather than trusting it.
       input: singleFile
         ? { hra: resolve(__dirname, 'hra/index.html') }
         : {
             landing: resolve(__dirname, 'index.html'),
+            cs: resolve(__dirname, 'cs/index.html'),
             hra: resolve(__dirname, 'hra/index.html'),
           },
     },

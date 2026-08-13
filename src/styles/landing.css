@@ -51,6 +51,62 @@ main {
   padding: 0 clamp(20px, 5vw, 48px) 120px;
 }
 
+/* ── Language switch ──────────────────────────────────────
+   Top right, above everything, and deliberately outside the reveal — the
+   language choice has to be reachable before the page finishes arriving.
+
+   The flags are inline SVG rather than the 🇨🇿/🇬🇧 emoji on purpose: Windows
+   ships no regional-indicator glyphs, so those emoji render as the bare letters
+   "CZ"/"GB" and the whole point of showing a flag is lost. */
+.langbar {
+  position: absolute;
+  top: clamp(14px, 2.5vw, 26px);
+  right: clamp(16px, 5vw, 48px);
+  z-index: 2;
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-pill);
+  background: rgba(20, 18, 15, 0.72);
+  backdrop-filter: blur(8px);
+}
+
+.langbar a,
+.langbar__on {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 13px;
+  border-radius: var(--radius-pill);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-decoration: none;
+  color: var(--ink-muted);
+  transition:
+    color 160ms var(--ease-out),
+    background 160ms var(--ease-out);
+}
+
+.langbar a:hover {
+  color: var(--ink);
+  background: rgba(216, 162, 74, 0.12);
+}
+
+.langbar__on {
+  color: #17130c;
+  background: var(--brass);
+}
+
+.flag {
+  width: 18px;
+  height: 12px;
+  border-radius: 2px;
+  flex: none;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.22);
+}
+
 /* ── Arrival ──────────────────────────────────────────────
    Nothing fancy: 18 px and a fade. The point is rhythm down the page, not a
    performance. */
