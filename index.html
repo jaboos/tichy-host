@@ -1,20 +1,127 @@
 <!doctype html>
-<html lang="cs">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="color-scheme" content="dark" />
-    <!-- Must match --bg in tokens.css, or the browser chrome and the page disagree
-         on mobile. It was still #14100D from the first visual direction. -->
     <meta name="theme-color" content="#0E0D0B" />
+    <title>The Silent Guest — a kitchen being judged without being told</title>
     <meta
       name="description"
-      content="Textová manažerská hra o fine-dining kuchyni. Šest kuchařů, čtyři posty, čtyřicet večerů — a inspektor, který nikdy neřekne, kdy přijde."
+      content="A text management game about a fine-dining kitchen. Six cooks, four stations, forty evenings, and a critic who never announces himself. Free, no sign-up, plays in the browser."
     />
-    <title>Tichý host</title>
+    <meta property="og:title" content="The Silent Guest" />
+    <meta
+      property="og:description"
+      content="Three of your forty evenings are being graded. Nobody will tell you which."
+    />
+    <meta property="og:type" content="website" />
+
+    <link rel="stylesheet" href="/src/styles/tokens.css" />
+    <link rel="stylesheet" href="/src/styles/landing.css" />
   </head>
+
   <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
+    <main class="page">
+      <!-- Above the fold: hook, then absolute clarity, then the one button. The
+           hook may surprise; the value proposition never may. -->
+      <header class="hero">
+        <p class="eyebrow">Free · No sign-up · Runs in your browser</p>
+
+        <h1>Three of your forty evenings are being graded.<br />Nobody will tell you which.</h1>
+
+        <p class="lede">
+          A text management game about running a fine-dining kitchen. Six cooks, four stations, six
+          courses a night — and a critic who never books under his own name.
+        </p>
+
+        <a class="cta" href="/hra/?lang=en">Open the kitchen</a>
+        <p class="cta-note">One season is about forty minutes. Nothing to install.</p>
+      </header>
+
+      <figure class="shot">
+        <img
+          src="/pas.jpg"
+          width="640"
+          height="1385"
+          alt="The assignment screen: four station cards showing who is on each, their wear, and the load against capacity."
+          loading="lazy"
+        />
+        <figcaption>
+          The pass. Every evening starts here: who stands where, and what it will cost.
+        </figcaption>
+      </figure>
+
+      <section class="points">
+        <article>
+          <h2>The bar moves when you succeed</h2>
+          <p>
+            Every plate is judged against one number, and that number climbs with your reputation.
+            Cook well and the standard rises to meet you. There is no difficulty setting, because
+            the difficulty is the score.
+          </p>
+        </article>
+
+        <article>
+          <h2>The suspicion figure is real</h2>
+          <p>
+            That percentage in the corner is a Bayesian posterior over nine tells the room gives
+            off. It is calibrated to within one point, measured across a hundred thousand evenings.
+            When it says 62 %, the guide really is out there 62 times in a hundred.
+          </p>
+        </article>
+
+        <article>
+          <h2>Every trade is priced before you take it</h2>
+          <p>
+            Lean on a station and the game shows you the odds first — star plate 4 % → 14 %, defect
+            13 % → 26 % — and then charges you the wear. Nothing is adjusted behind your back and
+            nothing is rounded in your favour.
+          </p>
+        </article>
+      </section>
+
+      <!-- Candor. On Reddit an admitted weakness buys more than any claim can. -->
+      <section class="plain">
+        <h2>What it is not</h2>
+        <ul>
+          <li>There are no graphics. It is text, numbers, and one brass colour.</li>
+          <li>Nothing is real-time. You decide, then you watch the evening play back.</li>
+          <li>
+            It is finished enough to play end to end, and rough in places I already know about.
+          </li>
+          <li>Made by one person. Czech and English, switchable mid-game.</li>
+        </ul>
+      </section>
+
+      <section class="plain ask">
+        <h2>I am after playtesters, not applause</h2>
+        <p>
+          Play until you get bored and then stop —
+          <strong>where you stopped is the single most useful thing you can tell me</strong>, and it
+          is worth more than a compliment.
+        </p>
+        <p>Three questions, if you have a minute afterwards:</p>
+        <ol>
+          <li>
+            Before you pressed <em>Start service</em> the first time — what did you think was going
+            to go wrong that evening?
+          </li>
+          <li>Which evening number were you on when you stopped, and what were you doing?</li>
+          <li>
+            Paste your kitchen code. It is on the end-of-season screen, and it lets me replay the
+            exact season you played.
+          </li>
+        </ol>
+      </section>
+
+      <section class="closing">
+        <a class="cta" href="/hra/?lang=en">Open the kitchen</a>
+        <p class="cta-note">
+          Forty evenings. Three of them count.
+          <a class="quiet" href="/hra/?lang=cs">Hra je i česky →</a>
+        </p>
+      </section>
+    </main>
   </body>
 </html>

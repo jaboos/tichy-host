@@ -1,0 +1,214 @@
+/* The faces have to be asked for here: the game imports them in main.tsx, which
+   this page never loads. Same three families as the game, self-hosted, no CDN. */
+@import '@fontsource/spectral/600.css';
+@import '@fontsource/public-sans/400.css';
+@import '@fontsource/public-sans/600.css';
+@import '@fontsource/ibm-plex-mono/400.css';
+
+/* The landing page. Tokens come from tokens.css — this file adds only the layout
+   the game itself has no use for, so the two can never drift into two palettes.
+
+   Wider than the game's 390 px column on purpose: this is a page to read, not a
+   phone screen to play, and 62ch is where prose stops being a wall. */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-ui);
+  color: var(--ink);
+  -webkit-font-smoothing: antialiased;
+}
+
+.page {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 56px var(--pad-x) 80px;
+  display: flex;
+  flex-direction: column;
+  gap: 56px;
+}
+
+/* ── Above the fold ───────────────────────────────────────── */
+
+.hero {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 18px;
+}
+
+.eyebrow {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: var(--fs-micro);
+  letter-spacing: var(--ls-label);
+  text-transform: uppercase;
+  color: var(--brass);
+}
+
+h1 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 600;
+  /* Fluid, because the hook is the page: it must not wrap into mush on a phone
+     nor float lost across a desktop. */
+  font-size: clamp(30px, 6.4vw, 46px);
+  line-height: 1.12;
+  letter-spacing: -0.01em;
+  text-wrap: balance;
+}
+
+.lede {
+  margin: 0;
+  max-width: 46ch;
+  font-size: clamp(16px, 2.4vw, 19px);
+  line-height: 1.55;
+  color: var(--ink-muted);
+  text-wrap: pretty;
+}
+
+.cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--hit);
+  padding: 0 30px;
+  margin-top: 8px;
+  border-radius: var(--radius-card);
+  background: var(--brass);
+  color: #14110c;
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-decoration: none;
+  box-shadow: var(--shadow-cta);
+  transition: transform var(--dur-fast) var(--ease-out);
+}
+
+.cta:hover {
+  background: var(--brass-hi);
+  color: #14110c;
+  transform: translateY(-1px);
+}
+
+.cta-note {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: var(--fs-small);
+  color: var(--ink-muted);
+}
+
+.quiet {
+  color: var(--ink-muted);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  margin-left: 6px;
+}
+
+/* ── The screenshot ───────────────────────────────────────── */
+
+.shot {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.shot img {
+  width: min(320px, 78vw);
+  height: auto;
+  border-radius: 22px;
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow-deep);
+}
+
+.shot figcaption {
+  max-width: 42ch;
+  text-align: center;
+  font-size: var(--fs-small);
+  line-height: 1.5;
+  color: var(--ink-muted);
+}
+
+/* ── Body sections ────────────────────────────────────────── */
+
+.points {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+}
+
+.points h2,
+.plain h2 {
+  margin: 0 0 8px;
+  font-family: var(--font-display);
+  font-size: clamp(19px, 3vw, 23px);
+  font-weight: 600;
+  line-height: 1.2;
+  text-wrap: balance;
+}
+
+.points p,
+.plain p {
+  margin: 0;
+  max-width: 62ch;
+  font-size: var(--fs-body);
+  line-height: 1.65;
+  color: var(--ink-muted);
+  text-wrap: pretty;
+}
+
+.plain ul,
+.plain ol {
+  margin: 10px 0 0;
+  padding-left: 20px;
+  max-width: 62ch;
+  font-size: var(--fs-body);
+  line-height: 1.65;
+  color: var(--ink-muted);
+}
+
+.plain li {
+  margin-bottom: 8px;
+}
+
+.plain li::marker {
+  color: var(--brass-a55);
+}
+
+.plain strong {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.plain em {
+  color: var(--ink);
+  font-style: normal;
+  font-family: var(--font-display);
+}
+
+/* The ask is the reason the page exists at all, so it gets a frame. */
+.ask {
+  border-left: 2px solid var(--brass-a55);
+  padding-left: 18px;
+}
+
+.ask p + p {
+  margin-top: 12px;
+}
+
+.closing {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+  border-top: 1px solid var(--line);
+  padding-top: 40px;
+}

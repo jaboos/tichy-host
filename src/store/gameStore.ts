@@ -592,6 +592,17 @@ interface Store {
   lockKitchen: () => void;
 }
 
+/**
+ * The language asked for by the link that brought the player here, if any. The
+ * landing page is English, so its play button carries `?lang=en`; without this the
+ * game would open in Czech for a reader who has just read an English page.
+ */
+function readLangParam(): Lang | null {
+  if (typeof window === 'undefined') return null;
+  const asked = new URLSearchParams(window.location.search).get('lang');
+  return asked === 'cs' || asked === 'en' ? asked : null;
+}
+
 function persist(game: GameState | null): void {
   persistence.saveGame(game);
 }
@@ -651,7 +662,13 @@ export const useGame = create<Store>((set, get) => ({
   storageBroken: false,
 
   boot: () => {
-    const prefs = persistence.loadPrefs();
+    const stored = persistence.loadPrefs();
+    // `?lang=en` on the link, so a visitor arriving from an English page does not
+    // land in a Czech kitchen. It wins over the stored preference once and is then
+    // remembered, which is what following that link meant.
+    const asked = readLangParam();
+    const prefs = asked === null ? stored : { ...stored, lang: asked };
+    if (asked !== null && asked !== stored.lang) persistence.savePrefs(prefs);
     setI18nLang(prefs.lang);
     const storageBroken = !persistence.isStorageAvailable();
     const saved = persistence.loadGame();
