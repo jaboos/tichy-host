@@ -256,7 +256,9 @@ export const cs = {
   'monday.title': 'Pondělí',
   'monday.week': 'Týden {n}/{total}',
   'monday.tickets': 'Lístky volna',
-  'monday.rail': 'Nerozdané',
+  // Řádek pod nadpisem je brigáda, počítadlo vedle jsou lístky. „Nerozdané"
+  // popisovalo z těch dvou to nesprávné.
+  'monday.rail': 'Brigáda',
   'monday.lock': 'Zamknout kuchyni',
   'monday.premiumTrade': 'Každý talíř o {q} lépe. Stojí {cost} týdně navíc.',
   'monday.outlook': 'Týden vyjde na',

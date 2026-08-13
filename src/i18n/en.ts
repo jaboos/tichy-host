@@ -225,7 +225,9 @@ export const en = {
   'pas.statusNoIntervention': 'No call made.',
   'pas.wearWarning': 'At the wear cap',
   'pas.resting': 'Resting',
-  'bar.title': 'The bar',
+  // A label, not a sentence — it sits beside the number on four screens, where
+  // every other label is bare.
+  'bar.title': 'Bar',
   'bar.base': 'base',
   'bar.week': 'week',
   'bar.reputation': 'reputation',
@@ -257,7 +259,9 @@ export const en = {
   'monday.title': 'Monday',
   'monday.week': 'Week {n}/{total}',
   'monday.tickets': 'Rest tickets',
-  'monday.rail': 'Undealt',
+  // The row under this heading is the brigade; the counter beside it is the
+  // tickets. Calling the row "Undealt" described the wrong one of the two.
+  'monday.rail': 'Brigade',
   'monday.lock': 'Lock the kitchen',
   'monday.premiumTrade': 'Every plate {q} better. Costs {cost} more per week.',
   'monday.outlook': 'The week works out at',
@@ -436,7 +440,8 @@ export const en = {
   'pas.tapSlot': 'Tap a place on a station and choose who stands there tonight.',
 
   // --- glossary and the evening verdict -------------------------------------
-  'gloss.latka.term': 'The bar',
+  // Every other glossary term is a bare noun; this one was the odd article out.
+  'gloss.latka.term': 'Bar',
   'gloss.latka.body':
     "Tonight's threshold, not your score. A plate below it is a defect, a plate 7.5 above it is a star plate. An ambitious menu lowers the bar — so timidity is not free.",
   'gloss.kvalita.term': 'Plate quality',

@@ -126,12 +126,13 @@ export default function MondayPlan(): React.JSX.Element | null {
               type="button"
               className={selectedCookId === cook.id ? 'chip chip--brass tap' : 'chip tap'}
               style={{ gap: 7 }}
+              // The whole chip carries the sentence. An aria-label on the figure
+              // alone replaced it with the bare word "wear" and the number was
+              // never read out — the same mistake as on the station cards.
+              aria-label={`${cook.lastName} · ${t('common.wear')} ${formatNumber(cook.wear, 1)}`}
               onClick={() => setSelectedCookId(selectedCookId === cook.id ? null : cook.id)}
             >
-              {cook.lastName}{' '}
-              <span style={{ color: tone }} aria-label={t('common.wear')}>
-                {formatNumber(cook.wear, 1)}
-              </span>
+              {cook.lastName} <span style={{ color: tone }}>{formatNumber(cook.wear, 1)}</span>
             </button>
           );
         })}
@@ -179,7 +180,7 @@ export default function MondayPlan(): React.JSX.Element | null {
                       key={ticket.cookId}
                       type="button"
                       className="chip chip--ok"
-                      aria-label={`${name} — ${t('monday.rail')}`}
+                      aria-label={`${name} — ${t('common.resting')}`}
                       onClick={() => toggleRestTicket(ticket.cookId, eveningInWeek)}
                     >
                       {name} ✕
@@ -246,8 +247,11 @@ export default function MondayPlan(): React.JSX.Element | null {
       <div className="card" style={{ marginTop: 10 }}>
         <div className="spread">
           <span className="label">{t('monday.outlook')}</span>
+          {/* No hand-written '+': Czech puts the symbol after the number and
+              English before it, so the sign landed as "+CZK 67,144". A losing week
+              already carries a minus in both locales, which is the case that has
+              to be unmistakable. */}
           <span className="mono" style={{ fontSize: 'var(--fs-num-sm)', color: netTone }}>
-            {outlook.net >= 0 ? '+' : ''}
             {formatCurrency(outlook.net)}
           </span>
         </div>
