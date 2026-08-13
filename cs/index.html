@@ -10,13 +10,33 @@
       name="description"
       content="Manažerská hra v prohlížeči o kuchyni luxusní restaurace. Šest kuchařů, čtyři posty, čtyřicet večerů a kritik, který si rezervuje stůl na cizí jméno. Zdarma, bez registrace."
     />
+    <!-- Absolutní adresy: Reddit, Slack ani X relativní og:image nedopočítají a
+         náhled by zůstal bez obrázku. -->
+    <meta property="og:site_name" content="Tichý host" />
     <meta property="og:title" content="Tichý host" />
     <meta
       property="og:description"
-      content="Tři večery ze čtyřiceti se hodnotí. Nikdy se nedozvíš, které."
+      content="Tři večery ze čtyřiceti se hodnotí. Nikdy se nedozvíš, které. Manažerská hra v prohlížeči o kuchyni luxusní restaurace."
     />
     <meta property="og:type" content="website" />
-    <meta property="og:image" content="/pas-cs.jpg" />
+    <meta property="og:url" content="https://silentguest.vercel.app/cs/" />
+    <meta property="og:locale" content="cs_CZ" />
+    <meta property="og:locale:alternate" content="en_GB" />
+    <!-- 1200×630, ne screenshot pasu 640×1385: scrapery ořezávají k poměru 1,91:1
+         a obrázek na výšku z toho vyjde jako proužek. -->
+    <meta property="og:image" content="https://silentguest.vercel.app/og-cs.jpg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta
+      property="og:image:alt"
+      content="Tři večery ze čtyřiceti se hodnotí — vedle obrazovky pasu ze hry."
+    />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <link rel="canonical" href="https://silentguest.vercel.app/cs/" />
+    <link rel="alternate" hreflang="cs" href="https://silentguest.vercel.app/cs/" />
+    <link rel="alternate" hreflang="en" href="https://silentguest.vercel.app/en" />
+    <link rel="alternate" hreflang="x-default" href="https://silentguest.vercel.app/en" />
 
     <link rel="stylesheet" href="/src/styles/tokens.css" />
     <link rel="stylesheet" href="/src/styles/landing.css" />

@@ -10,13 +10,33 @@
       name="description"
       content="A free browser game about running a fine-dining kitchen. Six cooks, four stations, forty evenings, and a critic who books under someone else's name. No sign-up."
     />
+    <!-- Absolute URLs only: Reddit, Slack and X all resolve og:image against
+         nothing, so a root-relative path yields a preview with no picture. -->
+    <meta property="og:site_name" content="The Silent Guest" />
     <meta property="og:title" content="The Silent Guest" />
     <meta
       property="og:description"
-      content="Three evenings out of forty are graded. You are never told which."
+      content="Three evenings out of forty are graded. You are never told which. A free browser game about running a fine-dining kitchen."
     />
     <meta property="og:type" content="website" />
-    <meta property="og:image" content="/pas.jpg" />
+    <meta property="og:url" content="https://silentguest.vercel.app/" />
+    <meta property="og:locale" content="en_GB" />
+    <meta property="og:locale:alternate" content="cs_CZ" />
+    <!-- 1200×630, not the 640×1385 pass screenshot: scrapers crop toward 1.91:1
+         and a portrait image comes out a sliver. Regenerate with tools/og-card.html. -->
+    <meta property="og:image" content="https://silentguest.vercel.app/og.jpg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta
+      property="og:image:alt"
+      content="Three evenings out of forty are graded — beside the assignment screen of the game."
+    />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <link rel="canonical" href="https://silentguest.vercel.app/" />
+    <link rel="alternate" hreflang="en" href="https://silentguest.vercel.app/en" />
+    <link rel="alternate" hreflang="cs" href="https://silentguest.vercel.app/cs/" />
+    <link rel="alternate" hreflang="x-default" href="https://silentguest.vercel.app/en" />
 
     <link rel="stylesheet" href="/src/styles/tokens.css" />
     <link rel="stylesheet" href="/src/styles/landing.css" />

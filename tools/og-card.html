@@ -1,0 +1,132 @@
+<!doctype html>
+<!--
+  Generator for the link-preview cards, not a page anyone visits. It is not one
+  of the vite inputs, so it never reaches dist/.
+
+  Reddit, Slack and X all crop an og:image toward 1.91:1. The pass screenshot is
+  640×1385 — feeding that in directly gets you a sliver. Open this at 1200×630,
+  screenshot, and save over public/og.jpg (or og-cs.jpg for ?lang=cs).
+
+      pnpm dev  →  http://localhost:5173/tools/og-card.html
+                   http://localhost:5173/tools/og-card.html?lang=cs
+-->
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>OG card generator</title>
+    <link rel="stylesheet" href="/src/styles/tokens.css" />
+    <style>
+      @import '@fontsource/spectral/400-italic.css';
+      @import '@fontsource/spectral/600.css';
+      @import '@fontsource/ibm-plex-mono/400.css';
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        width: 1200px;
+        height: 630px;
+        overflow: hidden;
+        background: var(--bg);
+        color: var(--ink);
+        font-family: var(--font-display);
+        display: grid;
+        grid-template-columns: 1fr 400px;
+        align-items: center;
+        gap: 40px;
+        padding: 0 0 0 76px;
+        position: relative;
+      }
+
+      .glow {
+        position: absolute;
+        inset: 0;
+        background:
+          radial-gradient(900px 620px at 4% -18%, rgba(232, 176, 84, 0.34), transparent 62%),
+          radial-gradient(620px 560px at 96% 8%, rgba(178, 58, 43, 0.22), transparent 64%);
+      }
+
+      .copy {
+        position: relative;
+      }
+
+      .eyebrow {
+        margin: 0 0 26px;
+        font-family: var(--font-mono);
+        font-size: 17px;
+        letter-spacing: 0.22em;
+        text-transform: uppercase;
+        color: var(--brass);
+      }
+
+      h1 {
+        margin: 0;
+        font-size: 74px;
+        font-weight: 600;
+        line-height: 1;
+        letter-spacing: -0.025em;
+        max-width: 12ch;
+      }
+
+      h1 em {
+        display: block;
+        font-style: italic;
+        font-weight: 400;
+        background: linear-gradient(96deg, var(--brass-hi), var(--brass) 62%, #b07f31);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+      }
+
+      .foot {
+        margin: 36px 0 0;
+        font-family: var(--font-mono);
+        font-size: 19px;
+        letter-spacing: 0.08em;
+        color: var(--ink-muted);
+      }
+
+      .shot {
+        position: relative;
+        display: grid;
+        place-items: center;
+        height: 100%;
+      }
+
+      .shot img {
+        /* 2.164 tall per unit of width, so anything over ~270px runs off the
+           630px card and reads as an accident rather than a crop. */
+        width: 262px;
+        border-radius: 26px;
+        border: 1px solid var(--brass-a35);
+        transform: perspective(1400px) rotateX(6deg) rotateY(-13deg) rotate(2deg);
+        box-shadow:
+          0 60px 90px -40px rgba(0, 0, 0, 0.95),
+          0 0 110px -30px rgba(216, 162, 74, 0.42);
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="glow"></div>
+    <div class="copy">
+      <p class="eyebrow" id="eyebrow">Free browser game · No sign-up</p>
+      <h1 id="hook">Three evenings out of forty <em id="hook2">are graded.</em></h1>
+      <p class="foot">silentguest.vercel.app</p>
+    </div>
+    <div class="shot"><img id="shot" src="/pas.jpg" alt="" /></div>
+
+    <script type="module">
+      if (new URLSearchParams(location.search).get('lang') === 'cs') {
+        document.documentElement.lang = 'cs';
+        document.getElementById('eyebrow').textContent =
+          'Hra v prohlížeči · Zdarma · Bez registrace';
+        document.getElementById('hook').childNodes[0].nodeValue = 'Tři večery ze čtyřiceti ';
+        document.getElementById('hook2').textContent = 'se hodnotí.';
+        document.getElementById('shot').src = '/pas-cs.jpg';
+      }
+    </script>
+  </body>
+</html>
