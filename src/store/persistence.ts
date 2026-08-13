@@ -122,7 +122,7 @@ export function clearGame(): void {
   saveGame(null);
 }
 
-const DEFAULT_PREFS: Prefs = { lang: 'cs', reducedMotion: false };
+const DEFAULT_PREFS: Prefs = { lang: 'cs', reducedMotion: false, hasPlayed: false };
 
 export function loadPrefs(): Prefs {
   const raw = readRaw(C.storage.prefsKey);
@@ -137,6 +137,11 @@ export function loadPrefs(): Prefs {
         typeof prefs.reducedMotion === 'boolean'
           ? prefs.reducedMotion
           : DEFAULT_PREFS.reducedMotion,
+      // Absent in prefs written before FR-13 was wired up. Reading that as `false`
+      // is the safe way round: it costs a returning player one more run with the
+      // curated six, where the other guess would deny a genuine first-timer the
+      // brigade the onboarding was written for.
+      hasPlayed: typeof prefs.hasPlayed === 'boolean' ? prefs.hasPlayed : DEFAULT_PREFS.hasPlayed,
     };
   } catch {
     return { ...DEFAULT_PREFS };

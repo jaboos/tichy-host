@@ -7,8 +7,10 @@
  * the venue name the PRD requires, so the beat keeps the layout and asks the
  * question the game actually has an answer for.
  *
- * Every beat is skippable and nothing here rolls the RNG: the seed is only read
- * when "open the kitchen" is pressed.
+ * Every beat is skippable. The seed is fixed on the way into the last beat, not
+ * when "open the kitchen" is pressed, because that beat shows the brigade and the
+ * brigade is drawn from the seed — previewing six people and then opening with six
+ * others would be the screen lying about the only thing it is for.
  */
 import { useState } from 'react';
 
@@ -44,7 +46,22 @@ export default function Onboarding(): React.JSX.Element {
   const [venueName, setVenueName] = useState('');
   const [seed, setSeed] = useState('');
   const [codeOpen, setCodeOpen] = useState(false);
-  const brigade = createStartingBrigade();
+
+  /**
+   * The six the player will actually get, not a fixed sample. FR-13: only the very
+   * first run is the curated §4.2 brigade; after that, and whenever a kitchen code
+   * was typed, the season draws from the pool of 24. `prepareSeason` fixes the
+   * seed so what is previewed here is what opens.
+   */
+  const pendingBrigade = useGame((s) => s.pendingBrigade);
+  const prepareSeason = useGame((s) => s.prepareSeason);
+  const brigade = pendingBrigade ?? createStartingBrigade();
+
+  /** Called on the way into the last beat, where the brigade is shown. */
+  const meetTheBrigade = (): void => {
+    prepareSeason(seed);
+    setBeat(2);
+  };
 
   const open = (): void =>
     newGame(
@@ -102,7 +119,7 @@ export default function Onboarding(): React.JSX.Element {
             {t('app.continue')}
           </button>
           <Dots at={0} />
-          <button type="button" className="btn-ghost" onClick={() => setBeat(2)}>
+          <button type="button" className="btn-ghost" onClick={meetTheBrigade}>
             {t('app.skipIntro')}
           </button>
         </div>
@@ -172,7 +189,7 @@ export default function Onboarding(): React.JSX.Element {
         </div>
 
         <div className="dock">
-          <button type="button" className="cta" onClick={() => setBeat(2)}>
+          <button type="button" className="cta" onClick={meetTheBrigade}>
             {t('app.continue')}
           </button>
           <Dots at={1} />

@@ -27,7 +27,7 @@ import {
   weekIndexOf,
   type EveningOpening,
 } from '../engine/season';
-import { createStartingBrigade } from '../engine/draft';
+import { createStartingBrigade, draftBrigade } from '../engine/draft';
 import { computeBar } from '../engine/bar';
 import { buildSetups } from '../engine/service';
 import { tellSeason } from '../engine/narrator';
@@ -545,11 +545,22 @@ interface Store {
   refusal: RefusalKey | null;
   lang: Lang;
   reducedMotion: boolean;
+  /** The seed and brigade of the season onboarding is about to open. FR-13. */
+  pendingSeed: string | null;
+  pendingBrigade: Cook[] | null;
   /** Chosen on the Pas, before the evening runs — not a control inside the cascade. */
   skipReveal: boolean;
   storageBroken: boolean;
 
   boot: () => void;
+  /**
+   * Fixes the seed and the brigade for the season about to start, so onboarding
+   * can show the player the six people they will actually get. FR-13: only the
+   * very first run is the curated six, and a typed kitchen code always draws —
+   * otherwise the code would not determine the kitchen, and sharing one would
+   * hand the receiver a different brigade than the sender had.
+   */
+  prepareSeason: (seed?: string) => void;
   newGame: (venueName: string, seed?: string) => void;
   /** Season n+1 of the same career: the same brigade, one season older. */
   nextSeason: () => void;
@@ -634,6 +645,8 @@ export const useGame = create<Store>((set, get) => ({
   refusal: null,
   lang: 'cs',
   reducedMotion: false,
+  pendingSeed: null,
+  pendingBrigade: null,
   skipReveal: false,
   storageBroken: false,
 
@@ -676,21 +689,42 @@ export const useGame = create<Store>((set, get) => ({
     });
   },
 
-  newGame: (venueName, seed) => {
+  prepareSeason: (seed) => {
     // `formatSeed`, not `normalizeSeed`: a typed code was stored stripped of its
     // dash and handed back to the player as 7K3MAREN, which is not the shape the
     // game asks for. Generated codes always carried the dash, so the two forms
     // differed depending on how the season started.
-    const normalized = seed === undefined ? null : formatSeed(seed);
+    const typed = seed === undefined || seed === '' ? null : formatSeed(seed);
     // The clock is entropy, and it lives here rather than in the engine.
-    const chosen = normalized ?? generateSeed(createRng(seedToRngState(String(Date.now()))));
+    const chosen = typed ?? generateSeed(createRng(seedToRngState(String(Date.now()))));
+
+    // The curated six of §4.2 are a first impression, and only that. A player who
+    // has opened a kitchen before, or who was given a code, draws from the pool of
+    // 24 — that draw is the replayability engine (§3.9: a menu tailored to another
+    // brigade costs 51.6 pp), and it was never reachable from the game.
+    const curated = typed === null && !persistence.loadPrefs().hasPlayed;
+    const brigade = curated
+      ? createStartingBrigade()
+      : draftBrigade(createRng(seedToRngState(chosen)));
+
+    set({ pendingSeed: chosen, pendingBrigade: brigade });
+  },
+
+  newGame: (venueName, seed) => {
+    // Onboarding prepares as it shows the brigade; a caller that skips that step
+    // (the tests do) gets the same decision made here.
+    if (get().pendingSeed === null || seed !== undefined) get().prepareSeason(seed);
+    const { pendingSeed, pendingBrigade } = get();
+    const chosen = pendingSeed ?? generateSeed(createRng(seedToRngState(String(Date.now()))));
+
     const fresh = startSeason({
       seed: chosen,
       seasonNumber: 1,
       venueName: venueName.trim(),
       lang: get().lang,
-      cooks: createStartingBrigade(),
+      cooks: pendingBrigade ?? createStartingBrigade(),
     });
+    persistence.savePrefs({ ...persistence.loadPrefs(), hasPlayed: true });
     const opened = openAndPersist(fresh);
     set({
       screen: 'pas',
@@ -758,6 +792,10 @@ export const useGame = create<Store>((set, get) => ({
     set({
       screen: 'onboarding',
       game: null,
+      // The prepared season goes too, or the next onboarding previews — and opens
+      // — the brigade of the career just thrown away.
+      pendingSeed: null,
+      pendingBrigade: null,
       opening: null,
       lastResult: null,
       intervention: null,

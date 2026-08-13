@@ -27,6 +27,7 @@ const shim: Storage = {
 
 const { useGame } = await import('../store/gameStore');
 const { C } = await import('../engine/constants');
+const { createStartingBrigade } = await import('../engine/draft');
 
 function playEvening(): void {
   const s = useGame.getState();
@@ -41,7 +42,15 @@ function playEvening(): void {
 describe('a whole season through the store', () => {
   beforeEach(() => {
     store.clear();
-    useGame.setState({ screen: 'onboarding', game: null, opening: null, lastResult: null });
+    // A fresh device: no save, no prefs, and no season already prepared.
+    useGame.setState({
+      screen: 'onboarding',
+      game: null,
+      opening: null,
+      lastResult: null,
+      pendingSeed: null,
+      pendingBrigade: null,
+    });
   });
 
   it('plays 40 evenings and reaches the verdict', () => {
@@ -145,6 +154,49 @@ describe('a whole season through the store', () => {
     useGame.getState().boot();
     expect(useGame.getState().screen).toBe('onboarding');
     expect(useGame.getState().game).toBeNull();
+  });
+
+  /**
+   * FR-13, the replayability engine. `draftBrigade` has existed and been tested
+   * since Phase 2, but nothing in the game could reach it — `newGame` always dealt
+   * the curated six, so every career on a device got the same people. §3.9 measures
+   * that variety at 51.6 pp, which makes this the most expensive line of wiring in
+   * the project to have left out.
+   */
+  it('only the first run gets the curated brigade', () => {
+    useGame.getState().boot();
+    useGame.getState().newGame('Test');
+    const first = useGame.getState().game?.cooks.map((cook) => cook.id) ?? [];
+    expect(first).toEqual(createStartingBrigade().map((cook) => cook.id));
+
+    // A second career on the same device draws from the pool of 24.
+    useGame.getState().startOver();
+    useGame.getState().newGame('Test');
+    const second = useGame.getState().game?.cooks.map((cook) => cook.id) ?? [];
+    expect(second).toHaveLength(C.season.brigadeSize);
+    expect(second, 'the second run repeated the curated brigade').not.toEqual(first);
+  });
+
+  it('a kitchen code decides the brigade, whoever opens it', () => {
+    // The onboarding tells the player "you get the same brigade and the same
+    // catalogue". That has to be true for a first-timer too, so a typed code
+    // always draws rather than falling back to the curated six.
+    const open = (code: string): string[] => {
+      store.clear();
+      useGame.setState({ screen: 'onboarding', game: null, opening: null, pendingSeed: null });
+      useGame.getState().boot();
+      useGame.getState().newGame('Test', code);
+      return useGame.getState().game?.cooks.map((cook) => cook.id) ?? [];
+    };
+
+    const shared = open('7K3-MAREN');
+    expect(shared).toHaveLength(C.season.brigadeSize);
+    expect(shared, 'a code handed back the curated six').not.toEqual(
+      createStartingBrigade().map((cook) => cook.id),
+    );
+    // Same code, fresh device: the same kitchen.
+    expect(open('7K3-MAREN')).toEqual(shared);
+    expect(open('D36-LESJT')).not.toEqual(shared);
   });
 
   it('a corrupt save never crashes and never silently wipes', () => {

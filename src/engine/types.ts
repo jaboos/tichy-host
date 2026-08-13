@@ -390,4 +390,10 @@ export interface ChronicleEntry {
 export interface Prefs {
   lang: Lang;
   reducedMotion: boolean;
+  /**
+   * Has a kitchen ever been opened on this device? FR-13: the first run gets the
+   * curated six of §4.2, every run after draws from the pool of 24. It lives in
+   * prefs rather than in the save, because it has to outlive the save.
+   */
+  hasPlayed: boolean;
 }
