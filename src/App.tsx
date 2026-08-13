@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { Analytics } from '@vercel/analytics/react';
 
 import { t } from './i18n';
 import { useGame } from './store/gameStore';
@@ -100,6 +101,7 @@ export default function App(): React.JSX.Element {
       </div>
       {body()}
       {WITHOUT_TABS.has(screen) ? null : <TabBar />}
+      <Analytics />
     </main>
   );
 }
