@@ -1,15 +1,16 @@
 /* The faces have to be asked for here: the game imports them in main.tsx, which
    this page never loads. Same three families as the game, self-hosted, no CDN. */
+@import '@fontsource/spectral/400-italic.css';
 @import '@fontsource/spectral/600.css';
 @import '@fontsource/public-sans/400.css';
 @import '@fontsource/public-sans/600.css';
 @import '@fontsource/ibm-plex-mono/400.css';
 
-/* The landing page. Tokens come from tokens.css — this file adds only the layout
-   the game itself has no use for, so the two can never drift into two palettes.
-
-   Wider than the game's 390 px column on purpose: this is a page to read, not a
-   phone screen to play, and 62ch is where prose stops being a wall. */
+/* The landing page.
+   Colour comes from tokens.css so the page and the game cannot drift into two
+   palettes — but the *scale* deliberately does not. The game is a 390 px column
+   of dense figures; this is a room you walk into. Type runs to 96 px, the light
+   comes from somewhere, and things arrive rather than being there already. */
 
 *,
 *::before,
@@ -17,198 +18,541 @@
   box-sizing: border-box;
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 body {
   margin: 0;
   font-family: var(--font-ui);
   color: var(--ink);
+  background: var(--bg);
   -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
 }
 
-.page {
-  max-width: 640px;
+/* ── The room ─────────────────────────────────────────────
+   One warm source top-left and a cold fall-off everywhere else. Fixed, so the
+   page moves through the light instead of dragging it along. */
+.ambience {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(1100px 780px at 8% -12%, rgba(232, 176, 84, 0.3), transparent 62%),
+    radial-gradient(760px 700px at 96% 6%, rgba(178, 58, 43, 0.2), transparent 64%),
+    radial-gradient(900px 700px at 50% 112%, rgba(216, 162, 74, 0.12), transparent 62%);
+}
+
+main {
+  max-width: 1080px;
   margin: 0 auto;
-  padding: 56px var(--pad-x) 80px;
-  display: flex;
-  flex-direction: column;
-  gap: 56px;
+  padding: 0 clamp(20px, 5vw, 48px) 120px;
 }
 
-/* ── Above the fold ───────────────────────────────────────── */
+/* ── Arrival ──────────────────────────────────────────────
+   Nothing fancy: 18 px and a fade. The point is rhythm down the page, not a
+   performance. */
+.js .reveal {
+  opacity: 0;
+  transform: translateY(18px);
+  transition:
+    opacity 620ms var(--ease-out),
+    transform 620ms var(--ease-out);
+}
+
+.reveal.is-in {
+  opacity: 1;
+  transform: none;
+}
+
+.hero__copy .reveal:nth-child(2) {
+  transition-delay: 90ms;
+}
+.hero__copy .reveal:nth-child(3) {
+  transition-delay: 170ms;
+}
+.hero__copy .reveal:nth-child(4) {
+  transition-delay: 250ms;
+}
+.hero .shot {
+  transition-delay: 200ms;
+}
+
+/* ── Hero ─────────────────────────────────────────────────
+   Two columns from 900 px up: the argument on the left, the thing itself on the
+   right. One column below that, screenshot under the CTA — the button should
+   never be the thing you have to scroll to find. */
 
 .hero {
+  display: grid;
+  gap: clamp(48px, 6vw, 72px);
+  align-items: center;
+  padding: clamp(72px, 12vh, 132px) 0 clamp(48px, 8vw, 96px);
+}
+
+.hero__copy {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 18px;
+  gap: clamp(18px, 3vw, 28px);
+}
+
+@media (min-width: 900px) {
+  .hero {
+    grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+    min-height: min(88vh, 900px);
+  }
+
+  /* Driven by viewport height, not width: the phone is 2.2× taller than it is
+     wide, so sizing it by width is what pushed the caption off the fold. */
+  .shot img {
+    width: auto;
+    height: min(60vh, 620px);
+  }
 }
 
 .eyebrow {
   margin: 0;
   font-family: var(--font-mono);
-  font-size: var(--fs-micro);
-  letter-spacing: var(--ls-label);
+  font-size: clamp(10px, 1.4vw, 12px);
+  letter-spacing: 0.22em;
   text-transform: uppercase;
   color: var(--brass);
 }
 
 h1 {
   margin: 0;
+  max-width: 13ch;
   font-family: var(--font-display);
   font-weight: 600;
-  /* Fluid, because the hook is the page: it must not wrap into mush on a phone
-     nor float lost across a desktop. */
-  font-size: clamp(30px, 6.4vw, 46px);
-  line-height: 1.12;
-  letter-spacing: -0.01em;
+  /* The hook is the page, so it is sized against the viewport rather than a
+     type scale — but it shares the row with the screenshot from 900 px up, and
+     capping it at 68 px is what keeps it from wrapping every third word. */
+  font-size: clamp(40px, 6.2vw, 68px);
+  line-height: 1;
+  letter-spacing: -0.025em;
   text-wrap: balance;
+}
+
+/* The turn of the sentence, in brass and in italic. The two-tone headline is
+   what stops it reading as a slab of text. */
+h1 em {
+  display: block;
+  font-style: italic;
+  font-weight: 400;
+  background: linear-gradient(96deg, var(--brass-hi), var(--brass) 62%, #b07f31);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }
 
 .lede {
   margin: 0;
-  max-width: 46ch;
-  font-size: clamp(16px, 2.4vw, 19px);
-  line-height: 1.55;
+  max-width: 52ch;
+  font-size: clamp(16px, 1.9vw, 21px);
+  line-height: 1.6;
   color: var(--ink-muted);
   text-wrap: pretty;
+}
+
+.cta-row {
+  display: flex;
+  align-items: center;
+  gap: clamp(16px, 3vw, 28px);
+  flex-wrap: wrap;
+  margin-top: 10px;
 }
 
 .cta {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  min-height: var(--hit);
-  padding: 0 30px;
-  margin-top: 8px;
-  border-radius: var(--radius-card);
-  background: var(--brass);
-  color: #14110c;
+  gap: 12px;
+  min-height: 60px;
+  padding: 0 34px;
+  border-radius: var(--radius-pill);
+  background: linear-gradient(150deg, var(--brass-hi), var(--brass) 58%, #bd8a35);
+  color: #17130c;
   font-family: var(--font-display);
-  font-size: 18px;
+  font-size: clamp(17px, 2vw, 19px);
   font-weight: 600;
-  letter-spacing: 0.03em;
+  letter-spacing: 0.01em;
   text-decoration: none;
-  box-shadow: var(--shadow-cta);
-  transition: transform var(--dur-fast) var(--ease-out);
+  box-shadow:
+    0 18px 44px -18px rgba(216, 162, 74, 0.85),
+    0 0 0 1px rgba(240, 193, 112, 0.35) inset;
+  transition:
+    transform 180ms var(--ease-out),
+    box-shadow 180ms var(--ease-out);
+}
+
+.cta svg {
+  transition: transform 180ms var(--ease-out);
 }
 
 .cta:hover {
-  background: var(--brass-hi);
-  color: #14110c;
-  transform: translateY(-1px);
+  transform: translateY(-2px);
+  box-shadow:
+    0 26px 60px -20px rgba(216, 162, 74, 1),
+    0 0 0 1px rgba(240, 193, 112, 0.55) inset;
+}
+
+.cta:hover svg {
+  transform: translateX(4px);
+}
+
+.cta--big {
+  min-height: 68px;
+  padding: 0 42px;
+  font-size: clamp(18px, 2.4vw, 22px);
 }
 
 .cta-note {
   margin: 0;
   font-family: var(--font-mono);
-  font-size: var(--fs-small);
+  font-size: clamp(11px, 1.4vw, 13px);
+  line-height: 1.6;
   color: var(--ink-muted);
 }
 
 .quiet {
-  color: var(--ink-muted);
-  text-decoration: underline;
-  text-underline-offset: 3px;
-  margin-left: 6px;
+  color: var(--brass);
+  text-decoration: none;
+  border-bottom: 1px solid var(--brass-a35);
+  padding-bottom: 1px;
 }
 
-/* ── The screenshot ───────────────────────────────────────── */
+.quiet:hover {
+  color: var(--brass-hi);
+}
+
+/* ── The three numbers ────────────────────────────────────── */
+
+.counts {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: clamp(12px, 3vw, 40px);
+  padding: clamp(28px, 5vw, 48px) 0;
+  border-block: 1px solid var(--line);
+}
+
+.counts div {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.counts b {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: clamp(40px, 8vw, 80px);
+  line-height: 0.9;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+}
+
+.counts__accent b {
+  color: var(--brass);
+}
+
+.counts span {
+  font-family: var(--font-mono);
+  font-size: clamp(10px, 1.3vw, 12px);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+}
+
+/* ── The screenshot, as an object rather than an illustration ── */
 
 .shot {
+  position: relative;
   margin: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 12px;
+  gap: 22px;
+}
+
+.shot__glow {
+  position: absolute;
+  top: -6%;
+  left: 50%;
+  width: min(620px, 96%);
+  height: 92%;
+  transform: translateX(-50%);
+  background: radial-gradient(closest-side, rgba(216, 162, 74, 0.26), transparent 72%);
+  filter: blur(22px);
 }
 
 .shot img {
-  width: min(320px, 78vw);
+  position: relative;
+  width: min(300px, 62vw);
   height: auto;
-  border-radius: 22px;
-  border: 1px solid var(--line);
-  box-shadow: var(--shadow-deep);
+  border-radius: 26px;
+  border: 1px solid var(--brass-a35);
+  /* Tilted and lifted. A screenshot pasted flat into a column reads as
+     documentation; the same image on an angle reads as a thing you could hold. */
+  transform: perspective(1400px) rotateX(6deg) rotateY(-10deg) rotate(1.6deg);
+  box-shadow:
+    0 60px 90px -40px rgba(0, 0, 0, 0.95),
+    0 0 90px -30px rgba(216, 162, 74, 0.35);
+  transition: transform 700ms var(--ease-out);
+}
+
+.shot:hover img {
+  transform: perspective(1400px) rotateX(2deg) rotateY(-3deg) rotate(0deg) translateY(-10px);
 }
 
 .shot figcaption {
-  max-width: 42ch;
+  position: relative;
   text-align: center;
-  font-size: var(--fs-small);
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: clamp(15px, 1.9vw, 18px);
   line-height: 1.5;
   color: var(--ink-muted);
 }
 
-/* ── Body sections ────────────────────────────────────────── */
+/* ── Features ─────────────────────────────────────────────── */
 
-.points {
-  display: flex;
-  flex-direction: column;
-  gap: 30px;
+.features {
+  display: grid;
+  gap: clamp(40px, 7vw, 84px);
+  padding: clamp(20px, 4vw, 40px) 0 clamp(64px, 9vw, 110px);
 }
 
-.points h2,
-.plain h2 {
-  margin: 0 0 8px;
+.feature {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: clamp(18px, 3vw, 36px);
+  align-items: start;
+  max-width: 78ch;
+}
+
+/* Odd blocks sit left, even blocks step in. Rhythm, so three items do not read
+   as three identical rows — a measured indent rather than a hard right-align,
+   which reads as an accident. */
+.feature:nth-child(even) {
+  margin-left: clamp(0px, 14vw, 170px);
+}
+
+/* The rule column spans both rows. Without the explicit placement the heading
+   and the paragraph are two separate grid items and the paragraph lands under
+   the number, which shoves the heading off to the right. */
+.feature__index {
+  grid-column: 1;
+  grid-row: 1 / span 2;
+  font-family: var(--font-mono);
+  font-size: clamp(11px, 1.5vw, 13px);
+  letter-spacing: 0.14em;
+  color: var(--brass);
+  padding-top: 0.55em;
+  border-top: 1px solid var(--brass-a35);
+  min-width: 3.4em;
+}
+
+.feature h2 {
+  grid-column: 2;
+  margin: 0 0 12px;
   font-family: var(--font-display);
-  font-size: clamp(19px, 3vw, 23px);
   font-weight: 600;
-  line-height: 1.2;
+  font-size: clamp(23px, 3.4vw, 36px);
+  line-height: 1.12;
+  letter-spacing: -0.015em;
   text-wrap: balance;
 }
 
-.points p,
-.plain p {
+.feature p {
+  grid-column: 2;
   margin: 0;
-  max-width: 62ch;
-  font-size: var(--fs-body);
-  line-height: 1.65;
+  max-width: 54ch;
+  font-size: clamp(15px, 1.7vw, 17px);
+  line-height: 1.68;
   color: var(--ink-muted);
   text-wrap: pretty;
 }
 
-.plain ul,
-.plain ol {
-  margin: 10px 0 0;
-  padding-left: 20px;
-  max-width: 62ch;
-  font-size: var(--fs-body);
-  line-height: 1.65;
+.feature p b {
+  color: var(--ink);
+  font-family: var(--font-mono);
+  font-size: 0.94em;
+  font-weight: 400;
+}
+
+.feature p em {
+  color: var(--ink);
+  font-style: italic;
+}
+
+/* ── Pull quote ───────────────────────────────────────────── */
+
+.pull {
+  margin: 0;
+  padding: clamp(56px, 9vw, 110px) 0;
+  text-align: center;
+  border-top: 1px solid var(--line);
+}
+
+.pull p {
+  margin: 0 auto;
+  max-width: 22ch;
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: clamp(26px, 5vw, 52px);
+  line-height: 1.22;
+  letter-spacing: -0.015em;
+  color: var(--ink);
+  text-wrap: balance;
+}
+
+.pull cite {
+  display: block;
+  margin-top: 26px;
+  font-family: var(--font-mono);
+  font-style: normal;
+  font-size: clamp(10px, 1.3vw, 12px);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
   color: var(--ink-muted);
 }
 
-.plain li {
-  margin-bottom: 8px;
+/* ── Candour and the ask ──────────────────────────────────── */
+
+/* Editorial two-column from 820 px: the heading is a margin note, the substance
+   runs in a readable measure beside it. One column below that. */
+.honest,
+.ask {
+  display: grid;
+  gap: 22px clamp(32px, 6vw, 72px);
+  padding: clamp(44px, 6vw, 72px) 0;
+  border-top: 1px solid var(--line);
 }
 
-.plain li::marker {
+@media (min-width: 820px) {
+  .honest,
+  .ask {
+    grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+  }
+
+  .honest h2,
+  .ask h2 {
+    grid-row: 1 / span 3;
+    position: sticky;
+    top: 40px;
+  }
+}
+
+.honest h2,
+.ask h2 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: clamp(21px, 3vw, 30px);
+  letter-spacing: -0.01em;
+}
+
+.honest ul,
+.ask ol {
+  margin: 0;
+  padding-left: 1.15em;
+  max-width: 62ch;
+  display: grid;
+  gap: 12px;
+  font-size: clamp(15px, 1.7vw, 17px);
+  line-height: 1.6;
+  color: var(--ink-muted);
+}
+
+.honest li::marker,
+.ask li::marker {
   color: var(--brass-a55);
 }
 
-.plain strong {
+.honest b,
+.ask b {
   color: var(--ink);
   font-weight: 600;
 }
 
-.plain em {
+.ask p {
+  margin: 0;
+  max-width: 60ch;
+  font-size: clamp(16px, 1.8vw, 18px);
+  line-height: 1.65;
+  color: var(--ink-muted);
+}
+
+.ask em {
   color: var(--ink);
-  font-style: normal;
   font-family: var(--font-display);
+  font-style: italic;
 }
 
-/* The ask is the reason the page exists at all, so it gets a frame. */
-.ask {
-  border-left: 2px solid var(--brass-a55);
-  padding-left: 18px;
-}
-
-.ask p + p {
-  margin-top: 12px;
-}
+/* ── Closing ──────────────────────────────────────────────── */
 
 .closing {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
-  gap: 12px;
+  align-items: center;
+  gap: 22px;
+  text-align: center;
+  padding: clamp(72px, 11vw, 130px) 0 0;
   border-top: 1px solid var(--line);
-  padding-top: 40px;
+}
+
+.closing__line {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(24px, 4.4vw, 44px);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+}
+
+/* ── Narrow screens ───────────────────────────────────────── */
+
+@media (max-width: 600px) {
+  .counts {
+    grid-template-columns: 1fr;
+    gap: 26px;
+  }
+
+  .counts div {
+    flex-direction: row;
+    align-items: baseline;
+    gap: 14px;
+  }
+
+  .counts b {
+    font-size: 46px;
+    min-width: 2.2ch;
+  }
+
+  .feature {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .feature:nth-child(even) {
+    margin-left: 0;
+  }
+
+  .feature__index,
+  .feature h2,
+  .feature p {
+    grid-column: 1;
+  }
+
+  .feature__index {
+    grid-row: auto;
+    min-width: 0;
+    padding-top: 0;
+    border-top: 0;
+  }
+
+  .shot img {
+    transform: perspective(1200px) rotateX(4deg) rotateY(-5deg);
+  }
 }
