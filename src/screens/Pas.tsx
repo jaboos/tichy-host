@@ -13,7 +13,7 @@ import { C } from '../engine/constants';
 import { buildSetups } from '../engine/service';
 import { STATIONS, type InterventionId } from '../engine/types';
 import { SIGNALS } from '../data/signals';
-import { t } from '../i18n';
+import { cookLast, t } from '../i18n';
 import {
   currentMenu,
   eveningVerdict,
@@ -275,13 +275,13 @@ export default function Pas(): React.JSX.Element | null {
             names:
               resting.length === 0
                 ? t('pas.nobodyResting')
-                : resting.map((c) => c.lastName).join(', '),
+                : resting.map((c) => cookLast(c.id)).join(', '),
           })}
           {atCap.length === 0 ? null : (
             <>
               {'  ·  '}
               <span className="bad">
-                {t('pas.capTag', { names: atCap.map((c) => c.lastName).join(', ') })}
+                {t('pas.capTag', { names: atCap.map((c) => cookLast(c.id)).join(', ') })}
               </span>
             </>
           )}

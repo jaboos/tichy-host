@@ -39,14 +39,7 @@ import {
   stationOdds,
   type EveningContext,
 } from '../engine/plate';
-import {
-  formatCurrency,
-  formatNumber,
-  formatPercent,
-  setLang as setI18nLang,
-  t,
-  type TKey,
-} from '../i18n';
+import { cookLast, formatCurrency, formatNumber, formatPercent, setLang as setI18nLang, t, type TKey } from '../i18n';
 import * as persistence from './persistence';
 import { STATIONS } from '../engine/types';
 import type {
@@ -267,7 +260,6 @@ export interface EveningVerdict {
  * narrators that drift apart.
  */
 export function narratorText(game: GameState, result: ServiceResult): string[] {
-  const cooks = new Map(game.cooks.map((cook) => [cook.id, cook]));
   const courses = new Map(game.catalogue.map((course) => [course.id, course]));
 
   return (result.lines ?? []).map((line: NarratorLine) => {
@@ -281,7 +273,7 @@ export function narratorText(game: GameState, result: ServiceResult): string[] {
       // that needs a case other than the nominative uses this and writes no
       // preposition of its own.
       stationAt: line.station === null ? '' : t(`station.${line.station}.at`),
-      cook: line.cookId === null ? '' : (cooks.get(line.cookId)?.lastName ?? ''),
+      cook: line.cookId === null ? '' : cookLast(line.cookId),
       course: course === undefined || course === null ? '' : t(course.nameKey),
     };
     return t(`narrator.${line.templateId}` as TKey, params);
@@ -375,7 +367,7 @@ export function eveningVerdict(
   if (worn.length > 0) {
     return {
       key: 'verdictLine.worn',
-      params: { names: worn.map((cook) => cook.lastName).join(', ') },
+      params: { names: worn.map((cook) => cookLast(cook.id)).join(', ') },
       tone: 'warn',
     };
   }
@@ -441,9 +433,9 @@ export function interventionTargets(
         .filter((cook) => !draft.resting.includes(cook.id))
         .map((cook) => ({
           value: { id, cookId: cook.id },
-          label: cook.lastName,
+          label: cookLast(cook.id),
           effect: t('iv.effectPraise', {
-            name: cook.lastName,
+            name: cookLast(cook.id),
             from: formatNumber(cook.wear, 1),
             to: wearAfter(cook, C.intervention.praiseWear),
           }),
@@ -458,7 +450,7 @@ export function interventionTargets(
           effect: t('iv.effectScold', {
             station: t(`station.${station}`),
             q: formatNumber(C.intervention.scoldQuality, 1),
-            name: lead?.lastName ?? '',
+            name: lead === undefined ? '' : cookLast(lead.id),
             from: lead === undefined ? '—' : formatNumber(lead.wear, 1),
             to: lead === undefined ? '—' : wearAfter(lead, C.intervention.scoldWear),
           }),
@@ -506,8 +498,8 @@ export function interventionTargets(
         .filter((cook) => draft.resting.includes(cook.id))
         .map((cook) => ({
           value: { id, cookId: cook.id },
-          label: cook.lastName,
-          effect: t('iv.effectDefer', { name: cook.lastName }),
+          label: cookLast(cook.id),
+          effect: t('iv.effectDefer', { name: cookLast(cook.id) }),
         }));
 
     case 'swap':
@@ -517,9 +509,9 @@ export function interventionTargets(
           const station = placementOf(draft, cook.id).target;
           return {
             value: { id, cookId: cook.id },
-            label: cook.lastName,
+            label: cookLast(cook.id),
             effect: t('iv.effectSwap', {
-              name: cook.lastName,
+              name: cookLast(cook.id),
               station: station === 'rest' ? t('pas.resting') : t(`station.${station}`),
             }),
           };

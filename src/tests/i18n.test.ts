@@ -17,7 +17,7 @@ import { describe, expect, it } from 'vitest';
 
 import { cs } from '../i18n/cs';
 import { en } from '../i18n/en';
-import { formatNumber, formatSigned, getLang, setLang, t } from '../i18n';
+import { cookFirst, cookLast, formatNumber, formatSigned, getLang, setLang, t } from '../i18n';
 import { COOK_ARCHETYPES } from '../data/cooks';
 import { COURSES } from '../data/courses';
 import { SIGNALS } from '../data/signals';
@@ -150,5 +150,49 @@ describe('t()', () => {
     expect(formatNumber(12.3, 1, 'en')).toBe('12.3');
     expect(formatSigned(-0.6, 1, 'en')).toBe('−0.6');
     expect(formatSigned(1.4, 1, 'en')).toBe('+1.4');
+  });
+});
+
+/**
+ * The brigade's names come from the dictionaries now, resolved from an id at
+ * render time. `cookFirst`/`cookLast` reach the dictionary through a cast, so
+ * nothing but this file stops a cook rendering the Czech fallback — or a blank —
+ * under an English UI. That was the actual bug being fixed here: the English
+ * build shipped a kitchen staffed by Vaňous and Brichtová.
+ */
+describe('every cook is named in both languages', () => {
+  it('resolves a distinct first and last name for all 24 archetypes', () => {
+    for (const lang of ['cs', 'en'] as const) {
+      const surnames = new Set<string>();
+      for (const archetype of COOK_ARCHETYPES) {
+        // A missing key falls back to Czech and, failing that, to undefined —
+        // both of which would sail past a mere "is a string" assertion.
+        expect(cookFirst(archetype.id, lang), `${archetype.id}: no first name in ${lang}`).toMatch(
+          /^\p{Lu}\p{L}+$/u,
+        );
+        const last = cookLast(archetype.id, lang);
+        expect(last, `${archetype.id}: no surname in ${lang}`).toMatch(/^\p{Lu}\p{L}+$/u);
+        surnames.add(last);
+      }
+      expect(surnames.size, `${lang} reuses a surname`).toBe(COOK_ARCHETYPES.length);
+    }
+  });
+
+  it('the English brigade carries no Czech diacritics', () => {
+    // The whole point of the exercise: Brichtová must not appear in English.
+    for (const archetype of COOK_ARCHETYPES) {
+      const name = `${cookFirst(archetype.id, 'en')} ${cookLast(archetype.id, 'en')}`;
+      expect(name, `${archetype.id} is still Czech in English`).not.toMatch(
+        /[ěščřžýáíéúůňťďĚŠČŘŽÝÁÍÉÚŮŇŤĎ]/,
+      );
+    }
+  });
+
+  it('the two dictionaries actually differ', () => {
+    // Guards the copy-paste failure: both files present, both filled in Czech.
+    const differing = COOK_ARCHETYPES.filter(
+      (archetype) => cookLast(archetype.id, 'cs') !== cookLast(archetype.id, 'en'),
+    );
+    expect(differing.length).toBeGreaterThanOrEqual(COOK_ARCHETYPES.length - 1);
   });
 });

@@ -12,8 +12,14 @@
  *   · eight `burns` archetypes, so the endurance constraint is nearly free
  *   · each of the twelve traits appears exactly twice
  *
- * Czech surnames carry an explicit accusative (`lastNameAcc`) because narrator
- * templates decline them — *"Ryba stál na studené"* but *"...místo Rybu"* (FR-16).
+ * Names are NOT here. They live in the dictionaries as `cook.<id>.first` and
+ * `cook.<id>.last`, exactly like the course names, so that a cook is an id until
+ * the moment it is drawn — which is what lets a language switch mid-season
+ * rename the brigade instead of leaving Czech surnames under an English UI.
+ *
+ * The accusative and instrumental forms this file used to carry were dead: the
+ * only place a name is ever interpolated is the push line in the narrator, and
+ * that one takes the nominative.
  */
 import { C } from '../engine/constants';
 import type { Cook, CookArchetype, Endurance, Station } from '../engine/types';
@@ -48,13 +54,9 @@ type CookSlug =
   | 'hruska'
   | 'peroutkova';
 
-/** Positional: id, first, last, accusative, instrumental, age, hand, home, endurance, trait, desire reward, starter. */
+/** Positional: id, age, hand, home, endurance, trait, desire reward, starter. */
 const cook = (
   id: CookSlug,
-  firstName: string,
-  lastName: string,
-  lastNameAcc: string,
-  lastNameIns: string,
   age: number,
   hand: number,
   homeStation: Station,
@@ -64,10 +66,6 @@ const cook = (
   isStarter = false,
 ): CookArchetype => ({
   id,
-  firstName,
-  lastName,
-  lastNameAcc,
-  lastNameIns,
   age,
   hand,
   homeStation,
@@ -84,32 +82,32 @@ const cook = (
 export const COOK_ARCHETYPES: readonly CookArchetype[] = [
   // --- the curated starting brigade, PRD §4.2. Σ hand = 16. -----------------
   // Two of them share Sauces on purpose: competition for a home station is a real cost.
-  cook('bartakova', 'Ilona', 'Bartáková', 'Bartákovou', 'Bartákovou', 34, 3, 'sauce', 'lasts', 'nozirka', 'klidnaRuka', true),
-  cook('ryba', 'Marek', 'Ryba', 'Rybu', 'Rybou', 29, 4, 'fire', 'burns', 'sampion', 'tichaVoda', true),
-  cook('vanous', 'Petr', 'Vaňous', 'Vaňouse', 'Vaňousem', 41, 3, 'cold', 'normal', 'klidnaRuka', 'perfekcionista', true),
-  cook('kesslerova', 'Dita', 'Kesslerová', 'Kesslerovou', 'Kesslerovou', 22, 2, 'dessert', 'lasts', 'ucednice', 'perfekcionista', true),
-  cook('hruba', 'Jana', 'Hrubá', 'Hrubou', 'Hrubou', 27, 2, 'sauce', 'lasts', 'cteListky', 'nozirka', true),
-  cook('brichtova', 'Ela', 'Brichtová', 'Brichtovou', 'Brichtovou', 25, 2, 'fire', 'lasts', 'vydrziZar', 'tahoun', true),
+  cook('bartakova', 34, 3, 'sauce', 'lasts', 'nozirka', 'klidnaRuka', true),
+  cook('ryba', 29, 4, 'fire', 'burns', 'sampion', 'tichaVoda', true),
+  cook('vanous', 41, 3, 'cold', 'normal', 'klidnaRuka', 'perfekcionista', true),
+  cook('kesslerova', 22, 2, 'dessert', 'lasts', 'ucednice', 'perfekcionista', true),
+  cook('hruba', 27, 2, 'sauce', 'lasts', 'cteListky', 'nozirka', true),
+  cook('brichtova', 25, 2, 'fire', 'lasts', 'vydrziZar', 'tahoun', true),
 
   // --- the rest of the pool -------------------------------------------------
-  cook('dolezal', 'Vít', 'Doležal', 'Doležala', 'Doležalem', 38, 5, 'fire', 'burns', 'hazardniHrac', 'klidnaRuka'),
-  cook('novakova', 'Radka', 'Nováková', 'Novákovou', 'Novákovou', 36, 4, 'sauce', 'normal', 'perfekcionista', 'tichaVoda'),
-  cook('simek', 'Ondřej', 'Šimek', 'Šimka', 'Šimkem', 31, 4, 'cold', 'burns', 'domaZustava', 'nozirka'),
-  cook('kolar', 'Tomáš', 'Kolář', 'Koláře', 'Kolářem', 44, 3, 'dessert', 'normal', 'tichaVoda', 'cteListky'),
-  cook('sykorova', 'Věra', 'Sýkorová', 'Sýkorovou', 'Sýkorovou', 39, 3, 'cold', 'lasts', 'tahoun', 'vydrziZar'),
-  cook('benes', 'Filip', 'Beneš', 'Beneše', 'Benešem', 26, 3, 'fire', 'normal', 'raniPtace', 'hazardniHrac'),
-  cook('malkova', 'Lucie', 'Málková', 'Málkovou', 'Málkovou', 33, 3, 'sauce', 'burns', 'klidnaRuka', 'sampion'),
-  cook('zeman', 'Karel', 'Zeman', 'Zemana', 'Zemanem', 52, 2, 'cold', 'lasts', 'vydrziZar', 'domaZustava'),
-  cook('rehorova', 'Alena', 'Řehořová', 'Řehořovou', 'Řehořovou', 24, 2, 'dessert', 'normal', 'ucednice', 'cteListky'),
-  cook('prochazka', 'Jiří', 'Procházka', 'Procházku', 'Procházkou', 30, 2, 'fire', 'burns', 'sampion', 'raniPtace'),
-  cook('vlckova', 'Simona', 'Vlčková', 'Vlčkovou', 'Vlčkovou', 28, 2, 'sauce', 'lasts', 'cteListky', 'tahoun'),
-  cook('sedlacek', 'Adam', 'Sedláček', 'Sedláčka', 'Sedláčkem', 23, 2, 'cold', 'normal', 'nozirka', 'domaZustava'),
-  cook('jandova', 'Petra', 'Jandová', 'Jandovou', 'Jandovou', 35, 2, 'dessert', 'burns', 'perfekcionista', 'hazardniHrac'),
-  cook('bilek', 'Roman', 'Bílek', 'Bílka', 'Bílkem', 47, 2, 'dessert', 'lasts', 'tichaVoda', 'vydrziZar'),
-  cook('krejci', 'Matěj', 'Krejčí', 'Krejčího', 'Krejčím', 20, 1, 'cold', 'burns', 'raniPtace', 'ucednice'),
-  cook('zelena', 'Nikola', 'Zelená', 'Zelenou', 'Zelenou', 21, 1, 'sauce', 'normal', 'hazardniHrac', 'ucednice'),
-  cook('hruska', 'David', 'Hruška', 'Hrušku', 'Hruškou', 19, 1, 'fire', 'lasts', 'tahoun', 'ucednice'),
-  cook('peroutkova', 'Klára', 'Peroutková', 'Peroutkovou', 'Peroutkovou', 22, 1, 'dessert', 'burns', 'domaZustava', 'sampion'),
+  cook('dolezal', 38, 5, 'fire', 'burns', 'hazardniHrac', 'klidnaRuka'),
+  cook('novakova', 36, 4, 'sauce', 'normal', 'perfekcionista', 'tichaVoda'),
+  cook('simek', 31, 4, 'cold', 'burns', 'domaZustava', 'nozirka'),
+  cook('kolar', 44, 3, 'dessert', 'normal', 'tichaVoda', 'cteListky'),
+  cook('sykorova', 39, 3, 'cold', 'lasts', 'tahoun', 'vydrziZar'),
+  cook('benes', 26, 3, 'fire', 'normal', 'raniPtace', 'hazardniHrac'),
+  cook('malkova', 33, 3, 'sauce', 'burns', 'klidnaRuka', 'sampion'),
+  cook('zeman', 52, 2, 'cold', 'lasts', 'vydrziZar', 'domaZustava'),
+  cook('rehorova', 24, 2, 'dessert', 'normal', 'ucednice', 'cteListky'),
+  cook('prochazka', 30, 2, 'fire', 'burns', 'sampion', 'raniPtace'),
+  cook('vlckova', 28, 2, 'sauce', 'lasts', 'cteListky', 'tahoun'),
+  cook('sedlacek', 23, 2, 'cold', 'normal', 'nozirka', 'domaZustava'),
+  cook('jandova', 35, 2, 'dessert', 'burns', 'perfekcionista', 'hazardniHrac'),
+  cook('bilek', 47, 2, 'dessert', 'lasts', 'tichaVoda', 'vydrziZar'),
+  cook('krejci', 20, 1, 'cold', 'burns', 'raniPtace', 'ucednice'),
+  cook('zelena', 21, 1, 'sauce', 'normal', 'hazardniHrac', 'ucednice'),
+  cook('hruska', 19, 1, 'fire', 'lasts', 'tahoun', 'ucednice'),
+  cook('peroutkova', 22, 1, 'dessert', 'burns', 'domaZustava', 'sampion'),
 ];
 
 /** The six of PRD §4.2, in the order the onboarding introduces them. */
@@ -132,10 +130,6 @@ export function getArchetype(id: string): CookArchetype {
 export function createCook(archetype: CookArchetype): Cook {
   return {
     id: archetype.id,
-    firstName: archetype.firstName,
-    lastName: archetype.lastName,
-    lastNameAcc: archetype.lastNameAcc,
-    lastNameIns: archetype.lastNameIns,
     age: archetype.age,
     hand: archetype.hand,
     homeStation: archetype.homeStation,

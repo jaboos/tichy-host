@@ -8,7 +8,7 @@
  */
 import { C } from '../engine/constants';
 import { getTrait } from '../data/traits';
-import { formatNumber, t } from '../i18n';
+import { cookFirst, cookLast, formatNumber, t } from '../i18n';
 import CookTriptych from './CookTriptych';
 import type { Cook } from '../engine/types';
 
@@ -38,7 +38,7 @@ export default function CookRow({ cook, onOpenCard }: Props): React.JSX.Element 
           the name needs the rest — at 390 px they do not share a row. */}
       <div style={{ minWidth: 0 }}>
         <div className="display" style={{ fontSize: 'var(--fs-dish)' }}>
-          {cook.firstName} {cook.lastName}
+          {cookFirst(cook.id)} {cookLast(cook.id)}
         </div>
         <div className="muted" style={{ fontSize: 'var(--fs-small)' }}>
           {t(`station.${cook.homeStation}`)} · {t(trait.nameKey)}

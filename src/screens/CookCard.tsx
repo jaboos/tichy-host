@@ -5,7 +5,7 @@
  */
 import { C } from '../engine/constants';
 import { getTrait } from '../data/traits';
-import { formatNumber, t } from '../i18n';
+import { cookFirst, cookLast, formatNumber, t } from '../i18n';
 import { useGame } from '../store/gameStore';
 import BrassDivider from '../components/BrassDivider';
 import CookTriptych from '../components/CookTriptych';
@@ -27,7 +27,7 @@ export default function CookCard(): React.JSX.Element | null {
       </button>
 
       <h1 className="display" style={{ fontSize: 'var(--fs-title)', margin: '10px 0 0' }}>
-        {cook.firstName} {cook.lastName}
+        {cookFirst(cook.id)} {cookLast(cook.id)}
       </h1>
       <div className="muted" style={{ fontSize: 'var(--fs-small)' }}>
         {t('cook.home')}: {t(`station.${cook.homeStation}`)}

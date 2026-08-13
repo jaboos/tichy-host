@@ -12,7 +12,7 @@
  * animation, so nothing sits on top of the content to do it.
  */
 import { C } from '../engine/constants';
-import { formatNumber, t } from '../i18n';
+import { cookLast, formatNumber, t } from '../i18n';
 import { slotEquals, type SlotRef } from '../store/gameStore';
 import type { StationSetup } from '../engine/plate';
 import type { Cook, CookRole, Station } from '../engine/types';
@@ -47,7 +47,7 @@ function Slot({
   const empty = cook === null;
   const tone = empty ? 'var(--line)' : wearTone(cook.wear);
   const nearCap = cook !== null && cook.wear >= C.wear.warningThreshold;
-  const who = empty ? t(role === 'lead' ? 'pas.noHands' : 'pas.addHelper') : cook.lastName;
+  const who = empty ? t(role === 'lead' ? 'pas.noHands' : 'pas.addHelper') : cookLast(cook.id);
   const wearSaid = empty ? t('common.none') : `${t('common.wear')} ${formatNumber(cook.wear, 1)}`;
 
   return (
@@ -81,7 +81,7 @@ function Slot({
             animation: empty ? 'cekani 2.6s var(--ease-out) infinite' : undefined,
           }}
         >
-          {empty ? (role === 'lead' ? t('pas.noHands') : t('pas.addHelper')) : cook.lastName}
+          {empty ? (role === 'lead' ? t('pas.noHands') : t('pas.addHelper')) : cookLast(cook.id)}
         </span>
         {/* No aria-label here: it replaced the figure with the bare word
             "opotřebení" and the number was never read out. The button's own label

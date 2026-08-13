@@ -23,6 +23,8 @@ import { act, createElement } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
+import { cookLast } from '../i18n';
+
 (globalThis as unknown as { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
 const { useGame } = await import('../store/gameStore');
@@ -83,7 +85,7 @@ describe('the Pas names the people standing at each station', () => {
     for (const id of assignedIds) {
       const cook = game?.cooks.find((c) => c.id === id);
       expect(cook, `cook ${id} is assigned but not in the brigade`).toBeDefined();
-      const surname = cook?.lastName ?? '';
+      const surname = cook === undefined ? '' : cookLast(cook.id);
       expect(surname).not.toBe('');
       expect(markup, `${surname} is assigned but never appears on screen`).toContain(surname);
     }
@@ -92,7 +94,7 @@ describe('the Pas names the people standing at each station', () => {
   it('names every cook in the brigade, assigned or not', () => {
     const game = useGame.getState().game;
     for (const cook of game?.cooks ?? []) {
-      expect(markup, `${cook.lastName} is missing from the brigade list`).toContain(cook.lastName);
+      expect(markup, `${cookLast(cook.id)} is missing from the brigade list`).toContain(cookLast(cook.id));
     }
   });
 
@@ -103,7 +105,7 @@ describe('the Pas names the people standing at each station', () => {
         (s) => draft.leads[s] === cook.id || draft.helpers[s] === cook.id,
       );
       const expected = station === undefined ? t('pas.resting') : t(`station.${station}`);
-      expect(markup, `${cook.lastName} has no visible placement`).toContain(expected);
+      expect(markup, `${cookLast(cook.id)} has no visible placement`).toContain(expected);
     }
   });
 
@@ -155,7 +157,7 @@ describe('the rejected interaction model is gone, FR-1 item 6', () => {
       t('pas.whoOnSlot', { station: t('station.sauce.at'), role: t('pas.lead') }),
     );
     for (const cook of game?.cooks ?? []) {
-      expect(expanded, `${cook.lastName} is missing from the picker`).toContain(cook.lastName);
+      expect(expanded, `${cookLast(cook.id)} is missing from the picker`).toContain(cookLast(cook.id));
     }
     render(() => {
       useGame.getState().openSlotPicker(null);

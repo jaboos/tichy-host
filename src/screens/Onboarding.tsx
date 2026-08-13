@@ -14,7 +14,7 @@
  */
 import { useState } from 'react';
 
-import { t } from '../i18n';
+import { cookLast, t } from '../i18n';
 import { useGame } from '../store/gameStore';
 import { createStartingBrigade } from '../engine/draft';
 import CookTriptych from '../components/CookTriptych';
@@ -222,7 +222,7 @@ export default function Onboarding(): React.JSX.Element {
                 and the name needs the rest — at 390 px they do not share a row. */}
             <div className="row" style={{ gap: 9, alignItems: 'baseline', minWidth: 0 }}>
               <span className="display" style={{ fontSize: 17 }}>
-                {cook.lastName}
+                {cookLast(cook.id)}
               </span>
               <span className="label" style={{ fontSize: 'var(--fs-micro)' }}>
                 {t(`station.${cook.homeStation}`)}

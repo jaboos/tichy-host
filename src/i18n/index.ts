@@ -59,6 +59,21 @@ export function t(key: TKey, params?: TParams, lang: Lang = current): string {
   });
 }
 
+/**
+ * A cook's name, resolved from its id. Everywhere else in the game a cook IS an
+ * id — this is the only place one becomes a surname, which is what lets a
+ * language switch mid-season rename the whole brigade instead of leaving Czech
+ * names under an English UI. The cast is needed because `Cook['id']` is a plain
+ * string; that every archetype has both keys is asserted by the i18n test.
+ */
+export function cookFirst(id: string, lang: Lang = current): string {
+  return t(`cook.${id}.first` as TKey, undefined, lang);
+}
+
+export function cookLast(id: string, lang: Lang = current): string {
+  return t(`cook.${id}.last` as TKey, undefined, lang);
+}
+
 /** `12,3` in Czech, `12.3` in English. PRD FR-16. */
 export function formatNumber(value: number, decimals = 1, lang: Lang = current): string {
   return new Intl.NumberFormat(LOCALES[lang], {

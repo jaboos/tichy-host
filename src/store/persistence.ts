@@ -59,13 +59,16 @@ function looksLikeGame(value: unknown): value is GameState {
     typeof game.rngState === 'number' &&
     typeof game.eveningIndex === 'number' &&
     Array.isArray(game.cooks) &&
-    // Every cook must carry its declined name forms; a save from before they
-    // existed is archived and restarted rather than rendering "undefined".
+    // Every cook must carry an id, because the id is now the only thing that
+    // resolves its name. A save whose cooks are anonymous would render blanks,
+    // so it is archived and restarted instead. Saves written before the names
+    // moved into the dictionaries still pass — they carry the id too, and their
+    // leftover name fields are simply ignored.
     game.cooks.every(
       (cook: unknown) =>
         typeof cook === 'object' &&
         cook !== null &&
-        typeof (cook as { lastNameIns?: unknown }).lastNameIns === 'string',
+        typeof (cook as { id?: unknown }).id === 'string',
     ) &&
     Array.isArray(game.catalogue) &&
     Array.isArray(game.menu) &&

@@ -11,7 +11,7 @@
  * without hands. Nothing is disabled and nothing is hidden; the game shows both
  * sides and the player decides, exactly as it does for a push.
  */
-import { formatNumber, t } from '../i18n';
+import { cookLast, formatNumber, t } from '../i18n';
 import type { SlotCandidate, SlotRef } from '../store/gameStore';
 
 interface Props {
@@ -58,7 +58,7 @@ export default function SlotPicker({
           >
             <span className="spread" style={{ width: '100%', gap: 8 }}>
               <span className="display" style={{ fontSize: 'var(--fs-body)', color: 'var(--ink)' }}>
-                {candidate.cook.lastName}
+                {cookLast(candidate.cook.id)}
               </span>
               <span className="mono" style={{ fontSize: 'var(--fs-small)' }}>
                 {t('cook.hand')} {candidate.effHand} · {t('cook.wear')}{' '}

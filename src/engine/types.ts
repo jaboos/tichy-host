@@ -42,16 +42,12 @@ export interface Desire {
 }
 
 export interface Cook {
-  id: string;
-  firstName: string;
   /**
-   * Nominative, plus the two declined forms the UI and the narrator actually
-   * need: accusative ("místo Rybu") and instrumental ("prohodit s Rybou").
-   * Czech will not let a surname be concatenated into a sentence undeclined.
+   * A cook is an id all the way through the engine. The names live in the
+   * dictionaries under `cook.<id>.first` / `.last`, so nothing saved here has
+   * to change when the player switches language.
    */
-  lastName: string;
-  lastNameAcc: string;
-  lastNameIns: string;
+  id: string;
   age: number;
   /** 1–5. The only skill number in the game. */
   hand: number;
@@ -78,10 +74,6 @@ export interface Cook {
  */
 export interface CookArchetype {
   id: string;
-  firstName: string;
-  lastName: string;
-  lastNameAcc: string;
-  lastNameIns: string;
   age: number;
   hand: number;
   homeStation: Station;

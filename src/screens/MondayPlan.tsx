@@ -13,7 +13,7 @@ import { buildStationSetup } from '../engine/plate';
 import { autoAssign } from '../engine/season';
 import { coversFor, weeklyOutlook } from '../engine/economy';
 import { STATIONS, type Station } from '../engine/types';
-import { formatCurrency, formatNumber, t } from '../i18n';
+import { cookLast, formatCurrency, formatNumber, t } from '../i18n';
 import { currentMenu, useGame } from '../store/gameStore';
 import BarIndicator from '../components/BarIndicator';
 import BrassDivider from '../components/BrassDivider';
@@ -129,10 +129,10 @@ export default function MondayPlan(): React.JSX.Element | null {
               // The whole chip carries the sentence. An aria-label on the figure
               // alone replaced it with the bare word "wear" and the number was
               // never read out — the same mistake as on the station cards.
-              aria-label={`${cook.lastName} · ${t('common.wear')} ${formatNumber(cook.wear, 1)}`}
+              aria-label={`${cookLast(cook.id)} · ${t('common.wear')} ${formatNumber(cook.wear, 1)}`}
               onClick={() => setSelectedCookId(selectedCookId === cook.id ? null : cook.id)}
             >
-              {cook.lastName} <span style={{ color: tone }}>{formatNumber(cook.wear, 1)}</span>
+              {cookLast(cook.id)} <span style={{ color: tone }}>{formatNumber(cook.wear, 1)}</span>
             </button>
           );
         })}
@@ -174,7 +174,7 @@ export default function MondayPlan(): React.JSX.Element | null {
               >
                 {dealt.map((ticket) => {
                   const cook = game.cooks.find((c) => c.id === ticket.cookId);
-                  const name = cook?.lastName ?? ticket.cookId;
+                  const name = cook === undefined ? ticket.cookId : cookLast(cook.id);
                   return (
                     <button
                       key={ticket.cookId}
