@@ -22,6 +22,7 @@ import { useCallback, useEffect, useState } from 'react';
 
 import { type TKey, t } from '../i18n';
 import { useGame } from '../store/gameStore';
+import { tourIsRunning } from './Tour';
 import { postFeedback } from '../telemetry/client';
 import { trackEvent } from '../telemetry/events';
 import {
@@ -76,6 +77,9 @@ export default function Feedback(): React.JSX.Element | null {
     // Never over the reveal. An evening playing back is the one moment the game
     // has undivided attention, and interrupting it takes exactly the wrong thing.
     if (useGame.getState().screen === 'service') return;
+    // The tutorial owns the screen while it runs. Walking it is still play, so
+    // the clock reaches five minutes mid-bubble and both dialogs would show.
+    if (tourIsRunning()) return;
     if (!promptIsDue()) return;
     setPhase((current) => {
       if (current !== 'quiet') return current;

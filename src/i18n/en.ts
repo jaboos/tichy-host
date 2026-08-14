@@ -240,6 +240,19 @@ export const en = {
 
   // The feedback form and the ask that opens it.
   'fb.header': 'Feedback',
+  'tour.replay': 'Tutorial',
+  'tour.waiting': 'Do that and the tutorial carries on by itself.',
+  'tour.slot-lead.title': 'The lead',
+  'tour.slot-lead.body': 'Tap the name at the top of a station card. A list opens, and that is how somebody gets put on that station.',
+  'tour.picker.title': 'The list',
+  'tour.picker.body': 'Tap a name to stand them there. Each one shows their hand and where they would have to leave — moving somebody frees the place they came from.',
+  'tour.picker-release.title': 'Taking someone off',
+  'tour.picker-release.body': 'This empties the slot and leaves the cook idle. An empty station is worse than a weak cook, so spend this carefully.',
+  'tour.slot-helper.title': 'Adding a helper',
+  'tour.slot-helper.body':
+    "The second line on a card is the helper. They raise the station's capacity but cost extra wear — and they are missing from wherever you took them.",
+  'tour.intervention.title': "Tonight's call",
+  'tour.intervention.body': 'One call an evening. Push is the strongest and you get five a season — the game always shows you how the odds change before it charges you.',
   'tour.skip': 'Skip',
   'tour.next': 'Next',
   'tour.done': 'Got it',

@@ -32,6 +32,7 @@ export default function SlotPicker({
   return (
     <div
       className="card card--lifted"
+      data-tour="picker"
       // The list opens below the fold and the sticky dock covers it, so tapping a
       // place looked like nothing happened. Centre it, because 'nearest' parks it
       // under the dock — the dock is outside the scroll calculation.
@@ -98,7 +99,12 @@ export default function SlotPicker({
 
       <div className="row" style={{ marginTop: 10, gap: 6 }}>
         {occupied ? (
-          <button type="button" className="chip tap" onClick={() => onChoose(null)}>
+          <button
+            type="button"
+            className="chip tap"
+            data-tour="picker-release"
+            onClick={() => onChoose(null)}
+          >
             {t('pas.releaseSlot')}
           </button>
         ) : null}

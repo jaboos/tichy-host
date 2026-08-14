@@ -291,7 +291,11 @@ export default function Pas(): React.JSX.Element | null {
         <Glossary of="opotrebeni" />
       </div>
 
-      <div className="spread" style={{ marginTop: 16, alignItems: 'baseline' }}>
+      <div
+        className="spread"
+        style={{ marginTop: 16, alignItems: 'baseline' }}
+        data-tour="intervention"
+      >
         <span className="h2 row" style={{ gap: 0 }}>
           {t('pas.intervention')}
           <Glossary of="pritlacit" />

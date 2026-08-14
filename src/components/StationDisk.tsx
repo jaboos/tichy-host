@@ -54,6 +54,7 @@ function Slot({
     <button
       type="button"
       onClick={onOpen}
+      data-tour={role === 'lead' ? 'slot-lead' : 'slot-helper'}
       style={{
         display: 'flex',
         flexDirection: 'column',

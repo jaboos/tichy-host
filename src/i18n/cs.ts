@@ -238,6 +238,23 @@ export const cs = {
 
   // Zpětná vazba a její vyžádání.
   'fb.header': 'Zpětná vazba',
+  'tour.replay': 'Návod',
+  'tour.waiting': 'Až to uděláš, návod pokračuje sám.',
+  'tour.slot-lead.title': 'Vedoucí postu',
+  'tour.slot-lead.body':
+    'Klepni na jméno nahoře na kartě postu. Otevře se seznam, ze kterého na ten post někoho postavíš.',
+  'tour.picker.title': 'Seznam kuchařů',
+  'tour.picker.body':
+    'Klepnutím na jméno ho na post postavíš. U každého je vidět ruka a odkud by musel odejít — přesunem se jinde uvolní místo.',
+  'tour.picker-release.title': 'Odebrat kuchaře',
+  'tour.picker-release.body':
+    'Tímhle post uvolníš a kuchař zůstane bez práce. Prázdný post je horší než slabý kuchař, tak to dělej s rozmyslem.',
+  'tour.slot-helper.title': 'Přidat pomocníka',
+  'tour.slot-helper.body':
+    'Druhý řádek na kartě je pomocník. Zvedne kapacitu postu, ale stojí opotřebení navíc — a chybí tam, odkud ho vezmeš.',
+  'tour.intervention.title': 'Dnešní zásah',
+  'tour.intervention.body':
+    'Jeden zásah na večer. Přitlačit je nejsilnější a máš ho pětkrát za sezónu — hra ti vždycky nejdřív ukáže, jak se změní šance.',
   'tour.skip': 'Přeskočit',
   'tour.next': 'Dál',
   'tour.done': 'Rozumím',

@@ -481,3 +481,18 @@ button:focus-visible,
   align-items: stretch;
   margin-top: 16px;
 }
+
+/* The ring breathes, because a static outline on a dark screen reads as chrome.
+   `puls` already exists for the suspicion dial, so the tutorial borrows the
+   game's own idea of "look here" rather than inventing a second one. */
+.tour__hole {
+  animation: puls 1800ms var(--ease-out) infinite;
+}
+
+.tour__wait {
+  margin: 10px 0 0;
+  font-family: var(--font-mono);
+  font-size: var(--fs-micro);
+  line-height: 1.6;
+  color: var(--brass);
+}

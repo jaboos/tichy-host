@@ -1,22 +1,61 @@
 /**
- * Four bubbles over the real Pas, pointing at the four things a first evening
- * needs. Not a thirteenth concept — it explains the twelve that exist and then
- * never appears again.
+ * Nine bubbles over the real Pas: what the numbers mean, then how to move
+ * people between stations, then the one call an evening allows, then how to
+ * commit. Not a thirteenth concept — it explains the twelve that exist, and it
+ * can be replayed from the header at any time.
  *
  * It sits on the live screen rather than on pictures of one, on purpose: the
  * numbers under the spotlight are the player's own, so "the bar is 13.1
  * tonight" is true while they are reading it.
  *
- * Anchors are `data-tour` attributes on the Pas. A missing anchor skips its step
- * rather than pointing the bubble at the corner of the page — the tour is
- * scaffolding, and scaffolding must never be the thing that breaks the screen.
+ * Anchors are `data-tour` attributes. Three of them — the picker and its release
+ * chip — only exist once a slot is open, so a missing anchor makes the step WAIT
+ * with its instruction on screen rather than skip. The waiting is the teaching.
+ * Nothing ever blocks a click, so the tour can guide but never trap.
  */
 import { useCallback, useEffect, useState } from 'react';
 
 import { C } from '../engine/constants';
 import { type TKey, t } from '../i18n';
 
-const STEPS = ['suspicion', 'bar', 'stations', 'start'] as const;
+/**
+ * Read top to bottom, this is a first evening: what the numbers mean, then how
+ * to move people, then how to spend the one call, then how to commit.
+ *
+ * `slot-lead`, `picker` and `picker-release` only exist once a slot is open, so
+ * those steps wait for their anchor instead of skipping it — waiting is what
+ * makes the sequence feel like instruction rather than a slideshow.
+ */
+const STEPS = [
+  'suspicion',
+  'bar',
+  'stations',
+  'slot-lead',
+  'picker',
+  'picker-release',
+  'slot-helper',
+  'intervention',
+  'start',
+] as const;
+
+/** Dispatch on `window` to run the tutorial again from anywhere. */
+export const OPEN_EVENT = 'tour:open';
+
+export function openTour(): void {
+  window.dispatchEvent(new Event(OPEN_EVENT));
+}
+
+/**
+ * Module state rather than a prop, because the only consumer is the feedback
+ * ask, which is a sibling. Caught in the browser: five minutes of walking the
+ * tutorial is still five minutes of play, so the ask fired on top of a bubble
+ * and the screen had two dialogs on it at once.
+ */
+let running = false;
+
+export function tourIsRunning(): boolean {
+  return running;
+}
 
 interface Spot {
   top: number;
@@ -45,20 +84,58 @@ export default function Tour(): React.JSX.Element | null {
   const [step, setStep] = useState<number>(() => (seen() ? -1 : 0));
   const [spot, setSpot] = useState<Spot | null>(null);
 
+  // After commit, never during render: reassigning module state while rendering
+  // is what breaks under concurrent React, and eslint is right to refuse it.
+  useEffect(() => {
+    running = step >= 0 && step < STEPS.length;
+    return () => {
+      running = false;
+    };
+  }, [step]);
+
   const close = useCallback(() => {
     remember();
     setStep(-1);
+  }, []);
+
+  // Re-runnable from the header, at any time, from any screen state.
+  useEffect(() => {
+    const again = (): void => {
+      setSpot(null);
+      setStep(0);
+    };
+    window.addEventListener(OPEN_EVENT, again);
+    return () => window.removeEventListener(OPEN_EVENT, again);
   }, []);
 
   useEffect(() => {
     if (step < 0 || step >= STEPS.length) return undefined;
 
     let raf = 0;
+    // Whether the NEXT step's anchor was already on screen when this one began.
+    // If it was not, and it appears, the player has just done the thing this
+    // step asked for — so the tutorial follows them instead of making them
+    // press Next to catch up with their own click.
+    const nextName = STEPS[step + 1];
+    const nextWasThere =
+      nextName === undefined || document.querySelector(`[data-tour="${nextName}"]`) !== null;
+
     const measure = (): void => {
+      if (
+        !nextWasThere &&
+        nextName !== undefined &&
+        document.querySelector(`[data-tour="${nextName}"]`) !== null
+      ) {
+        setStep(step + 1);
+        return;
+      }
+
       const anchor = document.querySelector(`[data-tour="${STEPS[step] ?? ''}"]`);
       if (anchor === null) {
-        // The Pas has not rendered this one — move on rather than stall.
-        setStep((current) => (current >= STEPS.length - 1 ? -1 : current + 1));
+        // Not on screen yet, because this step is telling the player to make it
+        // appear. Keep the bubble and drop the spotlight rather than skipping —
+        // the waiting IS the instruction.
+        setSpot(null);
         return;
       }
       anchor.scrollIntoView?.({ block: 'center', behavior: 'smooth' });
@@ -68,27 +145,39 @@ export default function Tour(): React.JSX.Element | null {
       });
     };
 
-    // One beat after the screen settles, then again on anything that moves it.
-    const timer = window.setTimeout(measure, 140);
+    measure();
+    // Polled rather than observed: the anchor may be mounted by a click that
+    // happens seconds from now, and a MutationObserver over the whole Pas would
+    // fire on every wear figure that ticks.
+    const poll = window.setInterval(measure, 250);
     window.addEventListener('resize', measure);
     window.addEventListener('scroll', measure, true);
     return () => {
-      window.clearTimeout(timer);
+      window.clearInterval(poll);
       window.cancelAnimationFrame(raf);
       window.removeEventListener('resize', measure);
       window.removeEventListener('scroll', measure, true);
     };
   }, [step]);
 
-  if (step < 0 || step >= STEPS.length || spot === null) return null;
+  if (step < 0 || step >= STEPS.length) return null;
 
   const name = STEPS[step] ?? '';
   const last = step === STEPS.length - 1;
-  // Below the spotlight, unless that would put the bubble off the bottom.
-  const below = spot.top + spot.height < window.innerHeight * 0.62;
-  const place = below
-    ? { top: spot.top + spot.height + 18 }
-    : { bottom: window.innerHeight - spot.top + 18 };
+  // Below the spotlight, unless that would put the bubble off the bottom. With
+  // nothing to point at, the bubble sits low, where a thumb already is.
+  /**
+   * Below the anchor when the bubble fits there; otherwise pinned to the bottom.
+   *
+   * It is never placed *above*, which is what an earlier version did: with a
+   * tall anchor like the cook list, `bottom: innerHeight - spot.top` pushed the
+   * bubble's own heading off the top of the screen. A height threshold only
+   * moved the boundary — the list measured 410px against a 422px cutoff and
+   * still broke. Two placements with a fits-check cannot fail that way.
+   */
+  const ROOM = 260;
+  const below = spot !== null && spot.top + spot.height + 18 + ROOM < window.innerHeight;
+  const place = below && spot !== null ? { top: spot.top + spot.height + 18 } : { bottom: 16 };
 
   return (
     <div
@@ -97,19 +186,22 @@ export default function Tour(): React.JSX.Element | null {
       aria-modal="true"
       aria-label={t(`tour.${name}.title` as TKey)}
     >
-      <div
-        className="tour__hole"
-        style={{
-          top: spot.top - 8,
-          left: spot.left - 8,
-          width: spot.width + 16,
-          height: spot.height + 16,
-        }}
-      />
+      {spot === null ? null : (
+        <div
+          className="tour__hole"
+          style={{
+            top: spot.top - 8,
+            left: spot.left - 8,
+            width: spot.width + 16,
+            height: spot.height + 16,
+          }}
+        />
+      )}
       <div className="tour__bubble" style={place}>
         <p className="tour__step">{t('tour.of', { n: step + 1, total: STEPS.length })}</p>
         <h2 className="h2">{t(`tour.${name}.title` as TKey)}</h2>
         <p className="tour__body">{t(`tour.${name}.body` as TKey)}</p>
+        {spot === null ? <p className="tour__wait">{t('tour.waiting')}</p> : null}
         <div className="tour__row">
           <button
             type="button"
