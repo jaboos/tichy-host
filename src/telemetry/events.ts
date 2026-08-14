@@ -27,7 +27,10 @@ export type EventName =
   | 'evening_finished'
   | 'session_end'
   | 'feedback_prompt_shown'
-  | 'feedback_prompt_declined';
+  | 'feedback_prompt_declined'
+  | 'tour_step'
+  | 'tour_skipped'
+  | 'tour_done';
 
 interface Context {
   seed: string | null;
@@ -143,22 +146,31 @@ export function startTelemetry(): () => void {
     }, C.feedback.deadClickMs);
   };
 
-  const onHide = (): void => {
-    if (document.visibilityState !== 'hidden') return;
+  // Fired from both, because the first ten sessions produced not one
+  // `session_end`: visibilitychange covers backgrounding a tab, and pagehide is
+  // the only thing that fires when a tab is simply closed. Which screen a
+  // session ends on is the most useful number here, and it was missing.
+  let ended = false;
+  const finish = (): void => {
+    if (ended) return;
+    ended = true;
     trackEvent('session_end');
     flushEvents();
+  };
+  const onHide = (): void => {
+    if (document.visibilityState === 'hidden') finish();
   };
 
   document.addEventListener('click', onClick, true);
   document.addEventListener('visibilitychange', onHide);
-  window.addEventListener('pagehide', flushEvents);
+  window.addEventListener('pagehide', finish);
   const timer = window.setInterval(flushEvents, C.feedback.flushIntervalMs);
 
   return () => {
     observer.disconnect();
     document.removeEventListener('click', onClick, true);
     document.removeEventListener('visibilitychange', onHide);
-    window.removeEventListener('pagehide', flushEvents);
+    window.removeEventListener('pagehide', finish);
     window.clearInterval(timer);
     flushEvents();
   };

@@ -76,7 +76,11 @@ export default function Feedback(): React.JSX.Element | null {
   const ask = useCallback((why: string) => {
     // Never over the reveal. An evening playing back is the one moment the game
     // has undivided attention, and interrupting it takes exactly the wrong thing.
-    if (useGame.getState().screen === 'service') return;
+    const { screen: at, game } = useGame.getState();
+    if (at === 'service') return;
+    // Never before there is a game. Somebody left the title screen open for five
+    // minutes and got asked how the game was going.
+    if (game === null || at === 'onboarding') return;
     // The tutorial owns the screen while it runs. Walking it is still play, so
     // the clock reaches five minutes mid-bubble and both dialogs would show.
     if (tourIsRunning()) return;
@@ -123,6 +127,11 @@ export default function Feedback(): React.JSX.Element | null {
     };
   }, [ask]);
 
+  /** Two players clicked beside the panel trying to close it. Now that works. */
+  const onScrim = (event: React.MouseEvent<HTMLDivElement>): void => {
+    if (event.target === event.currentTarget) setPhase('quiet');
+  };
+
   const decline = (): void => {
     snoozePrompt();
     trackEvent('feedback_prompt_declined', trigger);
@@ -156,7 +165,13 @@ export default function Feedback(): React.JSX.Element | null {
 
   if (phase === 'asking') {
     return (
-      <div className="sheet" role="dialog" aria-modal="true" aria-label={t('fb.prompt.title')}>
+      <div
+        className="sheet"
+        onClick={onScrim}
+        role="dialog"
+        aria-modal="true"
+        aria-label={t('fb.prompt.title')}
+      >
         <div className="sheet__panel">
           <h2 className="h2">{t('fb.prompt.title')}</h2>
           <p className="sheet__lede">{t('fb.prompt.body')}</p>
@@ -181,7 +196,13 @@ export default function Feedback(): React.JSX.Element | null {
   if (phase === 'sent' || phase === 'failed') {
     const failed = phase === 'failed';
     return (
-      <div className="sheet" role="dialog" aria-modal="true" aria-label={t('fb.title')}>
+      <div
+        className="sheet"
+        onClick={onScrim}
+        role="dialog"
+        aria-modal="true"
+        aria-label={t('fb.title')}
+      >
         <div className="sheet__panel">
           <p className="sheet__lede">{failed ? t('fb.failed') : t('fb.thanks')}</p>
           <div className="sheet__row">
@@ -200,7 +221,13 @@ export default function Feedback(): React.JSX.Element | null {
   }
 
   return (
-    <div className="sheet" role="dialog" aria-modal="true" aria-label={t('fb.title')}>
+    <div
+      className="sheet"
+      onClick={onScrim}
+      role="dialog"
+      aria-modal="true"
+      aria-label={t('fb.title')}
+    >
       <div className="sheet__panel sheet__panel--tall">
         <h2 className="h2">{t('fb.title')}</h2>
         <p className="sheet__lede">{t('fb.intro')}</p>

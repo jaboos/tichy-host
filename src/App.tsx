@@ -49,6 +49,7 @@ export default function App(): React.JSX.Element {
   const boot = useGame((s) => s.boot);
   const lang = useGame((s) => s.lang);
   const setLang = useGame((s) => s.setLang);
+  const goto = useGame((s) => s.goto);
 
   // Restoring a save is a side effect and belongs here, not in the engine.
   useEffect(() => {
@@ -67,7 +68,7 @@ export default function App(): React.JSX.Element {
         lang: state.lang,
       };
     });
-    const stopClock = startClock();
+    const stopClock = startClock(() => useGame.getState().game !== null);
     const stopTelemetry = startTelemetry();
     return () => {
       stopClock();
@@ -113,9 +114,22 @@ export default function App(): React.JSX.Element {
   return (
     <main className="frame" style={bottom}>
       <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 6 }}>
-        <button type="button" className="chip" data-track="header-tour" onClick={openTour}>
-          {t('tour.replay')}
-        </button>
+        {WITHOUT_TABS.has(screen) ? null : (
+          <button
+            type="button"
+            className="chip"
+            data-track="header-tour"
+            onClick={() => {
+              // The tutorial teaches the Pas, so it goes there first. It used to
+              // render only on the Pas while the chip sat on every screen — a
+              // dead click on `consequence` is how that surfaced.
+              goto('pas');
+              openTour();
+            }}
+          >
+            {t('tour.replay')}
+          </button>
+        )}
         <button type="button" className="chip" data-track="header-feedback" onClick={openFeedback}>
           {t('fb.header')}
         </button>
@@ -130,7 +144,7 @@ export default function App(): React.JSX.Element {
       </div>
       {body()}
       {WITHOUT_TABS.has(screen) ? null : <TabBar />}
-      {screen === 'pas' ? <Tour /> : null}
+      <Tour />
       <Feedback />
     </main>
   );

@@ -58,10 +58,13 @@ export function playedMs(): number {
  * opened the game and went to lunch a fifteen-minute player, and then ask them
  * about an evening they never saw.
  */
-export function startClock(): () => void {
+export function startClock(counts: () => boolean = () => true): () => void {
   let timer: ReturnType<typeof setInterval> | undefined;
 
   const tick = (): void => {
+    // Sitting on the title screen is not playing. Somebody left it open five
+    // minutes and the game asked them how the game was going.
+    if (!counts()) return;
     writeJson(C.storage.clockKey, { ms: playedMs() + C.feedback.clockTickMs });
   };
 

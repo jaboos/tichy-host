@@ -17,6 +17,7 @@ import { useCallback, useEffect, useState } from 'react';
 
 import { C } from '../engine/constants';
 import { type TKey, t } from '../i18n';
+import { trackEvent } from '../telemetry/events';
 
 /**
  * Read top to bottom, this is a first evening: what the numbers mean, then how
@@ -84,6 +85,13 @@ export default function Tour(): React.JSX.Element | null {
   const [step, setStep] = useState<number>(() => (seen() ? -1 : 0));
   const [spot, setSpot] = useState<Spot | null>(null);
 
+  // Which step a tutorial dies on was the question the first ten sessions could
+  // not answer, because nothing recorded it.
+  useEffect(() => {
+    const at = STEPS[step];
+    if (at !== undefined) trackEvent('tour_step', at, step + 1);
+  }, [step]);
+
   // After commit, never during render: reassigning module state while rendering
   // is what breaks under concurrent React, and eslint is right to refuse it.
   useEffect(() => {
@@ -93,8 +101,9 @@ export default function Tour(): React.JSX.Element | null {
     };
   }, [step]);
 
-  const close = useCallback(() => {
+  const close = useCallback((completed: boolean, at: string) => {
     remember();
+    trackEvent(completed ? 'tour_done' : 'tour_skipped', at);
     setStep(-1);
   }, []);
 
@@ -164,8 +173,6 @@ export default function Tour(): React.JSX.Element | null {
 
   const name = STEPS[step] ?? '';
   const last = step === STEPS.length - 1;
-  // Below the spotlight, unless that would put the bubble off the bottom. With
-  // nothing to point at, the bubble sits low, where a thumb already is.
   /**
    * Below the anchor when the bubble fits there; otherwise pinned to the bottom.
    *
@@ -207,12 +214,17 @@ export default function Tour(): React.JSX.Element | null {
             type="button"
             className="cta"
             data-track={`tour-next-${name}`}
-            onClick={() => (last ? close() : setStep(step + 1))}
+            onClick={() => (last ? close(true, name) : setStep(step + 1))}
           >
             {last ? t('tour.done') : t('tour.next')}
           </button>
           {last ? null : (
-            <button type="button" className="btn-ghost" data-track="tour-skip" onClick={close}>
+            <button
+              type="button"
+              className="btn-ghost"
+              data-track="tour-skip"
+              onClick={() => close(false, name)}
+            >
               {t('tour.skip')}
             </button>
           )}
