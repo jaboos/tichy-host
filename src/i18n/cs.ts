@@ -237,6 +237,23 @@ export const cs = {
   'app.venueLabel': 'Jméno podniku',
 
   // Zpětná vazba a její vyžádání.
+  'fb.header': 'Zpětná vazba',
+  'tour.skip': 'Přeskočit',
+  'tour.next': 'Dál',
+  'tour.done': 'Rozumím',
+  'tour.of': '{n} ze {total}',
+  'tour.suspicion.title': 'Podezření',
+  'tour.suspicion.body':
+    'Odhad, jak pravděpodobně je dnešek jeden ze tří hodnocených večerů. Roste se znaky, které host v sále zanechá.',
+  'tour.bar.title': 'Laťka',
+  'tour.bar.body':
+    'Nejdůležitější číslo ve hře. Každý talíř se poměřuje s ním: pod ním je vada, hodně nad ním hvězdný talíř. S rostoucí pověstí laťka stoupá.',
+  'tour.stations.title': 'Posty',
+  'tour.stations.body':
+    'Kdo kde stojí. Zátěž nad kapacitou znamená přetížení a trest roste s druhou mocninou. Klepnutím na kuchaře ho přesuneš.',
+  'tour.start.title': 'Zahájit servis',
+  'tour.start.body':
+    'Rozhodni se nejdřív, pak se dívej. Večer se spočítá celý naráz a odhalení je jen přehrávka — zavřením okna nic neztratíš.',
   'fb.prompt.title': 'Máš minutu?',
   'fb.prompt.body': 'Pět otázek na to, jak se ti hraje. Čtyři jsou na klik, poslední je na tebe.',
   'fb.prompt.yes': 'Odpovím',

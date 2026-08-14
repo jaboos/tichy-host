@@ -399,6 +399,7 @@ export const C = deepFreeze({
     clockKey: 'tichy-host-v4-clock',
     promptKey: 'tichy-host-v4-prompt',
     sessionKey: 'tichy-host-v4-session',
+    tourKey: 'tichy-host-v4-tour',
   },
 
   // -------------------------------------------------------------------------

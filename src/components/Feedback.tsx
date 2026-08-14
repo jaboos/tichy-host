@@ -49,6 +49,13 @@ const QUESTIONS = [
 const OPEN_MAX = 2000;
 const ASK_POLL_MS = 20000;
 
+/** Dispatch this on `window` to open the form from anywhere. */
+export const OPEN_EVENT = 'feedback:open';
+
+export function openFeedback(): void {
+  window.dispatchEvent(new Event(OPEN_EVENT));
+}
+
 /**
  * Opened straight from a landing page. Read once, lazily, at first render —
  * the query string cannot change under us, so deriving it in an effect would
@@ -77,6 +84,16 @@ export default function Feedback(): React.JSX.Element | null {
       trackEvent('feedback_prompt_shown', why);
       return 'asking';
     });
+  }, []);
+
+  // The button in the header. A one-way command rather than shared state: the
+  // store would have to hold this modal's phase to express it, and syncing an
+  // external boolean into local phase is the set-state-in-an-effect that eslint
+  // rightly complains about.
+  useEffect(() => {
+    const openNow = (): void => setPhase('form');
+    window.addEventListener(OPEN_EVENT, openNow);
+    return () => window.removeEventListener(OPEN_EVENT, openNow);
   }, []);
 
   useEffect(() => {
@@ -142,7 +159,7 @@ export default function Feedback(): React.JSX.Element | null {
           <div className="sheet__row">
             <button
               type="button"
-              className="btn"
+              className="cta"
               data-track="fb-accept"
               onClick={() => setPhase('form')}
             >
@@ -165,7 +182,7 @@ export default function Feedback(): React.JSX.Element | null {
           <p className="sheet__lede">{failed ? t('fb.failed') : t('fb.thanks')}</p>
           <div className="sheet__row">
             {failed ? (
-              <button type="button" className="btn" onClick={() => void send()}>
+              <button type="button" className="cta" onClick={() => void send()}>
                 {t('fb.submit')}
               </button>
             ) : null}
@@ -225,7 +242,7 @@ export default function Feedback(): React.JSX.Element | null {
         <p className="ask-privacy">{t('fb.privacy')}</p>
 
         <div className="sheet__row">
-          <button type="button" className="btn" data-track="fb-send" onClick={() => void send()}>
+          <button type="button" className="cta" data-track="fb-send" onClick={() => void send()}>
             {t('fb.submit')}
           </button>
           <button type="button" className="btn-ghost" onClick={decline}>

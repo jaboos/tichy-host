@@ -4,8 +4,9 @@ import { t } from './i18n';
 import { useGame } from './store/gameStore';
 import { setContextProvider, startTelemetry } from './telemetry/events';
 import { startClock } from './telemetry/session';
-import Feedback from './components/Feedback';
+import Feedback, { openFeedback } from './components/Feedback';
 import TabBar from './components/TabBar';
+import Tour from './components/Tour';
 import Brigade from './screens/Brigade';
 import Calendar from './screens/Calendar';
 import Chronicle from './screens/Chronicle';
@@ -111,7 +112,10 @@ export default function App(): React.JSX.Element {
 
   return (
     <main className="frame" style={bottom}>
-      <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+      <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 6 }}>
+        <button type="button" className="chip" data-track="header-feedback" onClick={openFeedback}>
+          {t('fb.header')}
+        </button>
         <button
           type="button"
           className="chip"
@@ -123,6 +127,7 @@ export default function App(): React.JSX.Element {
       </div>
       {body()}
       {WITHOUT_TABS.has(screen) ? null : <TabBar />}
+      {screen === 'pas' ? <Tour /> : null}
       <Feedback />
     </main>
   );

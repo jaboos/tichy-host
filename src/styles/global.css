@@ -347,9 +347,9 @@ button:focus-visible,
 
 .sheet__row {
   display: flex;
-  gap: 10px;
-  align-items: center;
-  flex-wrap: wrap;
+  flex-direction: column;
+  gap: 8px;
+  align-items: stretch;
   margin-top: 18px;
 }
 
@@ -419,4 +419,65 @@ button:focus-visible,
   font-size: var(--fs-micro);
   line-height: 1.6;
   color: var(--ink-muted);
+}
+
+/* ── Tour ─────────────────────────────────────────────────
+   A spotlight cut out of a dark scrim, and a bubble beside it. The hole is a
+   huge outward box-shadow rather than a real mask: it costs one element, needs
+   no SVG, and the browser composites it on the GPU. */
+.tour {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  pointer-events: none;
+}
+
+.tour__hole {
+  position: absolute;
+  border-radius: var(--radius-chip);
+  box-shadow:
+    0 0 0 9999px rgba(6, 5, 4, 0.78),
+    0 0 0 1px var(--brass);
+  transition:
+    top var(--dur-base) var(--ease-out),
+    left var(--dur-base) var(--ease-out),
+    width var(--dur-base) var(--ease-out),
+    height var(--dur-base) var(--ease-out);
+}
+
+.tour__bubble {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(var(--col-width), calc(100vw - 28px));
+  padding: 16px 18px calc(16px + env(safe-area-inset-bottom));
+  pointer-events: auto;
+  border: 1px solid var(--brass-a35);
+  border-radius: var(--radius-card);
+  background: var(--card);
+  box-shadow: var(--shadow-deep);
+  animation: spad var(--dur-base) var(--ease-out);
+}
+
+.tour__step {
+  margin: 0 0 6px;
+  font-family: var(--font-mono);
+  font-size: var(--fs-micro);
+  letter-spacing: var(--ls-mono);
+  color: var(--brass);
+}
+
+.tour__body {
+  margin: 8px 0 0;
+  font-size: var(--fs-small);
+  line-height: 1.55;
+  color: var(--ink-muted);
+}
+
+.tour__row {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: stretch;
+  margin-top: 16px;
 }

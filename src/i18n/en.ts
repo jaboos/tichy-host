@@ -239,6 +239,23 @@ export const en = {
   'app.venueLabel': 'Name of the restaurant',
 
   // The feedback form and the ask that opens it.
+  'fb.header': 'Feedback',
+  'tour.skip': 'Skip',
+  'tour.next': 'Next',
+  'tour.done': 'Got it',
+  'tour.of': '{n} of {total}',
+  'tour.suspicion.title': 'Suspicion',
+  'tour.suspicion.body':
+    'How likely tonight is one of the three graded evenings. It moves with the tells the room leaves behind.',
+  'tour.bar.title': 'The bar',
+  'tour.bar.body':
+    'The most important number here. Every plate is scored against it: under it is a defect, well over it is a star plate. It climbs as your reputation does.',
+  'tour.stations.title': 'Stations',
+  'tour.stations.body':
+    'Who stands where. Load above capacity is overload, and the penalty grows with the square. Tap a cook to move them.',
+  'tour.start.title': 'Start service',
+  'tour.start.body':
+    'Decide first, then watch. The evening is calculated in one go and the reveal is only a replay — closing the tab loses nothing.',
   'fb.prompt.title': 'Got a minute?',
   'fb.prompt.body':
     'Five questions about how this is going. Four are one click; the last one is yours.',

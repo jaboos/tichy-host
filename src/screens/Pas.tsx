@@ -191,7 +191,9 @@ export default function Pas(): React.JSX.Element | null {
             · {t(dayKey)} · {t('pas.covers', { n: opening.covers })}
           </div>
         </div>
-        <SuspicionDial value={opening.suspicion} />
+        <span data-tour="suspicion">
+          <SuspicionDial value={opening.suspicion} />
+        </span>
       </header>
 
       {/* The maître's tell gets a card of its own with a brass rule down its left
@@ -215,7 +217,7 @@ export default function Pas(): React.JSX.Element | null {
         {t('suspicion.maitre')}
       </div>
 
-      <div style={{ marginTop: 14 }}>
+      <div style={{ marginTop: 14 }} data-tour="bar">
         <BarIndicator
           menu={menu}
           weekIndex={opening.weekIndex}
@@ -224,7 +226,7 @@ export default function Pas(): React.JSX.Element | null {
         />
       </div>
 
-      <div className="spread" style={{ marginTop: 18 }}>
+      <div className="spread" style={{ marginTop: 18 }} data-tour="stations">
         <span className="h2">{t('pas.stations')}</span>
         <span className="row" style={{ gap: 2 }}>
           <span className="label" style={{ fontSize: 'var(--fs-micro)' }}>
@@ -386,7 +388,7 @@ export default function Pas(): React.JSX.Element | null {
         >
           {t(verdict.key, verdict.params)}
         </div>
-        <button type="button" className="cta" onClick={() => startService()}>
+        <button type="button" className="cta" data-tour="start" onClick={() => startService()}>
           {t('pas.start')}
           <span className="cta__note">{t('pas.covers', { n: opening.covers })}</span>
         </button>
