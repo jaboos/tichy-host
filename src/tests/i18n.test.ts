@@ -154,6 +154,42 @@ describe('t()', () => {
 });
 
 /**
+ * Every link from a landing page into the game has to hand over the language of
+ * the page it came from.
+ *
+ * Found by opening it: the English page's feedback link was `/hra/?feedback=1`
+ * with no language, so the game fell back to the stored preference — which
+ * defaults to Czech. An English visitor clicked an English link and got a Czech
+ * form. The main CTA carried `?lang=en`; the feedback link, added later, did
+ * not. Exactly the kind of gap that only ever shows up in a browser.
+ */
+describe('the landing pages hand the game a language', () => {
+  const PAGES: ReadonlyArray<[string, string]> = [
+    ['index.html', 'en'],
+    [join('cs', 'index.html'), 'cs'],
+  ];
+
+  it('every /hra/ link carries the language of its page', () => {
+    const root = join(SRC, '..');
+    let checked = 0;
+
+    for (const [page, lang] of PAGES) {
+      const html = readFileSync(join(root, page), 'utf8');
+      const links = html.match(/href="\/hra\/[^"]*"/g) ?? [];
+      expect(links.length, `${page} does not link to the game at all`).toBeGreaterThan(0);
+
+      for (const link of links) {
+        expect(link, `${page}: ${link} would open the game in the wrong language`).toContain(
+          `lang=${lang}`,
+        );
+        checked += 1;
+      }
+    }
+    expect(checked, 'no game links were examined').toBeGreaterThanOrEqual(6);
+  });
+});
+
+/**
  * The brigade's names come from the dictionaries now, resolved from an id at
  * render time. `cookFirst`/`cookLast` reach the dictionary through a cast, so
  * nothing but this file stops a cook rendering the Czech fallback — or a blank —

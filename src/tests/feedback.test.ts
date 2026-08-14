@@ -23,9 +23,8 @@ const shim: Storage = {
 (globalThis as unknown as { localStorage: Storage }).localStorage = shim;
 
 const { C } = await import('../engine/constants');
-const { notePromptShown, playedMs, promptIsDue, silencePrompt, snoozePrompt } = await import(
-  '../telemetry/session'
-);
+const { notePromptShown, playedMs, promptIsDue, silencePrompt, snoozePrompt } =
+  await import('../telemetry/session');
 
 /** Puts a given amount of active play on the clock. */
 function played(ms: number): void {
