@@ -396,6 +396,39 @@ export const C = deepFreeze({
     chronicleKey: 'tichy-host-v4-chron',
     prefsKey: 'tichy-host-v4-prefs',
     backupKey: 'tichy-host-v4-backup',
+    clockKey: 'tichy-host-v4-clock',
+    promptKey: 'tichy-host-v4-prompt',
+    sessionKey: 'tichy-host-v4-session',
+  },
+
+  // -------------------------------------------------------------------------
+  // Feedback and telemetry.
+  //
+  // None of it touches the simulation. It lives here because the project keeps
+  // every tunable in one file, and because "ask at five minutes" is exactly the
+  // kind of number that otherwise ends up buried in a component.
+  // -------------------------------------------------------------------------
+  feedback: {
+    /** Active play before the first ask, and before the second. Milliseconds. */
+    firstPromptMs: 5 * 60 * 1000,
+    secondPromptMs: 15 * 60 * 1000,
+    /** Never more than twice in the life of one browser. */
+    maxPrompts: 2,
+    /** "Not now" buys silence for a day. */
+    snoozeMs: 24 * 60 * 60 * 1000,
+    /** The clock only advances while the tab is visible; this is its tick. */
+    clockTickMs: 1000,
+
+    /** Three clicks inside this window and this radius is a rage click. */
+    rageWindowMs: 1000,
+    rageRadiusPx: 30,
+    rageClicks: 3,
+    /** A click that mutates nothing within this window is a dead click. */
+    deadClickMs: 700,
+
+    /** Events are buffered and posted in batches, never one per click. */
+    flushIntervalMs: 15000,
+    maxBatch: 40,
   },
 } as const);
 

@@ -310,3 +310,113 @@ button:focus-visible,
   white-space: nowrap;
   border: 0;
 }
+
+/* ── Feedback sheet ───────────────────────────────────────
+   The ask and the form. A sheet rather than a centred dialog: on a 390px column
+   the thumb is at the bottom, and a form that starts under the fold is a form
+   nobody finishes. */
+.sheet {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 12px;
+  background: rgba(6, 5, 4, 0.72);
+}
+
+.sheet__panel {
+  width: min(var(--col-width), 100%);
+  max-height: 88vh;
+  overflow-y: auto;
+  padding: 22px 18px calc(18px + env(safe-area-inset-bottom));
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  background: var(--card);
+  box-shadow: var(--shadow-deep);
+  animation: spad var(--dur-base) var(--ease-out);
+}
+
+.sheet__lede {
+  margin: 10px 0 18px;
+  font-size: var(--fs-body);
+  line-height: 1.55;
+  color: var(--ink-muted);
+}
+
+.sheet__row {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-top: 18px;
+}
+
+.ask-q {
+  margin: 0 0 20px;
+  padding: 0;
+  border: 0;
+}
+
+.ask-q legend {
+  padding: 0 0 10px;
+  font-size: var(--fs-small);
+  line-height: 1.45;
+  color: var(--ink);
+}
+
+.ask-opt {
+  display: block;
+  width: 100%;
+  min-height: var(--hit);
+  margin-bottom: 6px;
+  padding: 11px 14px;
+  text-align: left;
+  font-family: var(--font-ui);
+  font-size: var(--fs-small);
+  color: var(--ink-muted);
+  background: transparent;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-chip);
+  cursor: pointer;
+  transition:
+    border-color var(--dur-fast) var(--ease-out),
+    color var(--dur-fast) var(--ease-out);
+}
+
+.ask-opt:hover {
+  color: var(--ink);
+  border-color: var(--brass-a35);
+}
+
+.ask-opt.is-on {
+  color: var(--ink);
+  border-color: var(--brass);
+  background: var(--brass-a35);
+}
+
+.ask-open {
+  width: 100%;
+  padding: 11px 14px;
+  font-family: var(--font-ui);
+  font-size: var(--fs-small);
+  color: var(--ink);
+  background: transparent;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-chip);
+  resize: vertical;
+}
+
+.ask-open:focus-visible {
+  outline: none;
+  border-color: var(--brass);
+}
+
+.ask-privacy {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: var(--fs-micro);
+  line-height: 1.6;
+  color: var(--ink-muted);
+}

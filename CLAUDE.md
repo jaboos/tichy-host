@@ -6,7 +6,13 @@ Working rules for this repository. Kept deliberately short — this file is inje
 ## Project
 
 `Tichý host` (The Silent Guest) — a browser text management game about a fine-dining kitchen.
-Vite + React 18 + TypeScript (strict) + Zustand. No backend. State in `localStorage`. CZ/EN.
+Vite + React 18 + TypeScript (strict) + Zustand. CZ/EN.
+
+**No backend for game state.** The save lives in `localStorage` and nowhere else: the game must play
+end to end with the network unplugged, and no server may ever hold a season. The single exception is
+playtest instrumentation in `src/telemetry/` — an opt-in feedback form and anonymous click events,
+write-only into Supabase, which nothing in the game ever reads back. If a feature needs the network
+in order to *play*, it is in the wrong place.
 
 ## Commands
 

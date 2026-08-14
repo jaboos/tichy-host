@@ -638,3 +638,9 @@ h1 em {
     transform: perspective(1200px) rotateX(4deg) rotateY(-5deg);
   }
 }
+
+.ask-cta {
+  margin: 26px 0 0;
+  font-family: var(--font-mono);
+  font-size: clamp(12px, 1.5vw, 14px);
+}

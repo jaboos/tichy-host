@@ -10,6 +10,9 @@ import { viteSingleFile } from 'vite-plugin-singlefile';
 const singleFile = process.env['SINGLEFILE'] === '1';
 
 export default defineConfig({
+  // Stamped into every telemetry row, so a finding can be tied to the deploy it
+  // came from. Evaluated in node at config time, nowhere near the pure engine.
+  define: { __BUILD__: JSON.stringify(new Date().toISOString().slice(0, 10)) },
   plugins: [react(), ...(singleFile ? [viteSingleFile()] : [])],
   // Three pages: the English landing at `/`, the Czech one at `/cs/`, and the
   // game at `/hra/`. Both landings are plain HTML linking `src/styles/tokens.css`

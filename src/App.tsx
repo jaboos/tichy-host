@@ -2,6 +2,9 @@ import { useEffect } from 'react';
 
 import { t } from './i18n';
 import { useGame } from './store/gameStore';
+import { setContextProvider, startTelemetry } from './telemetry/events';
+import { startClock } from './telemetry/session';
+import Feedback from './components/Feedback';
 import TabBar from './components/TabBar';
 import Brigade from './screens/Brigade';
 import Calendar from './screens/Calendar';
@@ -50,6 +53,26 @@ export default function App(): React.JSX.Element {
   useEffect(() => {
     boot();
   }, [boot]);
+
+  // The play clock and the click watchers. Both read wall time and the DOM, so
+  // neither could live in the engine; both are no-ops unless telemetry is on.
+  useEffect(() => {
+    setContextProvider(() => {
+      const state = useGame.getState();
+      return {
+        seed: state.game?.seed ?? null,
+        eveningIndex: state.game?.eveningIndex ?? null,
+        screen: state.screen,
+        lang: state.lang,
+      };
+    });
+    const stopClock = startClock();
+    const stopTelemetry = startTelemetry();
+    return () => {
+      stopClock();
+      stopTelemetry();
+    };
+  }, []);
 
   const body = (): React.JSX.Element | null => {
     switch (screen) {
@@ -100,6 +123,7 @@ export default function App(): React.JSX.Element {
       </div>
       {body()}
       {WITHOUT_TABS.has(screen) ? null : <TabBar />}
+      <Feedback />
     </main>
   );
 }

@@ -14,6 +14,7 @@
 import { create } from 'zustand';
 
 import { C } from '../engine/constants';
+import { trackEvent } from '../telemetry/events';
 import { createRng, formatSeed, generateSeed, seedToRngState } from '../engine/rng';
 import {
   advanceEvening,
@@ -39,7 +40,15 @@ import {
   stationOdds,
   type EveningContext,
 } from '../engine/plate';
-import { cookLast, formatCurrency, formatNumber, formatPercent, setLang as setI18nLang, t, type TKey } from '../i18n';
+import {
+  cookLast,
+  formatCurrency,
+  formatNumber,
+  formatPercent,
+  setLang as setI18nLang,
+  t,
+  type TKey,
+} from '../i18n';
 import * as persistence from './persistence';
 import { STATIONS } from '../engine/types';
 import type {
@@ -856,6 +865,9 @@ export const useGame = create<Store>((set, get) => ({
   confirmIntervention: () => {
     const pick = get().interventionPick;
     if (pick === null) return;
+    // Which interventions get reached at all is the discoverability question the
+    // feedback form asks in words; this answers it in behaviour.
+    trackEvent(pick.id === 'push' ? 'push_used' : 'help_open', pick.id);
     set({ intervention: pick, interventionOpen: null, interventionPick: null, refusal: null });
   },
 
@@ -866,6 +878,10 @@ export const useGame = create<Store>((set, get) => ({
   startService: (skipReveal = false) => {
     const { game, opening, draft, intervention } = get();
     if (game === null || opening === null) return;
+
+    // How long the pass held someone before they committed. A long dwell on an
+    // early evening is decision paralysis; a short one late is confidence.
+    trackEvent('service_started', intervention === null ? 'plain' : intervention.id);
 
     const rng = createRng(game.rngState);
     const { state, result } = advanceEvening(
