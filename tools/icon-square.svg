@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="512" height="512">
+  <!--
+    Generator source for the PNG icons, not a shipped file.
+
+    Same mark as public/favicon.svg with square corners, because iOS and Android
+    apply their own mask to a home-screen icon. Feeding them the rounded version
+    rounds it twice and leaves transparent slivers in the corners.
+
+        pnpm dev → http://localhost:5173/tools/icon-square.svg
+        screenshot at 512×512 → public/icon-512.png → sips down to 192 and 180
+  -->
+  <rect width="64" height="64" fill="#0E0D0B" />
+  <path d="M9 40h46" stroke="#D8A24A" stroke-width="6" stroke-linecap="round" />
+  <circle cx="32" cy="29" r="12" fill="#F2EDE4" />
+</svg>

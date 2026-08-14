@@ -51,6 +51,32 @@ main {
   padding: 0 clamp(20px, 5vw, 48px) 120px;
 }
 
+/* ── Brand ────────────────────────────────────────────────
+   The mark plus the name, top left, opposite the language switch. Outside the
+   reveal for the same reason the switch is: the top row of a page should not
+   have to animate in before it says whose page it is. */
+.brand {
+  position: absolute;
+  top: clamp(14px, 2.5vw, 26px);
+  left: clamp(16px, 5vw, 48px);
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--font-display);
+  font-size: clamp(14px, 1.7vw, 16px);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+}
+
+.brand img {
+  /* The file carries its own rounding; this radius only stops a hairline of the
+     square viewBox showing at fractional device pixel ratios. */
+  border-radius: 8px;
+  flex: none;
+}
+
 /* ── Language switch ──────────────────────────────────────
    Top right, above everything, and deliberately outside the reveal — the
    language choice has to be reachable before the page finishes arriving.

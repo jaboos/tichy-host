@@ -6,6 +6,14 @@
     <meta name="color-scheme" content="dark" />
     <meta name="theme-color" content="#0E0D0B" />
     <title>The Silent Guest — three evenings out of forty are graded</title>
+
+    <!-- The mark: a plate resting on the bar. An SVG for browsers, a square-
+         cornered PNG for iOS because it masks the icon itself and would round
+         an already-rounded one twice. Declaring these is also what stops the
+         browser guessing at /favicon.ico and logging a 404 on every load. -->
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
     <meta
       name="description"
       content="A free browser game about running a fine-dining kitchen. Six cooks, four stations, forty evenings, and a critic who books under someone else's name. No sign-up."
@@ -53,6 +61,11 @@
     <!-- The glow lives behind everything and never moves. It is the whole reason
          the page reads as a room rather than a document. -->
     <div class="ambience" aria-hidden="true"></div>
+
+    <div class="brand">
+      <img src="/favicon.svg" width="30" height="30" alt="" />
+      <span>The Silent Guest</span>
+    </div>
 
     <nav class="langbar" aria-label="Language">
       <span class="langbar__on" aria-current="true">

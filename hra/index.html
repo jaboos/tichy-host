@@ -12,6 +12,14 @@
       content="Textová manažerská hra o fine-dining kuchyni. Šest kuchařů, čtyři posty, čtyřicet večerů — a inspektor, který nikdy neřekne, kdy přijde."
     />
     <title>Tichý host</title>
+
+    <!-- The mark: a plate resting on the bar. An SVG for browsers, a square-
+         cornered PNG for iOS because it masks the icon itself and would round
+         an already-rounded one twice. Declaring these is also what stops the
+         browser guessing at /favicon.ico and logging a 404 on every load. -->
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
   </head>
   <body>
     <div id="root"></div>
