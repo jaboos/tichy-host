@@ -211,6 +211,9 @@
     </main>
 
     <script type="module">
+      import { startAnalytics } from '/src/analytics.ts';
+      startAnalytics();
+
       const shy = document.querySelectorAll('.reveal');
       const still = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 

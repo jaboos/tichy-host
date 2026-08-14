@@ -14,8 +14,11 @@ import '@fontsource/ibm-plex-mono/500.css';
 import '@fontsource/ibm-plex-mono/600.css';
 
 import App from './App';
+import { startAnalytics } from './analytics';
 import './styles/tokens.css';
 import './styles/global.css';
+
+startAnalytics();
 
 const container = document.getElementById('root');
 if (container === null) throw new Error('#root missing from index.html');

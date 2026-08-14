@@ -219,6 +219,9 @@
     </main>
 
     <script type="module">
+      import { startAnalytics } from '/src/analytics.ts';
+      startAnalytics();
+
       // Sections arrive as you reach them. Guarded on prefers-reduced-motion, and
       // if the observer is unavailable everything is simply already visible.
       const shy = document.querySelectorAll('.reveal');
